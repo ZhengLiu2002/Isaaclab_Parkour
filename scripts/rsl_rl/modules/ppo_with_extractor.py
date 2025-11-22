@@ -4,6 +4,7 @@ from __future__ import annotations
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from tensordict import TensorDict
 
 from .actor_critic_with_encoder import ActorCriticRMA
 from rsl_rl.algorithms import PPO
@@ -75,9 +76,31 @@ class PPOWithExtractor(PPO):
         self.counter = 0
 
 
+    def init_storage(self, training_type, num_envs, num_transitions_per_env, obs, privileged_obs=None, actions_shape=None):
+        """Accept legacy signature and create storage compatible with rsl-rl>=3.1."""
+        if actions_shape is None:
+            actions_shape = (self.policy.num_actions,) if hasattr(self.policy, "num_actions") else (1,)
+        if isinstance(actions_shape, list):
+            actions_shape = tuple(actions_shape)
+        if isinstance(obs, TensorDict):
+            obs_td = obs.to(self.device)
+        else:
+            # obs is shape list like [num_obs]
+            obs_shape = obs if isinstance(obs, (list, tuple)) else (obs,)
+            obs_tensor = torch.zeros((num_envs, *obs_shape), device=self.device)
+            obs_dict = {"obs": obs_tensor}
+            if privileged_obs is not None and privileged_obs[0] > 0:
+                priv_tensor = torch.zeros((num_envs, *privileged_obs), device=self.device)
+                obs_dict["critic_obs"] = priv_tensor
+            obs_td = TensorDict(obs_dict, batch_size=[num_envs], device=self.device)
+        super().init_storage(training_type, num_envs, num_transitions_per_env, obs_td, actions_shape)
+
     def act(self, obs, critic_obs, hist_encoding=False):
         if self.policy.is_recurrent:
             self.transition.hidden_states = self.policy.get_hidden_states()
+        obs_td = TensorDict({"obs": obs}, batch_size=[obs.shape[0]], device=self.device)
+        if critic_obs is not None:
+            obs_td["critic_obs"] = critic_obs
         # compute the actions and values
         if self.train_with_estimated_states:
             obs_est = obs.clone()
@@ -92,10 +115,47 @@ class PPOWithExtractor(PPO):
         self.transition.action_mean = self.policy.action_mean.detach()
         self.transition.action_sigma = self.policy.action_std.detach()
         # need to record obs and critic_obs before env.step()
-        self.transition.observations = obs
+        self.transition.observations = obs_td
         self.transition.privileged_observations = critic_obs
 
         return self.transition.actions
+
+    def process_env_step(self, obs, rewards, dones, extras):
+        obs_td = TensorDict({"obs": obs}, batch_size=[obs.shape[0]], device=self.device)
+        # Update the normalizers
+        if hasattr(self.policy, "update_normalization"):
+            self.policy.update_normalization(obs_td)
+        if self.rnd:
+            self.rnd.update_normalization(obs_td)
+
+        # Record the rewards and dones
+        # Note: We clone here because later on we bootstrap the rewards based on timeouts
+        self.transition.rewards = rewards.clone()
+        self.transition.dones = dones
+
+        # Compute the intrinsic rewards and add to extrinsic rewards
+        if self.rnd:
+            # Compute the intrinsic rewards
+            self.intrinsic_rewards = self.rnd.get_intrinsic_reward(obs_td)
+            # Add intrinsic rewards to extrinsic rewards
+            self.transition.rewards += self.intrinsic_rewards
+
+        # Bootstrapping on time outs
+        if "time_outs" in extras:
+            self.transition.rewards += self.gamma * torch.squeeze(
+                self.transition.values * extras["time_outs"].unsqueeze(1).to(self.device), 1
+            )
+
+        # Record the transition
+        self.storage.add_transitions(self.transition)
+        self.transition.clear()
+        self.policy.reset(dones)
+
+    def compute_returns(self, critic_obs):
+        last_values = self.policy.evaluate(critic_obs).detach()
+        self.storage.compute_returns(
+            last_values, self.gamma, self.lam, normalize_advantage=not self.normalize_advantage_per_mini_batch
+        )
     
 
     def update(self):  # noqa: C901
@@ -121,21 +181,43 @@ class PPOWithExtractor(PPO):
         else:
             generator = self.storage.mini_batch_generator(self.num_mini_batches, self.num_learning_epochs)
 
-        # iterate over batches
-        for (
-            obs_batch,
-            critic_obs_batch,
-            actions_batch,
-            target_values_batch,
-            advantages_batch,
-            returns_batch,
-            old_actions_log_prob_batch,
-            old_mu_batch,
-            old_sigma_batch,
-            hid_states_batch,
-            masks_batch,
-            rnd_state_batch,
-        ) in generator:
+        # iterate over batches (handle both legacy and current rollout generators)
+        for batch in generator:
+            if len(batch) == 10:
+                (
+                    obs_batch,
+                    actions_batch,
+                    target_values_batch,
+                    advantages_batch,
+                    returns_batch,
+                    old_actions_log_prob_batch,
+                    old_mu_batch,
+                    old_sigma_batch,
+                    hid_states_batch,
+                    masks_batch,
+                ) = batch
+                rnd_state_batch = None
+                # unpack tensordict if present
+                if isinstance(obs_batch, TensorDict):
+                    critic_obs_batch = obs_batch.get("critic_obs", obs_batch.get("obs"))
+                    obs_batch = obs_batch.get("obs")
+                else:
+                    critic_obs_batch = obs_batch
+            else:
+                (
+                    obs_batch,
+                    critic_obs_batch,
+                    actions_batch,
+                    target_values_batch,
+                    advantages_batch,
+                    returns_batch,
+                    old_actions_log_prob_batch,
+                    old_mu_batch,
+                    old_sigma_batch,
+                    hid_states_batch,
+                    masks_batch,
+                    rnd_state_batch,
+                ) = batch
 
             # number of augmentations per sample
             # we start with 1 and increase it if we use symmetry augmentation
@@ -293,6 +375,8 @@ class PPOWithExtractor(PPO):
 
             # Random Network Distillation loss
             if self.rnd:
+                if rnd_state_batch is None:
+                    rnd_state_batch = obs_batch
                 # predict the embedding and the target
                 predicted_embedding = self.rnd.predictor(rnd_state_batch)
                 target_embedding = self.rnd.target(rnd_state_batch).detach()
@@ -367,20 +451,41 @@ class PPOWithExtractor(PPO):
             generator = self.storage.recurrent_mini_batch_generator(self.num_mini_batches, self.num_learning_epochs)
         else:
             generator = self.storage.mini_batch_generator(self.num_mini_batches, self.num_learning_epochs)
-        for (
-            obs_batch,
-            critic_obs_batch,
-            actions_batch,
-            target_values_batch,
-            advantages_batch,
-            returns_batch,
-            old_actions_log_prob_batch,
-            old_mu_batch,
-            old_sigma_batch,
-            hid_states_batch,
-            masks_batch,
-            rnd_state_batch,
-        ) in generator:
+        for batch in generator:
+            if len(batch) == 10:
+                (
+                    obs_batch,
+                    actions_batch,
+                    target_values_batch,
+                    advantages_batch,
+                    returns_batch,
+                    old_actions_log_prob_batch,
+                    old_mu_batch,
+                    old_sigma_batch,
+                    hid_states_batch,
+                    masks_batch,
+                ) = batch
+                if isinstance(obs_batch, TensorDict):
+                    obs_batch = obs_batch.get("obs")
+                critic_obs_batch = obs_batch
+            else:
+                (
+                    obs_batch,
+                    critic_obs_batch,
+                    actions_batch,
+                    target_values_batch,
+                    advantages_batch,
+                    returns_batch,
+                    old_actions_log_prob_batch,
+                    old_mu_batch,
+                    old_sigma_batch,
+                    hid_states_batch,
+                    masks_batch,
+                    rnd_state_batch,
+                ) = batch
+                if isinstance(obs_batch, TensorDict):
+                    critic_obs_batch = obs_batch.get("critic_obs", obs_batch.get("obs"))
+                    obs_batch = obs_batch.get("obs")
             with torch.inference_mode():
                 self.policy.act(obs_batch, 
                                 hist_encoding=True, 

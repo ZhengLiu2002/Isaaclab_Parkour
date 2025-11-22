@@ -9,9 +9,43 @@ from collections import deque
 
 import rsl_rl
 from rsl_rl.env import VecEnv
-from rsl_rl.modules import (
-    EmpiricalNormalization,
-)
+try:
+    from rsl_rl.modules import EmpiricalNormalization  # type: ignore
+except ImportError:
+    import torch
+
+    class EmpiricalNormalization(torch.nn.Module):
+        """Fallback normalizer when rsl_rl version lacks EmpiricalNormalization."""
+
+        def __init__(self, shape, until=1.0e8):
+            super().__init__()
+            self.register_buffer("count", torch.tensor(0.0))
+            self.register_buffer("mean", torch.zeros(shape))
+            self.register_buffer("var", torch.ones(shape))
+            self.until = until
+
+        def forward(self, x):
+            if self.training and self.count < self.until:
+                # Simple running mean/var update
+                batch_mean = x.mean(dim=0)
+                batch_var = x.var(dim=0, unbiased=False)
+                batch_count = x.shape[0]
+
+                delta = batch_mean - self.mean
+                tot_count = self.count + batch_count
+
+                new_mean = self.mean + delta * batch_count / tot_count
+                m_a = self.var * self.count
+                m_b = batch_var * batch_count
+                M2 = m_a + m_b + delta.pow(2) * self.count * batch_count / tot_count
+                new_var = M2 / tot_count
+
+                self.mean = new_mean
+                self.var = new_var
+                self.count = tot_count
+
+            std = torch.sqrt(self.var + 1e-8)
+            return (x - self.mean) / std
 from .actor_critic_with_encoder import ActorCriticRMA
 from rsl_rl.utils import store_code_state
 from rsl_rl.runners.on_policy_runner import OnPolicyRunner
@@ -128,9 +162,9 @@ class OnPolicyRunnerWithExtractor(OnPolicyRunner):
                 self.training_type,
                 self.env.num_envs,
                 self.num_steps_per_env,
-                [num_obs],
-                [num_privileged_obs],
-                [self.env.num_actions],
+                (num_obs,),
+                (num_privileged_obs,),
+                (self.env.num_actions,),
             )
 
         self.disable_logs = self.is_distributed and self.gpu_global_rank != 0
@@ -226,7 +260,7 @@ class OnPolicyRunnerWithExtractor(OnPolicyRunner):
                         privileged_obs = obs
 
                     # process the step
-                    self.alg.process_env_step(rewards, dones, infos)
+                    self.alg.process_env_step(obs, rewards, dones, infos)
 
                     # Extract intrinsic rewards (only for logging)
                     intrinsic_rewards = self.alg.intrinsic_rewards if self.alg.rnd else None

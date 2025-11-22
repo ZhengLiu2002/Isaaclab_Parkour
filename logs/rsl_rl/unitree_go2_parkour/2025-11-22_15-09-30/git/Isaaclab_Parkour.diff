@@ -1,0 +1,5727 @@
+--- git status ---
+On branch master
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	new file:   Isaaclab_Parkour.egg-info/PKG-INFO
+	new file:   Isaaclab_Parkour.egg-info/SOURCES.txt
+	new file:   Isaaclab_Parkour.egg-info/dependency_links.txt
+	new file:   Isaaclab_Parkour.egg-info/top_level.txt
+	modified:   README.md
+	new file:   logs/rsl_rl/unitree_go2_parkour/2025-11-22_15-05-29/events.out.tfevents.1763795156.lz-MS-7E32.26169.0
+	new file:   logs/rsl_rl/unitree_go2_parkour/2025-11-22_15-05-29/params/agent.pkl
+	new file:   logs/rsl_rl/unitree_go2_parkour/2025-11-22_15-05-29/params/agent.yaml
+	new file:   logs/rsl_rl/unitree_go2_parkour/2025-11-22_15-05-29/params/env.pkl
+	new file:   logs/rsl_rl/unitree_go2_parkour/2025-11-22_15-05-29/params/env.yaml
+	new file:   outputs/2025-11-22/14-59-09/.hydra/config.yaml
+	new file:   outputs/2025-11-22/14-59-09/.hydra/hydra.yaml
+	new file:   outputs/2025-11-22/14-59-09/.hydra/overrides.yaml
+	new file:   outputs/2025-11-22/14-59-09/hydra.log
+	new file:   outputs/2025-11-22/15-05-29/.hydra/config.yaml
+	new file:   outputs/2025-11-22/15-05-29/.hydra/hydra.yaml
+	new file:   outputs/2025-11-22/15-05-29/.hydra/overrides.yaml
+	new file:   outputs/2025-11-22/15-05-29/hydra.log
+	new file:   parkour_isaaclab/actuators/__pycache__/__init__.cpython-311.pyc
+	new file:   parkour_isaaclab/actuators/__pycache__/parkour_actuator_cfg.cpython-311.pyc
+	new file:   parkour_isaaclab/actuators/__pycache__/parkour_actuator_pd.cpython-311.pyc
+	new file:   parkour_isaaclab/envs/__pycache__/__init__.cpython-311.pyc
+	new file:   parkour_isaaclab/envs/__pycache__/parkour_manager_based_env.cpython-311.pyc
+	new file:   parkour_isaaclab/envs/__pycache__/parkour_manager_based_env_cfg.cpython-311.pyc
+	new file:   parkour_isaaclab/envs/__pycache__/parkour_manager_based_rl_env.cpython-311.pyc
+	new file:   parkour_isaaclab/envs/__pycache__/parkour_manager_based_rl_env_cfg.cpython-311.pyc
+	new file:   parkour_isaaclab/envs/__pycache__/parkour_ui.cpython-311.pyc
+	new file:   parkour_isaaclab/envs/__pycache__/parkour_viewprot_camera_contoller.cpython-311.pyc
+	new file:   parkour_isaaclab/envs/mdp/__pycache__/__init__.cpython-311.pyc
+	new file:   parkour_isaaclab/envs/mdp/__pycache__/events.cpython-311.pyc
+	new file:   parkour_isaaclab/envs/mdp/__pycache__/observations.cpython-311.pyc
+	new file:   parkour_isaaclab/envs/mdp/__pycache__/rewards.cpython-311.pyc
+	new file:   parkour_isaaclab/envs/mdp/__pycache__/terminations.cpython-311.pyc
+	new file:   parkour_isaaclab/envs/mdp/parkour_actions/__pycache__/__init__.cpython-311.pyc
+	new file:   parkour_isaaclab/envs/mdp/parkour_actions/__pycache__/actions_cfg.cpython-311.pyc
+	new file:   parkour_isaaclab/envs/mdp/parkour_actions/__pycache__/joint_actions.cpython-311.pyc
+	new file:   parkour_isaaclab/envs/mdp/parkour_commands/__pycache__/__init__.cpython-311.pyc
+	new file:   parkour_isaaclab/envs/mdp/parkour_commands/__pycache__/parkour_command_cfg.cpython-311.pyc
+	new file:   parkour_isaaclab/envs/mdp/parkour_commands/__pycache__/uniform_parkour_command.cpython-311.pyc
+	new file:   parkour_isaaclab/envs/mdp/parkours/__pycache__/__init__.cpython-311.pyc
+	new file:   parkour_isaaclab/envs/mdp/parkours/__pycache__/parkour_event.cpython-311.pyc
+	new file:   parkour_isaaclab/envs/mdp/parkours/__pycache__/parkour_events_cfg.cpython-311.pyc
+	new file:   parkour_isaaclab/managers/__pycache__/__init__.cpython-311.pyc
+	new file:   parkour_isaaclab/managers/__pycache__/parkour_manager.cpython-311.pyc
+	new file:   parkour_isaaclab/managers/__pycache__/parkour_manager_term_cfg.cpython-311.pyc
+	new file:   parkour_isaaclab/managers/__pycache__/parkour_reward_manager.cpython-311.pyc
+	new file:   parkour_isaaclab/terrains/__pycache__/__init__.cpython-311.pyc
+	new file:   parkour_isaaclab/terrains/__pycache__/parkour_terrain_generator.cpython-311.pyc
+	new file:   parkour_isaaclab/terrains/__pycache__/parkour_terrain_generator_cfg.cpython-311.pyc
+	new file:   parkour_isaaclab/terrains/__pycache__/parkour_terrain_importer.cpython-311.pyc
+	new file:   parkour_isaaclab/terrains/__pycache__/utils.cpython-311.pyc
+	new file:   parkour_isaaclab/terrains/extreme_parkour/__pycache__/__init__.cpython-311.pyc
+	new file:   parkour_isaaclab/terrains/extreme_parkour/__pycache__/extreme_parkour_terrains_cfg.cpython-311.pyc
+	new file:   parkour_isaaclab/terrains/extreme_parkour/__pycache__/extreme_parkour_terrians.cpython-311.pyc
+	new file:   parkour_isaaclab/terrains/extreme_parkour/config/__pycache__/__init__.cpython-311.pyc
+	new file:   parkour_isaaclab/terrains/extreme_parkour/config/__pycache__/parkour.cpython-311.pyc
+	new file:   parkour_tasks/parkour_tasks/__pycache__/default_cfg.cpython-311.pyc
+	new file:   parkour_tasks/parkour_tasks/extreme_parkour_task/__pycache__/__init__.cpython-311.pyc
+	new file:   parkour_tasks/parkour_tasks/extreme_parkour_task/config/go2/__pycache__/__init__.cpython-311.pyc
+	new file:   parkour_tasks/parkour_tasks/extreme_parkour_task/config/go2/__pycache__/parkour_mdp_cfg.cpython-311.pyc
+	new file:   parkour_tasks/parkour_tasks/extreme_parkour_task/config/go2/__pycache__/parkour_teacher_cfg.cpython-311.pyc
+	new file:   parkour_tasks/parkour_tasks/extreme_parkour_task/config/go2/agents/__pycache__/__init__.cpython-311.pyc
+	new file:   parkour_tasks/parkour_tasks/extreme_parkour_task/config/go2/agents/__pycache__/parkour_rl_cfg.cpython-311.pyc
+	new file:   parkour_tasks/parkour_tasks/extreme_parkour_task/config/go2/agents/__pycache__/rsl_teacher_ppo_cfg.cpython-311.pyc
+	new file:   scripts/rsl_rl/__pycache__/__init__.cpython-311.pyc
+	new file:   scripts/rsl_rl/__pycache__/cli_args.cpython-311.pyc
+	new file:   scripts/rsl_rl/__pycache__/exporter.cpython-311.pyc
+	new file:   scripts/rsl_rl/__pycache__/vecenv_wrapper.cpython-311.pyc
+	modified:   scripts/rsl_rl/demo.py
+	modified:   scripts/rsl_rl/evaluation.py
+	new file:   scripts/rsl_rl/modules/__pycache__/__init__.cpython-311.pyc
+	new file:   scripts/rsl_rl/modules/__pycache__/actor_critic_with_encoder.cpython-311.pyc
+	new file:   scripts/rsl_rl/modules/__pycache__/distillation_with_extractor.cpython-311.pyc
+	new file:   scripts/rsl_rl/modules/__pycache__/on_policy_runner_with_extractor.cpython-311.pyc
+	new file:   scripts/rsl_rl/modules/__pycache__/ppo_with_extractor.cpython-311.pyc
+	new file:   scripts/rsl_rl/modules/feature_extractors/__pycache__/__init__.cpython-311.pyc
+	new file:   scripts/rsl_rl/modules/feature_extractors/__pycache__/depth_backbone.cpython-311.pyc
+	new file:   scripts/rsl_rl/modules/feature_extractors/__pycache__/estimator.cpython-311.pyc
+	new file:   scripts/rsl_rl/modules/feature_extractors/__pycache__/state_encoder.cpython-311.pyc
+	modified:   scripts/rsl_rl/modules/on_policy_runner_with_extractor.py
+	modified:   scripts/rsl_rl/modules/ppo_with_extractor.py
+	modified:   scripts/rsl_rl/play.py
+	modified:   scripts/rsl_rl/train.py
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   scripts/rsl_rl/modules/__pycache__/ppo_with_extractor.cpython-311.pyc
+	modified:   scripts/rsl_rl/modules/ppo_with_extractor.py
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	logs/rsl_rl/unitree_go2_parkour/2025-11-22_15-08-05/
+	logs/rsl_rl/unitree_go2_parkour/2025-11-22_15-09-30/
+	outputs/2025-11-22/15-08-05/
+	outputs/2025-11-22/15-09-30/
+ 
+
+
+--- git diff ---
+diff --git a/Isaaclab_Parkour.egg-info/PKG-INFO b/Isaaclab_Parkour.egg-info/PKG-INFO
+new file mode 100644
+index 0000000..ebe274b
+--- /dev/null
++++ b/Isaaclab_Parkour.egg-info/PKG-INFO
+@@ -0,0 +1,5 @@
++Metadata-Version: 2.4
++Name: Isaaclab_Parkour
++Version: 0.1
++License-File: LICENSE
++Dynamic: license-file
+diff --git a/Isaaclab_Parkour.egg-info/SOURCES.txt b/Isaaclab_Parkour.egg-info/SOURCES.txt
+new file mode 100644
+index 0000000..2c54e35
+--- /dev/null
++++ b/Isaaclab_Parkour.egg-info/SOURCES.txt
+@@ -0,0 +1,7 @@
++LICENSE
++README.md
++setup.py
++Isaaclab_Parkour.egg-info/PKG-INFO
++Isaaclab_Parkour.egg-info/SOURCES.txt
++Isaaclab_Parkour.egg-info/dependency_links.txt
++Isaaclab_Parkour.egg-info/top_level.txt
+\ No newline at end of file
+diff --git a/Isaaclab_Parkour.egg-info/dependency_links.txt b/Isaaclab_Parkour.egg-info/dependency_links.txt
+new file mode 100644
+index 0000000..8b13789
+--- /dev/null
++++ b/Isaaclab_Parkour.egg-info/dependency_links.txt
+@@ -0,0 +1 @@
++
+diff --git a/Isaaclab_Parkour.egg-info/top_level.txt b/Isaaclab_Parkour.egg-info/top_level.txt
+new file mode 100644
+index 0000000..8b13789
+--- /dev/null
++++ b/Isaaclab_Parkour.egg-info/top_level.txt
+@@ -0,0 +1 @@
++
+diff --git a/README.md b/README.md
+index dcee941..e4bcab7 100644
+--- a/README.md
++++ b/README.md
+@@ -10,19 +10,15 @@ https://github.com/user-attachments/assets/aa9f7ece-83c1-404f-be50-6ae6a3ba3530
+ ## How to install 
+ 
+ ```
+-cd IsaacLab ## going to IsaacLab
+-```
+-
+-```
+-https://github.com/CAI23sbP/Isaaclab_Parkour.git ## cloning this repo
+-```
+-
+-```
+-cd Isaaclab_Parkour && pip3 install -e .
+-```
+-
+-```
+-cd parkour_tasks && pip3 install -e .
++cd IsaacLab                                   # go to IsaacLab workspace
++git clone https://github.com/CAI23sbP/Isaaclab_Parkour.git
++cd Isaaclab_Parkour
++pip install -e .                              # install root package
++
++cd parkour_tasks
++pip install --no-build-isolation -e .         # avoid network fetch; toml already bundled
++# 如果之前装过旧版本失败，可先卸载再重装：
++# pip uninstall -y parkour_tasks && pip install --no-build-isolation -e .
+ ```
+ 
+ ## How to train policies
+diff --git a/logs/rsl_rl/unitree_go2_parkour/2025-11-22_15-05-29/events.out.tfevents.1763795156.lz-MS-7E32.26169.0 b/logs/rsl_rl/unitree_go2_parkour/2025-11-22_15-05-29/events.out.tfevents.1763795156.lz-MS-7E32.26169.0
+new file mode 100644
+index 0000000..ba3b950
+Binary files /dev/null and b/logs/rsl_rl/unitree_go2_parkour/2025-11-22_15-05-29/events.out.tfevents.1763795156.lz-MS-7E32.26169.0 differ
+diff --git a/logs/rsl_rl/unitree_go2_parkour/2025-11-22_15-05-29/params/agent.pkl b/logs/rsl_rl/unitree_go2_parkour/2025-11-22_15-05-29/params/agent.pkl
+new file mode 100644
+index 0000000..e367262
+Binary files /dev/null and b/logs/rsl_rl/unitree_go2_parkour/2025-11-22_15-05-29/params/agent.pkl differ
+diff --git a/logs/rsl_rl/unitree_go2_parkour/2025-11-22_15-05-29/params/agent.yaml b/logs/rsl_rl/unitree_go2_parkour/2025-11-22_15-05-29/params/agent.yaml
+new file mode 100644
+index 0000000..1d35b0d
+--- /dev/null
++++ b/logs/rsl_rl/unitree_go2_parkour/2025-11-22_15-05-29/params/agent.yaml
+@@ -0,0 +1,91 @@
++seed: 1
++device: cuda:0
++num_steps_per_env: 24
++max_iterations: 50000
++empirical_normalization: false
++obs_groups: {}
++clip_actions: null
++save_interval: 100
++experiment_name: unitree_go2_parkour
++run_name: ''
++logger: tensorboard
++neptune_project: isaaclab
++wandb_project: isaaclab
++resume: false
++load_run: .*
++load_checkpoint: model_.*.pt
++class_name: OnPolicyRunner
++policy:
++  class_name: ActorCriticRMA
++  init_noise_std: 1.0
++  noise_std_type: scalar
++  actor_obs_normalization: {}
++  critic_obs_normalization: {}
++  actor_hidden_dims:
++  - 512
++  - 256
++  - 128
++  critic_hidden_dims:
++  - 512
++  - 256
++  - 128
++  activation: elu
++  tanh_encoder_output: false
++  scan_encoder_dims:
++  - 128
++  - 64
++  - 32
++  priv_encoder_dims:
++  - 64
++  - 20
++  actor:
++    num_priv_explicit: 9
++    num_priv_latent: 29
++    num_prop: 53
++    num_scan: 132
++    num_hist: 10
++    class_name: Actor
++    state_history_encoder:
++      num_priv_explicit: 9
++      num_priv_latent: 29
++      num_prop: 53
++      num_scan: 132
++      num_hist: 10
++      class_name: StateHistoryEncoder
++      channel_size: 10
++algorithm:
++  class_name: PPOWithExtractor
++  num_learning_epochs: 5
++  num_mini_batches: 4
++  learning_rate: 0.0002
++  schedule: adaptive
++  gamma: 0.99
++  lam: 0.95
++  entropy_coef: 0.01
++  desired_kl: 0.01
++  max_grad_norm: 1.0
++  value_loss_coef: 1.0
++  use_clipped_value_loss: true
++  clip_param: 0.2
++  normalize_advantage_per_mini_batch: false
++  rnd_cfg: null
++  symmetry_cfg: null
++  dagger_update_freq: 20
++  priv_reg_coef_schedual:
++  - 0.0
++  - 0.1
++  - 2000.0
++  - 3000.0
++estimator:
++  num_priv_explicit: 9
++  num_priv_latent: 29
++  num_prop: 53
++  num_scan: 132
++  num_hist: 10
++  class_name: DefaultEstimator
++  train_with_estimated_states: true
++  learning_rate: 0.0001
++  hidden_dims:
++  - 128
++  - 64
++depth_encoder: null
+diff --git a/logs/rsl_rl/unitree_go2_parkour/2025-11-22_15-05-29/params/env.pkl b/logs/rsl_rl/unitree_go2_parkour/2025-11-22_15-05-29/params/env.pkl
+new file mode 100644
+index 0000000..f1eed3f
+Binary files /dev/null and b/logs/rsl_rl/unitree_go2_parkour/2025-11-22_15-05-29/params/env.pkl differ
+diff --git a/logs/rsl_rl/unitree_go2_parkour/2025-11-22_15-05-29/params/env.yaml b/logs/rsl_rl/unitree_go2_parkour/2025-11-22_15-05-29/params/env.yaml
+new file mode 100644
+index 0000000..7c186b7
+--- /dev/null
++++ b/logs/rsl_rl/unitree_go2_parkour/2025-11-22_15-05-29/params/env.yaml
+@@ -0,0 +1,1595 @@
++viewer:
++  eye: !!python/tuple
++  - 7.5
++  - 7.5
++  - 7.5
++  lookat: !!python/tuple
++  - 0.0
++  - 0.0
++  - 0.0
++  cam_prim_path: /OmniverseKit_Persp
++  resolution: !!python/tuple
++  - 1280
++  - 720
++  origin_type: world
++  env_index: 0
++  asset_name: null
++  body_name: null
++sim:
++  physics_prim_path: /physicsScene
++  device: cuda:0
++  dt: 0.005
++  render_interval: 4
++  gravity: !!python/tuple
++  - 0.0
++  - 0.0
++  - -9.81
++  enable_scene_query_support: false
++  use_fabric: true
++  physx:
++    solver_type: 1
++    min_position_iteration_count: 1
++    max_position_iteration_count: 255
++    min_velocity_iteration_count: 0
++    max_velocity_iteration_count: 255
++    enable_ccd: false
++    enable_stabilization: false
++    enable_enhanced_determinism: false
++    bounce_threshold_velocity: 0.5
++    friction_offset_threshold: 0.04
++    friction_correlation_distance: 0.025
++    gpu_max_rigid_contact_count: 8388608
++    gpu_max_rigid_patch_count: 2621440
++    gpu_found_lost_pairs_capacity: 2097152
++    gpu_found_lost_aggregate_pairs_capacity: 33554432
++    gpu_total_aggregate_pairs_capacity: 2097152
++    gpu_collision_stack_size: 67108864
++    gpu_heap_capacity: 67108864
++    gpu_temp_buffer_capacity: 16777216
++    gpu_max_num_partitions: 8
++    gpu_max_soft_body_contacts: 1048576
++    gpu_max_particle_contacts: 1048576
++    solve_articulation_contact_last: false
++  physics_material:
++    func: isaaclab.sim.spawners.materials.physics_materials:spawn_rigid_body_material
++    static_friction: 1.0
++    dynamic_friction: 1.0
++    restitution: 0.0
++    friction_combine_mode: average
++    restitution_combine_mode: average
++    compliant_contact_stiffness: 0.0
++    compliant_contact_damping: 0.0
++  render:
++    enable_translucency: null
++    enable_reflections: null
++    enable_global_illumination: null
++    antialiasing_mode: null
++    enable_dlssg: null
++    enable_dl_denoiser: null
++    dlss_mode: null
++    enable_direct_lighting: null
++    samples_per_pixel: null
++    enable_shadows: null
++    enable_ambient_occlusion: null
++    dome_light_upper_lower_strategy: null
++    carb_settings: null
++    rendering_mode: null
++  create_stage_in_memory: false
++  logging_level: WARNING
++  save_logs_to_file: true
++ui_window_class_type: parkour_isaaclab.envs.parkour_ui:ParkourManagerBasedRLEnvWindow
++seed: 1
++decimation: 4
++scene:
++  num_envs: 6144
++  env_spacing: 1.0
++  lazy_sensor_update: true
++  replicate_physics: true
++  filter_collisions: true
++  clone_in_fabric: false
++  robot:
++    class_type: isaaclab.assets.articulation.articulation:Articulation
++    prim_path: /World/envs/env_.*/Robot
++    spawn:
++      func: isaaclab.sim.spawners.from_files.from_files:spawn_from_usd
++      visible: true
++      semantic_tags: null
++      copy_from_source: true
++      mass_props: null
++      deformable_props: null
++      rigid_props:
++        rigid_body_enabled: null
++        kinematic_enabled: null
++        disable_gravity: false
++        linear_damping: 0.0
++        angular_damping: 0.0
++        max_linear_velocity: 1000.0
++        max_angular_velocity: 1000.0
++        max_depenetration_velocity: 1.0
++        max_contact_impulse: null
++        enable_gyroscopic_forces: null
++        retain_accelerations: false
++        solver_position_iteration_count: null
++        solver_velocity_iteration_count: null
++        sleep_threshold: null
++        stabilization_threshold: null
++      collision_props: null
++      activate_contact_sensors: true
++      scale: null
++      articulation_props:
++        articulation_enabled: null
++        enabled_self_collisions: true
++        solver_position_iteration_count: 4
++        solver_velocity_iteration_count: 0
++        sleep_threshold: null
++        stabilization_threshold: null
++        fix_root_link: null
++      fixed_tendons_props: null
++      spatial_tendons_props: null
++      joint_drive_props: null
++      visual_material_path: material
++      visual_material: null
++      usd_path: https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/5.1/Isaac/IsaacLab/Robots/Unitree/Go2/go2.usd
++      variants: null
++    init_state:
++      pos: !!python/tuple
++      - 0.0
++      - 0.0
++      - 0.4
++      rot: !!python/tuple
++      - 1.0
++      - 0.0
++      - 0.0
++      - 0.0
++      lin_vel: !!python/tuple
++      - 0.0
++      - 0.0
++      - 0.0
++      ang_vel: !!python/tuple
++      - 0.0
++      - 0.0
++      - 0.0
++      joint_pos:
++        .*L_hip_joint: 0.1
++        .*R_hip_joint: -0.1
++        F[L,R]_thigh_joint: 0.8
++        R[L,R]_thigh_joint: 1.0
++        .*_calf_joint: -1.5
++      joint_vel:
++        .*: 0.0
++    collision_group: 0
++    debug_vis: false
++    articulation_root_prim_path: null
++    soft_joint_pos_limit_factor: 0.9
++    actuators:
++      base_legs:
++        class_type: parkour_isaaclab.actuators.parkour_actuator_pd:ParkourDCMotor
++        joint_names_expr:
++        - .*_hip_joint
++        - .*_thigh_joint
++        - .*_calf_joint
++        effort_limit:
++          .*_hip_joint: 35.0
++          .*_thigh_joint: 40.0
++          .*_calf_joint: 40.0
++        velocity_limit:
++          .*_hip_joint: 52.4
++          .*_thigh_joint: 30.1
++          .*_calf_joint: 30.1
++        effort_limit_sim: null
++        velocity_limit_sim: null
++        stiffness: 40.0
++        damping: 1.0
++        armature: null
++        friction: 0.0
++        dynamic_friction: null
++        viscous_friction: null
++        saturation_effort:
++          .*_hip_joint: 35.0
++          .*_thigh_joint: 45.0
++          .*_calf_joint: 45.0
++    actuator_value_resolution_debug_print: false
++  sky_light:
++    class_type: null
++    prim_path: /World/skyLight
++    spawn:
++      func: isaaclab.sim.spawners.lights.lights:spawn_light
++      visible: true
++      semantic_tags: null
++      copy_from_source: true
++      prim_type: DomeLight
++      color: !!python/tuple
++      - 1.0
++      - 1.0
++      - 1.0
++      enable_color_temperature: false
++      color_temperature: 6500.0
++      normalize: false
++      exposure: 0.0
++      intensity: 750.0
++      texture_file: https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/5.1/Isaac/Materials/Textures/Skies/PolyHaven/kloofendal_43d_clear_puresky_4k.hdr
++      texture_format: automatic
++      visible_in_primary_ray: true
++    init_state:
++      pos: !!python/tuple
++      - 0.0
++      - 0.0
++      - 0.0
++      rot: !!python/tuple
++      - 1.0
++      - 0.0
++      - 0.0
++      - 0.0
++    collision_group: 0
++    debug_vis: false
++  terrain:
++    class_type: parkour_isaaclab.terrains.parkour_terrain_importer:ParkourTerrainImporter
++    collision_group: -1
++    prim_path: /World/ground
++    num_envs: 6144
++    terrain_type: generator
++    terrain_generator:
++      class_type: isaaclab.terrains.terrain_generator:TerrainGenerator
++      seed: null
++      curriculum: true
++      size: !!python/tuple
++      - 16.0
++      - 4.0
++      border_width: 20.0
++      border_height: 1.0
++      num_rows: 10
++      num_cols: 40
++      color_scheme: none
++      horizontal_scale: 0.08
++      vertical_scale: 0.005
++      slope_threshold: 1.5
++      sub_terrains:
++        parkour_gap:
++          function: parkour_isaaclab.terrains.extreme_parkour.extreme_parkour_terrians:parkour_gap_terrain
++          proportion: 0.2
++          size: !!python/tuple
++          - 16.0
++          - 4.0
++          flat_patch_sampling: null
++          border_width: 0.0
++          horizontal_scale: 0.08
++          vertical_scale: 0.005
++          slope_threshold: 1.5
++          platform_len: 2.5
++          platform_height: 0.0
++          use_simplified: false
++          edge_width_thresh: 0.05
++          apply_roughness: true
++          apply_flat: false
++          downsampled_scale: 0.075
++          noise_range: !!python/tuple
++          - 0.02
++          - 0.06
++          noise_step: 0.005
++          x_range: !!python/tuple
++          - 0.8
++          - 1.5
++          y_range: !!python/tuple
++          - -0.4
++          - 0.4
++          half_valid_width: !!python/tuple
++          - 0.6
++          - 1.2
++          pad_width: 0.1
++          pad_height: 0.0
++          gap_size: 0.1 + 0.7*difficulty
++          gap_depth: !!python/tuple
++          - 0.2
++          - 1
++        parkour_hurdle:
++          function: parkour_isaaclab.terrains.extreme_parkour.extreme_parkour_terrians:parkour_hurdle_terrain
++          proportion: 0.2
++          size: !!python/tuple
++          - 16.0
++          - 4.0
++          flat_patch_sampling: null
++          border_width: 0.0
++          horizontal_scale: 0.08
++          vertical_scale: 0.005
++          slope_threshold: 1.5
++          platform_len: 2.5
++          platform_height: 0.0
++          use_simplified: false
++          edge_width_thresh: 0.05
++          apply_roughness: true
++          apply_flat: false
++          downsampled_scale: 0.075
++          noise_range: !!python/tuple
++          - 0.02
++          - 0.06
++          noise_step: 0.005
++          x_range: !!python/tuple
++          - 1.2
++          - 2.2
++          y_range: !!python/tuple
++          - -0.4
++          - 0.4
++          half_valid_width: !!python/tuple
++          - 0.4
++          - 0.8
++          pad_width: 0.1
++          pad_height: 0.0
++          stone_len: 0.1 + 0.3 * difficulty
++          hurdle_height_range: 0.1+0.1*difficulty, 0.15+0.25*difficulty
++        parkour_flat:
++          function: parkour_isaaclab.terrains.extreme_parkour.extreme_parkour_terrians:parkour_hurdle_terrain
++          proportion: 0.2
++          size: !!python/tuple
++          - 16.0
++          - 4.0
++          flat_patch_sampling: null
++          border_width: 0.0
++          horizontal_scale: 0.08
++          vertical_scale: 0.005
++          slope_threshold: 1.5
++          platform_len: 2.5
++          platform_height: 0.0
++          use_simplified: false
++          edge_width_thresh: 0.05
++          apply_roughness: true
++          apply_flat: true
++          downsampled_scale: 0.075
++          noise_range: !!python/tuple
++          - 0.02
++          - 0.06
++          noise_step: 0.005
++          x_range: !!python/tuple
++          - 1.2
++          - 2.2
++          y_range: !!python/tuple
++          - -0.4
++          - 0.4
++          half_valid_width: !!python/tuple
++          - 0.4
++          - 0.8
++          pad_width: 0.1
++          pad_height: 0.0
++          stone_len: 0.1 + 0.3 * difficulty
++          hurdle_height_range: 0.1+0.1*difficulty, 0.15+0.15*difficulty
++        parkour_step:
++          function: parkour_isaaclab.terrains.extreme_parkour.extreme_parkour_terrians:parkour_step_terrain
++          proportion: 0.2
++          size: !!python/tuple
++          - 16.0
++          - 4.0
++          flat_patch_sampling: null
++          border_width: 0.0
++          horizontal_scale: 0.08
++          vertical_scale: 0.005
++          slope_threshold: 1.5
++          platform_len: 2.5
++          platform_height: 0.0
++          use_simplified: false
++          edge_width_thresh: 0.05
++          apply_roughness: true
++          apply_flat: false
++          downsampled_scale: 0.075
++          noise_range: !!python/tuple
++          - 0.02
++          - 0.06
++          noise_step: 0.005
++          x_range: !!python/tuple
++          - 0.3
++          - 1.5
++          y_range: !!python/tuple
++          - -0.4
++          - 0.4
++          half_valid_width: !!python/tuple
++          - 0.5
++          - 1
++          pad_width: 0.1
++          pad_height: 0.0
++          step_height: 0.1 + 0.35*difficulty
++        parkour:
++          function: parkour_isaaclab.terrains.extreme_parkour.extreme_parkour_terrians:parkour_terrain
++          proportion: 0.2
++          size: !!python/tuple
++          - 16.0
++          - 4.0
++          flat_patch_sampling: null
++          border_width: 0.0
++          horizontal_scale: 0.08
++          vertical_scale: 0.005
++          slope_threshold: 1.5
++          platform_len: 2.5
++          platform_height: 0.0
++          use_simplified: false
++          edge_width_thresh: 0.05
++          apply_roughness: true
++          apply_flat: false
++          downsampled_scale: 0.075
++          noise_range: !!python/tuple
++          - 0.02
++          - 0.06
++          noise_step: 0.005
++          x_range: -0.1, 0.1+0.3*difficulty
++          y_range: 0.2, 0.3+0.1*difficulty
++          half_valid_width: !!python/tuple
++          - 0.6
++          - 1.2
++          pad_width: 0.1
++          pad_height: 0.0
++          pit_depth: !!python/tuple
++          - 0.2
++          - 1
++          stone_width: 1.0
++          last_stone_len: 1.6
++          stone_len: 0.9 - 0.3*difficulty, 1 - 0.2*difficulty
++          incline_height: 0.25*difficulty
++          last_incline_height: incline_height + 0.1 - 0.1*difficulty
++        parkour_demo:
++          function: parkour_isaaclab.terrains.extreme_parkour.extreme_parkour_terrians:parkour_demo_terrain
++          proportion: 0.0
++          size: !!python/tuple
++          - 16.0
++          - 4.0
++          flat_patch_sampling: null
++          border_width: 0.0
++          horizontal_scale: 0.08
++          vertical_scale: 0.005
++          slope_threshold: 1.5
++          platform_len: 2.5
++          platform_height: 0.0
++          use_simplified: false
++          edge_width_thresh: 0.05
++          apply_roughness: true
++          apply_flat: false
++          downsampled_scale: 0.075
++          noise_range: !!python/tuple
++          - 0.02
++          - 0.06
++          noise_step: 0.005
++          x_range: !!python/tuple
++          - 0.8
++          - 1.5
++          y_range: !!python/tuple
++          - -0.4
++          - 0.4
++          half_valid_width: !!python/tuple
++          - 0.6
++          - 1.2
++          pad_width: 0.1
++          pad_height: 0.0
++      difficulty_range: !!python/tuple
++      - 0.0
++      - 1.0
++      use_cache: false
++      cache_dir: /tmp/isaaclab/terrains
++      num_goals: 8
++      terrain_names: []
++      random_difficulty: false
++    usd_path: null
++    env_spacing: 1.0
++    use_terrain_origins: true
++    visual_material:
++      func: isaaclab.sim.spawners.materials.visual_materials:spawn_from_mdl_file
++      mdl_path: https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/5.1/Isaac/IsaacLab/Materials/TilesMarbleSpiderWhiteBrickBondHoned/TilesMarbleSpiderWhiteBrickBondHoned.mdl
++      project_uvw: true
++      albedo_brightness: null
++      texture_scale: !!python/tuple
++      - 0.25
++      - 0.25
++    physics_material:
++      func: isaaclab.sim.spawners.materials.physics_materials:spawn_rigid_body_material
++      static_friction: 1.0
++      dynamic_friction: 1.0
++      restitution: 0.0
++      friction_combine_mode: average
++      restitution_combine_mode: average
++      compliant_contact_stiffness: 0.0
++      compliant_contact_damping: 0.0
++    max_init_terrain_level: 2
++    debug_vis: false
++  height_scanner:
++    class_type: isaaclab.sensors.ray_caster.ray_caster:RayCaster
++    prim_path: /World/envs/env_.*/Robot/base
++    update_period: 0.02
++    history_length: 0
++    debug_vis: false
++    mesh_prim_paths:
++    - /World/ground
++    offset:
++      pos: !!python/tuple
++      - 0.375
++      - 0.0
++      - 20.0
++      rot: !!python/tuple
++      - 1.0
++      - 0.0
++      - 0.0
++      - 0.0
++    attach_yaw_only: true
++    ray_alignment: base
++    pattern_cfg:
++      func: isaaclab.sensors.ray_caster.patterns.patterns:grid_pattern
++      resolution: 0.15
++      size:
++      - 1.65
++      - 1.5
++      direction: !!python/tuple
++      - 0.0
++      - 0.0
++      - -1.0
++      ordering: xy
++    max_distance: 1000000.0
++    drift_range: !!python/tuple
++    - 0.0
++    - 0.0
++    ray_cast_drift_range:
++      x: !!python/tuple
++      - 0.0
++      - 0.0
++      y: !!python/tuple
++      - 0.0
++      - 0.0
++      z: !!python/tuple
++      - 0.0
++      - 0.0
++    visualizer_cfg:
++      prim_path: /Visuals/RayCaster
++      markers:
++        hit:
++          func: isaaclab.sim.spawners.shapes.shapes:spawn_sphere
++          visible: true
++          semantic_tags: null
++          copy_from_source: true
++          mass_props: null
++          rigid_props: null
++          collision_props: null
++          activate_contact_sensors: false
++          visual_material_path: material
++          visual_material:
++            func: isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface
++            diffuse_color: !!python/tuple
++            - 1.0
++            - 0.0
++            - 0.0
++            emissive_color: !!python/tuple
++            - 0.0
++            - 0.0
++            - 0.0
++            roughness: 0.5
++            metallic: 0.0
++            opacity: 1.0
++          physics_material_path: material
++          physics_material: null
++          radius: 0.02
++  contact_forces:
++    class_type: isaaclab.sensors.contact_sensor.contact_sensor:ContactSensor
++    prim_path: /World/envs/env_.*/Robot/.*
++    update_period: 0.02
++    history_length: 2
++    debug_vis: false
++    track_pose: false
++    track_contact_points: false
++    max_contact_data_count_per_prim: 4
++    track_air_time: true
++    force_threshold: 1.0
++    filter_prim_paths_expr: []
++    visualizer_cfg:
++      prim_path: /Visuals/ContactSensor
++      markers:
++        contact:
++          func: isaaclab.sim.spawners.shapes.shapes:spawn_sphere
++          visible: true
++          semantic_tags: null
++          copy_from_source: true
++          mass_props: null
++          rigid_props: null
++          collision_props: null
++          activate_contact_sensors: false
++          visual_material_path: material
++          visual_material:
++            func: isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface
++            diffuse_color: !!python/tuple
++            - 1.0
++            - 0.0
++            - 0.0
++            emissive_color: !!python/tuple
++            - 0.0
++            - 0.0
++            - 0.0
++            roughness: 0.5
++            metallic: 0.0
++            opacity: 1.0
++          physics_material_path: material
++          physics_material: null
++          radius: 0.02
++        no_contact:
++          func: isaaclab.sim.spawners.shapes.shapes:spawn_sphere
++          visible: false
++          semantic_tags: null
++          copy_from_source: true
++          mass_props: null
++          rigid_props: null
++          collision_props: null
++          activate_contact_sensors: false
++          visual_material_path: material
++          visual_material:
++            func: isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface
++            diffuse_color: !!python/tuple
++            - 0.0
++            - 1.0
++            - 0.0
++            emissive_color: !!python/tuple
++            - 0.0
++            - 0.0
++            - 0.0
++            roughness: 0.5
++            metallic: 0.0
++            opacity: 1.0
++          physics_material_path: material
++          physics_material: null
++          radius: 0.02
++recorders:
++  dataset_file_handler_class_type: isaaclab.utils.datasets.hdf5_dataset_file_handler:HDF5DatasetFileHandler
++  dataset_export_dir_path: /tmp/isaaclab/logs
++  dataset_filename: dataset
++  dataset_export_mode:
++    _value_: 1
++    _name_: EXPORT_ALL
++    _sort_order_: 1
++  export_in_record_pre_reset: true
++observations:
++  policy:
++    concatenate_terms: true
++    concatenate_dim: -1
++    enable_corruption: false
++    history_length: null
++    flatten_history_dim: true
++    extreme_parkour_observations:
++      func: parkour_isaaclab.envs.mdp.observations:ExtremeParkourObservations
++      params:
++        asset_cfg:
++          name: robot
++          joint_names: null
++          joint_ids: !!python/object/apply:builtins.slice
++          - null
++          - null
++          - null
++          fixed_tendon_names: null
++          fixed_tendon_ids: !!python/object/apply:builtins.slice
++          - null
++          - null
++          - null
++          body_names: null
++          body_ids: !!python/object/apply:builtins.slice
++          - null
++          - null
++          - null
++          object_collection_names: null
++          object_collection_ids: !!python/object/apply:builtins.slice
++          - null
++          - null
++          - null
++          preserve_order: false
++        sensor_cfg:
++          name: contact_forces
++          joint_names: null
++          joint_ids: !!python/object/apply:builtins.slice
++          - null
++          - null
++          - null
++          fixed_tendon_names: null
++          fixed_tendon_ids: !!python/object/apply:builtins.slice
++          - null
++          - null
++          - null
++          body_names: .*_foot
++          body_ids: !!python/object/apply:builtins.slice
++          - null
++          - null
++          - null
++          object_collection_names: null
++          object_collection_ids: !!python/object/apply:builtins.slice
++          - null
++          - null
++          - null
++          preserve_order: false
++        parkour_name: base_parkour
++        history_length: 10
++      modifiers: null
++      noise: null
++      clip: !!python/tuple
++      - -100
++      - 100
++      scale: null
++      history_length: 0
++      flatten_history_dim: true
++actions:
++  joint_pos:
++    class_type: parkour_isaaclab.envs.mdp.parkour_actions.joint_actions:DelayedJointPositionAction
++    asset_name: robot
++    debug_vis: false
++    clip:
++      .*: !!python/tuple
++      - -4.8
++      - 4.8
++    joint_names:
++    - .*
++    scale: 0.25
++    offset: 0.0
++    preserve_order: false
++    use_default_offset: true
++    delay_update_global_steps: 192000
++    history_length: 1
++    action_delay_steps:
++    - 1
++    - 1
++    use_delay: false
++events:
++  reset_root_state:
++    func: parkour_isaaclab.envs.mdp.events:reset_root_state
++    params:
++      offset: 3.0
++    mode: reset
++    interval_range_s: null
++    is_global_time: false
++    min_step_count_between_reset: 0
++  reset_robot_joints:
++    func: isaaclab.envs.mdp.events:reset_joints_by_scale
++    params:
++      position_range: !!python/tuple
++      - 0.95
++      - 1.05
++      velocity_range: !!python/tuple
++      - 0.0
++      - 0.0
++    mode: reset
++    interval_range_s: null
++    is_global_time: false
++    min_step_count_between_reset: 0
++  physics_material:
++    func: parkour_isaaclab.envs.mdp.events:randomize_rigid_body_material
++    params:
++      asset_cfg:
++        name: robot
++        joint_names: null
++        joint_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        fixed_tendon_names: null
++        fixed_tendon_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        body_names: .*
++        body_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        object_collection_names: null
++        object_collection_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        preserve_order: false
++      friction_range: !!python/tuple
++      - 0.6
++      - 2.0
++      num_buckets: 64
++    mode: startup
++    interval_range_s: null
++    is_global_time: false
++    min_step_count_between_reset: 0
++  randomize_rigid_body_mass:
++    func: isaaclab.envs.mdp.events:randomize_rigid_body_mass
++    params:
++      asset_cfg:
++        name: robot
++        joint_names: null
++        joint_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        fixed_tendon_names: null
++        fixed_tendon_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        body_names: base
++        body_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        object_collection_names: null
++        object_collection_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        preserve_order: false
++      mass_distribution_params: !!python/tuple
++      - -1.0
++      - 3.0
++      operation: add
++    mode: startup
++    interval_range_s: null
++    is_global_time: false
++    min_step_count_between_reset: 0
++  randomize_rigid_body_com:
++    func: parkour_isaaclab.envs.mdp.events:randomize_rigid_body_com
++    params:
++      asset_cfg:
++        name: robot
++        joint_names: null
++        joint_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        fixed_tendon_names: null
++        fixed_tendon_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        body_names: base
++        body_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        object_collection_names: null
++        object_collection_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        preserve_order: false
++      com_range:
++        x: !!python/tuple
++        - -0.02
++        - 0.02
++        y: !!python/tuple
++        - -0.02
++        - 0.02
++        z: !!python/tuple
++        - -0.02
++        - 0.02
++    mode: startup
++    interval_range_s: null
++    is_global_time: false
++    min_step_count_between_reset: 0
++  random_camera_position: null
++  push_by_setting_velocity:
++    func: parkour_isaaclab.envs.mdp.events:push_by_setting_velocity
++    params:
++      velocity_range:
++        x: !!python/tuple
++        - -0.5
++        - 0.5
++        y: !!python/tuple
++        - -0.5
++        - 0.5
++    mode: interval
++    interval_range_s: !!python/tuple
++    - 8.0
++    - 8.0
++    is_global_time: true
++    min_step_count_between_reset: 0
++  base_external_force_torque:
++    func: isaaclab.envs.mdp.events:apply_external_force_torque
++    params:
++      asset_cfg:
++        name: robot
++        joint_names: null
++        joint_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        fixed_tendon_names: null
++        fixed_tendon_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        body_names: base
++        body_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        object_collection_names: null
++        object_collection_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        preserve_order: false
++      force_range: !!python/tuple
++      - 0.0
++      - 0.0
++      torque_range: !!python/tuple
++      - -0.0
++      - 0.0
++    mode: reset
++    interval_range_s: null
++    is_global_time: false
++    min_step_count_between_reset: 0
++rerender_on_reset: false
++num_rerenders_on_reset: 0
++wait_for_textures: true
++xr: null
++teleop_devices:
++  devices: {}
++export_io_descriptors: false
++log_dir: null
++is_finite_horizon: false
++episode_length_s: 20.0
++rewards:
++  reward_collision:
++    func: parkour_isaaclab.envs.mdp.rewards:reward_collision
++    params:
++      sensor_cfg:
++        name: contact_forces
++        joint_names: null
++        joint_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        fixed_tendon_names: null
++        fixed_tendon_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        body_names:
++        - base
++        - .*_calf
++        - .*_thigh
++        body_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        object_collection_names: null
++        object_collection_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        preserve_order: false
++    weight: -10.0
++  reward_feet_edge:
++    func: parkour_isaaclab.envs.mdp.rewards:reward_feet_edge
++    params:
++      asset_cfg:
++        name: robot
++        joint_names: null
++        joint_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        fixed_tendon_names: null
++        fixed_tendon_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        body_names:
++        - FL_foot
++        - FR_foot
++        - RL_foot
++        - RR_foot
++        body_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        object_collection_names: null
++        object_collection_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        preserve_order: false
++      sensor_cfg:
++        name: contact_forces
++        joint_names: null
++        joint_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        fixed_tendon_names: null
++        fixed_tendon_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        body_names: .*_foot
++        body_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        object_collection_names: null
++        object_collection_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        preserve_order: false
++      parkour_name: base_parkour
++    weight: -1.0
++  reward_torques:
++    func: parkour_isaaclab.envs.mdp.rewards:reward_torques
++    params:
++      asset_cfg:
++        name: robot
++        joint_names: null
++        joint_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        fixed_tendon_names: null
++        fixed_tendon_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        body_names: null
++        body_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        object_collection_names: null
++        object_collection_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        preserve_order: false
++    weight: -1.0e-05
++  reward_dof_error:
++    func: parkour_isaaclab.envs.mdp.rewards:reward_dof_error
++    params:
++      asset_cfg:
++        name: robot
++        joint_names: null
++        joint_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        fixed_tendon_names: null
++        fixed_tendon_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        body_names: null
++        body_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        object_collection_names: null
++        object_collection_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        preserve_order: false
++    weight: -0.04
++  reward_hip_pos:
++    func: parkour_isaaclab.envs.mdp.rewards:reward_hip_pos
++    params:
++      asset_cfg:
++        name: robot
++        joint_names: .*_hip_joint
++        joint_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        fixed_tendon_names: null
++        fixed_tendon_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        body_names: null
++        body_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        object_collection_names: null
++        object_collection_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        preserve_order: false
++    weight: -0.5
++  reward_ang_vel_xy:
++    func: parkour_isaaclab.envs.mdp.rewards:reward_ang_vel_xy
++    params:
++      asset_cfg:
++        name: robot
++        joint_names: null
++        joint_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        fixed_tendon_names: null
++        fixed_tendon_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        body_names: null
++        body_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        object_collection_names: null
++        object_collection_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        preserve_order: false
++    weight: -0.05
++  reward_action_rate:
++    func: parkour_isaaclab.envs.mdp.rewards:reward_action_rate
++    params:
++      asset_cfg:
++        name: robot
++        joint_names: null
++        joint_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        fixed_tendon_names: null
++        fixed_tendon_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        body_names: null
++        body_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        object_collection_names: null
++        object_collection_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        preserve_order: false
++    weight: -0.1
++  reward_dof_acc:
++    func: parkour_isaaclab.envs.mdp.rewards:reward_dof_acc
++    params:
++      asset_cfg:
++        name: robot
++        joint_names: null
++        joint_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        fixed_tendon_names: null
++        fixed_tendon_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        body_names: null
++        body_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        object_collection_names: null
++        object_collection_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        preserve_order: false
++    weight: -2.5e-07
++  reward_lin_vel_z:
++    func: parkour_isaaclab.envs.mdp.rewards:reward_lin_vel_z
++    params:
++      asset_cfg:
++        name: robot
++        joint_names: null
++        joint_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        fixed_tendon_names: null
++        fixed_tendon_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        body_names: null
++        body_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        object_collection_names: null
++        object_collection_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        preserve_order: false
++      parkour_name: base_parkour
++    weight: -1.0
++  reward_orientation:
++    func: parkour_isaaclab.envs.mdp.rewards:reward_orientation
++    params:
++      asset_cfg:
++        name: robot
++        joint_names: null
++        joint_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        fixed_tendon_names: null
++        fixed_tendon_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        body_names: null
++        body_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        object_collection_names: null
++        object_collection_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        preserve_order: false
++      parkour_name: base_parkour
++    weight: -1.0
++  reward_feet_stumble:
++    func: parkour_isaaclab.envs.mdp.rewards:reward_feet_stumble
++    params:
++      sensor_cfg:
++        name: contact_forces
++        joint_names: null
++        joint_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        fixed_tendon_names: null
++        fixed_tendon_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        body_names: .*_foot
++        body_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        object_collection_names: null
++        object_collection_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        preserve_order: false
++    weight: -1.0
++  reward_tracking_goal_vel:
++    func: parkour_isaaclab.envs.mdp.rewards:reward_tracking_goal_vel
++    params:
++      asset_cfg:
++        name: robot
++        joint_names: null
++        joint_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        fixed_tendon_names: null
++        fixed_tendon_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        body_names: null
++        body_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        object_collection_names: null
++        object_collection_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        preserve_order: false
++      parkour_name: base_parkour
++    weight: 1.5
++  reward_tracking_yaw:
++    func: parkour_isaaclab.envs.mdp.rewards:reward_tracking_yaw
++    params:
++      asset_cfg:
++        name: robot
++        joint_names: null
++        joint_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        fixed_tendon_names: null
++        fixed_tendon_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        body_names: null
++        body_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        object_collection_names: null
++        object_collection_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        preserve_order: false
++      parkour_name: base_parkour
++    weight: 0.5
++  reward_delta_torques:
++    func: parkour_isaaclab.envs.mdp.rewards:reward_delta_torques
++    params:
++      asset_cfg:
++        name: robot
++        joint_names: null
++        joint_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        fixed_tendon_names: null
++        fixed_tendon_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        body_names: null
++        body_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        object_collection_names: null
++        object_collection_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        preserve_order: false
++    weight: -1.0e-07
++terminations:
++  total_terminates:
++    func: parkour_isaaclab.envs.mdp.terminations:terminate_episode
++    params:
++      asset_cfg:
++        name: robot
++        joint_names: null
++        joint_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        fixed_tendon_names: null
++        fixed_tendon_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        body_names: null
++        body_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        object_collection_names: null
++        object_collection_ids: !!python/object/apply:builtins.slice
++        - null
++        - null
++        - null
++        preserve_order: false
++    time_out: true
++curriculum: null
++commands:
++  base_velocity:
++    class_type: parkour_isaaclab.envs.mdp.parkour_commands.uniform_parkour_command:UniformParkourCommand
++    resampling_time_range: !!python/tuple
++    - 6.0
++    - 6.0
++    debug_vis: false
++    asset_name: robot
++    heading_control_stiffness: 0.8
++    small_commands_to_zero: true
++    ranges:
++      lin_vel_x: !!python/tuple
++      - 0.3
++      - 0.8
++      heading: !!python/tuple
++      - -1.6
++      - 1.6
++    clips:
++      lin_vel_clip: 0.2
++      ang_vel_clip: 0.4
++    goal_vel_visualizer_cfg:
++      prim_path: /Visuals/Command/velocity_goal
++      markers:
++        arrow:
++          func: isaaclab.sim.spawners.from_files.from_files:spawn_from_usd
++          visible: true
++          semantic_tags: null
++          copy_from_source: true
++          mass_props: null
++          deformable_props: null
++          rigid_props: null
++          collision_props: null
++          activate_contact_sensors: false
++          scale: !!python/tuple
++          - 0.5
++          - 0.5
++          - 0.5
++          articulation_props: null
++          fixed_tendons_props: null
++          spatial_tendons_props: null
++          joint_drive_props: null
++          visual_material_path: material
++          visual_material:
++            func: isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface
++            diffuse_color: !!python/tuple
++            - 0.0
++            - 1.0
++            - 0.0
++            emissive_color: !!python/tuple
++            - 0.0
++            - 0.0
++            - 0.0
++            roughness: 0.5
++            metallic: 0.0
++            opacity: 1.0
++          usd_path: https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/5.1/Isaac/Props/UIElements/arrow_x.usd
++          variants: null
++    current_vel_visualizer_cfg:
++      prim_path: /Visuals/Command/velocity_current
++      markers:
++        arrow:
++          func: isaaclab.sim.spawners.from_files.from_files:spawn_from_usd
++          visible: true
++          semantic_tags: null
++          copy_from_source: true
++          mass_props: null
++          deformable_props: null
++          rigid_props: null
++          collision_props: null
++          activate_contact_sensors: false
++          scale: !!python/tuple
++          - 0.5
++          - 0.5
++          - 0.5
++          articulation_props: null
++          fixed_tendons_props: null
++          spatial_tendons_props: null
++          joint_drive_props: null
++          visual_material_path: material
++          visual_material:
++            func: isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface
++            diffuse_color: !!python/tuple
++            - 0.0
++            - 0.0
++            - 1.0
++            emissive_color: !!python/tuple
++            - 0.0
++            - 0.0
++            - 0.0
++            roughness: 0.5
++            metallic: 0.0
++            opacity: 1.0
++          usd_path: https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/5.1/Isaac/Props/UIElements/arrow_x.usd
++          variants: null
++parkours:
++  base_parkour:
++    class_type: parkour_isaaclab.envs.mdp.parkours.parkour_event:ParkourEvent
++    debug_vis: false
++    asset_name: robot
++    num_future_goal_obs: 2
++    arrow_num: 8
++    reach_goal_delay: 0.1
++    next_goal_threshold: 0.2
++    future_goal_poses_visualizer_cfg:
++      prim_path: /Visuals/Command/future_goal_poses
++      markers:
++        frame:
++          func: isaaclab.sim.spawners.shapes.shapes:spawn_sphere
++          visible: true
++          semantic_tags: null
++          copy_from_source: true
++          mass_props: null
++          rigid_props: null
++          collision_props: null
++          activate_contact_sensors: false
++          visual_material_path: material
++          visual_material:
++            func: isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface
++            diffuse_color: !!python/tuple
++            - 1.0
++            - 0.0
++            - 0.0
++            emissive_color: !!python/tuple
++            - 0.0
++            - 0.0
++            - 0.0
++            roughness: 0.5
++            metallic: 0.0
++            opacity: 1.0
++          physics_material_path: material
++          physics_material: null
++          radius: 0.15
++          scale: !!python/tuple
++          - 1.1
++          - 1.1
++          - 1.1
++    current_goal_pose_visualizer_cfg:
++      prim_path: /Visuals/Command/current_goal_pose
++      markers:
++        frame:
++          func: isaaclab.sim.spawners.shapes.shapes:spawn_sphere
++          visible: true
++          semantic_tags: null
++          copy_from_source: true
++          mass_props: null
++          rigid_props: null
++          collision_props: null
++          activate_contact_sensors: false
++          visual_material_path: material
++          visual_material:
++            func: isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface
++            diffuse_color: !!python/tuple
++            - 0.0
++            - 1.0
++            - 0.0
++            emissive_color: !!python/tuple
++            - 0.0
++            - 0.0
++            - 0.0
++            roughness: 0.5
++            metallic: 0.0
++            opacity: 1.0
++          physics_material_path: material
++          physics_material: null
++          radius: 0.15
++          scale: !!python/tuple
++          - 1.1
++          - 1.1
++          - 1.1
++    future_arrow_visualizer_cfg:
++      prim_path: /Visuals/Command/future_arrow
++      markers:
++        frame:
++          func: isaaclab.sim.spawners.shapes.shapes:spawn_sphere
++          visible: true
++          semantic_tags: null
++          copy_from_source: true
++          mass_props: null
++          rigid_props: null
++          collision_props: null
++          activate_contact_sensors: false
++          visual_material_path: material
++          visual_material:
++            func: isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface
++            diffuse_color: !!python/tuple
++            - 1.0
++            - 0.0
++            - 0.0
++            emissive_color: !!python/tuple
++            - 0.0
++            - 0.0
++            - 0.0
++            roughness: 0.5
++            metallic: 0.0
++            opacity: 1.0
++          physics_material_path: material
++          physics_material: null
++          radius: 0.05
++          scale: !!python/tuple
++          - 0.1
++          - 0.1
++          - 0.1
++    current_arrow_visualizer_cfg:
++      prim_path: /Visuals/Command/current_arrow
++      markers:
++        frame:
++          func: isaaclab.sim.spawners.shapes.shapes:spawn_sphere
++          visible: true
++          semantic_tags: null
++          copy_from_source: true
++          mass_props: null
++          rigid_props: null
++          collision_props: null
++          activate_contact_sensors: false
++          visual_material_path: material
++          visual_material:
++            func: isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface
++            diffuse_color: !!python/tuple
++            - 0.0
++            - 1.0
++            - 0.0
++            emissive_color: !!python/tuple
++            - 0.0
++            - 0.0
++            - 0.0
++            roughness: 0.5
++            metallic: 0.0
++            opacity: 1.0
++          physics_material_path: material
++          physics_material: null
++          radius: 0.05
++          scale: !!python/tuple
++          - 0.1
++          - 0.1
++          - 0.1
+diff --git a/outputs/2025-11-22/14-59-09/.hydra/config.yaml b/outputs/2025-11-22/14-59-09/.hydra/config.yaml
+new file mode 100644
+index 0000000..d29ac8f
+--- /dev/null
++++ b/outputs/2025-11-22/14-59-09/.hydra/config.yaml
+@@ -0,0 +1,1424 @@
++env:
++  viewer:
++    eye:
++    - 7.5
++    - 7.5
++    - 7.5
++    lookat:
++    - 0.0
++    - 0.0
++    - 0.0
++    cam_prim_path: /OmniverseKit_Persp
++    resolution:
++    - 1280
++    - 720
++    origin_type: world
++    env_index: 0
++    asset_name: null
++    body_name: null
++  sim:
++    physics_prim_path: /physicsScene
++    device: cuda:0
++    dt: 0.005
++    render_interval: 4
++    gravity:
++    - 0.0
++    - 0.0
++    - -9.81
++    enable_scene_query_support: false
++    use_fabric: true
++    physx:
++      solver_type: 1
++      min_position_iteration_count: 1
++      max_position_iteration_count: 255
++      min_velocity_iteration_count: 0
++      max_velocity_iteration_count: 255
++      enable_ccd: false
++      enable_stabilization: false
++      enable_enhanced_determinism: false
++      bounce_threshold_velocity: 0.5
++      friction_offset_threshold: 0.04
++      friction_correlation_distance: 0.025
++      gpu_max_rigid_contact_count: 8388608
++      gpu_max_rigid_patch_count: 2621440
++      gpu_found_lost_pairs_capacity: 2097152
++      gpu_found_lost_aggregate_pairs_capacity: 33554432
++      gpu_total_aggregate_pairs_capacity: 2097152
++      gpu_collision_stack_size: 67108864
++      gpu_heap_capacity: 67108864
++      gpu_temp_buffer_capacity: 16777216
++      gpu_max_num_partitions: 8
++      gpu_max_soft_body_contacts: 1048576
++      gpu_max_particle_contacts: 1048576
++      solve_articulation_contact_last: false
++    physics_material:
++      func: isaaclab.sim.spawners.materials.physics_materials:spawn_rigid_body_material
++      static_friction: 1.0
++      dynamic_friction: 1.0
++      restitution: 0.0
++      friction_combine_mode: average
++      restitution_combine_mode: average
++      compliant_contact_stiffness: 0.0
++      compliant_contact_damping: 0.0
++    render:
++      enable_translucency: null
++      enable_reflections: null
++      enable_global_illumination: null
++      antialiasing_mode: null
++      enable_dlssg: null
++      enable_dl_denoiser: null
++      dlss_mode: null
++      enable_direct_lighting: null
++      samples_per_pixel: null
++      enable_shadows: null
++      enable_ambient_occlusion: null
++      dome_light_upper_lower_strategy: null
++      carb_settings: null
++      rendering_mode: null
++    create_stage_in_memory: false
++    logging_level: WARNING
++    save_logs_to_file: true
++  ui_window_class_type: parkour_isaaclab.envs.parkour_ui:ParkourManagerBasedRLEnvWindow
++  seed: null
++  decimation: 4
++  scene:
++    num_envs: 6144
++    env_spacing: 1.0
++    lazy_sensor_update: true
++    replicate_physics: true
++    filter_collisions: true
++    clone_in_fabric: false
++    robot:
++      class_type: isaaclab.assets.articulation.articulation:Articulation
++      prim_path: '{ENV_REGEX_NS}/Robot'
++      spawn:
++        func: isaaclab.sim.spawners.from_files.from_files:spawn_from_usd
++        visible: true
++        semantic_tags: null
++        copy_from_source: true
++        mass_props: null
++        deformable_props: null
++        rigid_props:
++          rigid_body_enabled: null
++          kinematic_enabled: null
++          disable_gravity: false
++          linear_damping: 0.0
++          angular_damping: 0.0
++          max_linear_velocity: 1000.0
++          max_angular_velocity: 1000.0
++          max_depenetration_velocity: 1.0
++          max_contact_impulse: null
++          enable_gyroscopic_forces: null
++          retain_accelerations: false
++          solver_position_iteration_count: null
++          solver_velocity_iteration_count: null
++          sleep_threshold: null
++          stabilization_threshold: null
++        collision_props: null
++        activate_contact_sensors: true
++        scale: null
++        articulation_props:
++          articulation_enabled: null
++          enabled_self_collisions: true
++          solver_position_iteration_count: 4
++          solver_velocity_iteration_count: 0
++          sleep_threshold: null
++          stabilization_threshold: null
++          fix_root_link: null
++        fixed_tendons_props: null
++        spatial_tendons_props: null
++        joint_drive_props: null
++        visual_material_path: material
++        visual_material: null
++        usd_path: https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/5.1/Isaac/IsaacLab/Robots/Unitree/Go2/go2.usd
++        variants: null
++      init_state:
++        pos:
++        - 0.0
++        - 0.0
++        - 0.4
++        rot:
++        - 1.0
++        - 0.0
++        - 0.0
++        - 0.0
++        lin_vel:
++        - 0.0
++        - 0.0
++        - 0.0
++        ang_vel:
++        - 0.0
++        - 0.0
++        - 0.0
++        joint_pos:
++          .*L_hip_joint: 0.1
++          .*R_hip_joint: -0.1
++          F[L,R]_thigh_joint: 0.8
++          R[L,R]_thigh_joint: 1.0
++          .*_calf_joint: -1.5
++        joint_vel:
++          .*: 0.0
++      collision_group: 0
++      debug_vis: false
++      articulation_root_prim_path: null
++      soft_joint_pos_limit_factor: 0.9
++      actuators:
++        base_legs:
++          class_type: parkour_isaaclab.actuators.parkour_actuator_pd:ParkourDCMotor
++          joint_names_expr:
++          - .*_hip_joint
++          - .*_thigh_joint
++          - .*_calf_joint
++          effort_limit:
++            .*_hip_joint: 35.0
++            .*_thigh_joint: 40.0
++            .*_calf_joint: 40.0
++          velocity_limit:
++            .*_hip_joint: 52.4
++            .*_thigh_joint: 30.1
++            .*_calf_joint: 30.1
++          effort_limit_sim: null
++          velocity_limit_sim: null
++          stiffness: 40.0
++          damping: 1.0
++          armature: null
++          friction: 0.0
++          dynamic_friction: null
++          viscous_friction: null
++          saturation_effort:
++            .*_hip_joint: 35.0
++            .*_thigh_joint: 45.0
++            .*_calf_joint: 45.0
++      actuator_value_resolution_debug_print: false
++    sky_light:
++      class_type: null
++      prim_path: /World/skyLight
++      spawn:
++        func: isaaclab.sim.spawners.lights.lights:spawn_light
++        visible: true
++        semantic_tags: null
++        copy_from_source: true
++        prim_type: DomeLight
++        color:
++        - 1.0
++        - 1.0
++        - 1.0
++        enable_color_temperature: false
++        color_temperature: 6500.0
++        normalize: false
++        exposure: 0.0
++        intensity: 750.0
++        texture_file: https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/5.1/Isaac/Materials/Textures/Skies/PolyHaven/kloofendal_43d_clear_puresky_4k.hdr
++        texture_format: automatic
++        visible_in_primary_ray: true
++      init_state:
++        pos:
++        - 0.0
++        - 0.0
++        - 0.0
++        rot:
++        - 1.0
++        - 0.0
++        - 0.0
++        - 0.0
++      collision_group: 0
++      debug_vis: false
++    terrain:
++      class_type: parkour_isaaclab.terrains.parkour_terrain_importer:ParkourTerrainImporter
++      collision_group: -1
++      prim_path: /World/ground
++      num_envs: 1
++      terrain_type: generator
++      terrain_generator:
++        class_type: isaaclab.terrains.terrain_generator:TerrainGenerator
++        seed: null
++        curriculum: true
++        size:
++        - 16.0
++        - 4.0
++        border_width: 20.0
++        border_height: 1.0
++        num_rows: 10
++        num_cols: 40
++        color_scheme: none
++        horizontal_scale: 0.08
++        vertical_scale: 0.005
++        slope_threshold: 1.5
++        sub_terrains:
++          parkour_gap:
++            function: parkour_isaaclab.terrains.extreme_parkour.extreme_parkour_terrians:parkour_gap_terrain
++            proportion: 0.2
++            size:
++            - 10.0
++            - 10.0
++            flat_patch_sampling: null
++            border_width: 0.0
++            horizontal_scale: 0.05
++            vertical_scale: 0.005
++            slope_threshold: 1.5
++            platform_len: 2.5
++            platform_height: 0.0
++            use_simplified: false
++            edge_width_thresh: 0.05
++            apply_roughness: true
++            apply_flat: false
++            downsampled_scale: 0.075
++            noise_range:
++            - 0.02
++            - 0.06
++            noise_step: 0.005
++            x_range:
++            - 0.8
++            - 1.5
++            y_range:
++            - -0.4
++            - 0.4
++            half_valid_width:
++            - 0.6
++            - 1.2
++            pad_width: 0.1
++            pad_height: 0.0
++            gap_size: 0.1 + 0.7*difficulty
++            gap_depth:
++            - 0.2
++            - 1
++          parkour_hurdle:
++            function: parkour_isaaclab.terrains.extreme_parkour.extreme_parkour_terrians:parkour_hurdle_terrain
++            proportion: 0.2
++            size:
++            - 10.0
++            - 10.0
++            flat_patch_sampling: null
++            border_width: 0.0
++            horizontal_scale: 0.05
++            vertical_scale: 0.005
++            slope_threshold: 1.5
++            platform_len: 2.5
++            platform_height: 0.0
++            use_simplified: false
++            edge_width_thresh: 0.05
++            apply_roughness: true
++            apply_flat: false
++            downsampled_scale: 0.075
++            noise_range:
++            - 0.02
++            - 0.06
++            noise_step: 0.005
++            x_range:
++            - 1.2
++            - 2.2
++            y_range:
++            - -0.4
++            - 0.4
++            half_valid_width:
++            - 0.4
++            - 0.8
++            pad_width: 0.1
++            pad_height: 0.0
++            stone_len: 0.1 + 0.3 * difficulty
++            hurdle_height_range: 0.1+0.1*difficulty, 0.15+0.25*difficulty
++          parkour_flat:
++            function: parkour_isaaclab.terrains.extreme_parkour.extreme_parkour_terrians:parkour_hurdle_terrain
++            proportion: 0.2
++            size:
++            - 10.0
++            - 10.0
++            flat_patch_sampling: null
++            border_width: 0.0
++            horizontal_scale: 0.05
++            vertical_scale: 0.005
++            slope_threshold: 1.5
++            platform_len: 2.5
++            platform_height: 0.0
++            use_simplified: false
++            edge_width_thresh: 0.05
++            apply_roughness: true
++            apply_flat: true
++            downsampled_scale: 0.075
++            noise_range:
++            - 0.02
++            - 0.06
++            noise_step: 0.005
++            x_range:
++            - 1.2
++            - 2.2
++            y_range:
++            - -0.4
++            - 0.4
++            half_valid_width:
++            - 0.4
++            - 0.8
++            pad_width: 0.1
++            pad_height: 0.0
++            stone_len: 0.1 + 0.3 * difficulty
++            hurdle_height_range: 0.1+0.1*difficulty, 0.15+0.15*difficulty
++          parkour_step:
++            function: parkour_isaaclab.terrains.extreme_parkour.extreme_parkour_terrians:parkour_step_terrain
++            proportion: 0.2
++            size:
++            - 10.0
++            - 10.0
++            flat_patch_sampling: null
++            border_width: 0.0
++            horizontal_scale: 0.05
++            vertical_scale: 0.005
++            slope_threshold: 1.5
++            platform_len: 2.5
++            platform_height: 0.0
++            use_simplified: false
++            edge_width_thresh: 0.05
++            apply_roughness: true
++            apply_flat: false
++            downsampled_scale: 0.075
++            noise_range:
++            - 0.02
++            - 0.06
++            noise_step: 0.005
++            x_range:
++            - 0.3
++            - 1.5
++            y_range:
++            - -0.4
++            - 0.4
++            half_valid_width:
++            - 0.5
++            - 1
++            pad_width: 0.1
++            pad_height: 0.0
++            step_height: 0.1 + 0.35*difficulty
++          parkour:
++            function: parkour_isaaclab.terrains.extreme_parkour.extreme_parkour_terrians:parkour_terrain
++            proportion: 0.2
++            size:
++            - 10.0
++            - 10.0
++            flat_patch_sampling: null
++            border_width: 0.0
++            horizontal_scale: 0.05
++            vertical_scale: 0.005
++            slope_threshold: 1.5
++            platform_len: 2.5
++            platform_height: 0.0
++            use_simplified: false
++            edge_width_thresh: 0.05
++            apply_roughness: true
++            apply_flat: false
++            downsampled_scale: 0.075
++            noise_range:
++            - 0.02
++            - 0.06
++            noise_step: 0.005
++            x_range: -0.1, 0.1+0.3*difficulty
++            y_range: 0.2, 0.3+0.1*difficulty
++            half_valid_width:
++            - 0.6
++            - 1.2
++            pad_width: 0.1
++            pad_height: 0.0
++            pit_depth:
++            - 0.2
++            - 1
++            stone_width: 1.0
++            last_stone_len: 1.6
++            stone_len: 0.9 - 0.3*difficulty, 1 - 0.2*difficulty
++            incline_height: 0.25*difficulty
++            last_incline_height: incline_height + 0.1 - 0.1*difficulty
++          parkour_demo:
++            function: parkour_isaaclab.terrains.extreme_parkour.extreme_parkour_terrians:parkour_demo_terrain
++            proportion: 0.0
++            size:
++            - 10.0
++            - 10.0
++            flat_patch_sampling: null
++            border_width: 0.0
++            horizontal_scale: 0.05
++            vertical_scale: 0.005
++            slope_threshold: 1.5
++            platform_len: 2.5
++            platform_height: 0.0
++            use_simplified: false
++            edge_width_thresh: 0.05
++            apply_roughness: true
++            apply_flat: false
++            downsampled_scale: 0.075
++            noise_range:
++            - 0.02
++            - 0.06
++            noise_step: 0.005
++            x_range:
++            - 0.8
++            - 1.5
++            y_range:
++            - -0.4
++            - 0.4
++            half_valid_width:
++            - 0.6
++            - 1.2
++            pad_width: 0.1
++            pad_height: 0.0
++        difficulty_range:
++        - 0.0
++        - 1.0
++        use_cache: false
++        cache_dir: /tmp/isaaclab/terrains
++        num_goals: 8
++        terrain_names: []
++        random_difficulty: false
++      usd_path: null
++      env_spacing: null
++      use_terrain_origins: true
++      visual_material:
++        func: isaaclab.sim.spawners.materials.visual_materials:spawn_from_mdl_file
++        mdl_path: https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/5.1/Isaac/IsaacLab/Materials/TilesMarbleSpiderWhiteBrickBondHoned/TilesMarbleSpiderWhiteBrickBondHoned.mdl
++        project_uvw: true
++        albedo_brightness: null
++        texture_scale:
++        - 0.25
++        - 0.25
++      physics_material:
++        func: isaaclab.sim.spawners.materials.physics_materials:spawn_rigid_body_material
++        static_friction: 1.0
++        dynamic_friction: 1.0
++        restitution: 0.0
++        friction_combine_mode: average
++        restitution_combine_mode: average
++        compliant_contact_stiffness: 0.0
++        compliant_contact_damping: 0.0
++      max_init_terrain_level: 2
++      debug_vis: false
++    height_scanner:
++      class_type: isaaclab.sensors.ray_caster.ray_caster:RayCaster
++      prim_path: '{ENV_REGEX_NS}/Robot/base'
++      update_period: 0.02
++      history_length: 0
++      debug_vis: false
++      mesh_prim_paths:
++      - /World/ground
++      offset:
++        pos:
++        - 0.375
++        - 0.0
++        - 20.0
++        rot:
++        - 1.0
++        - 0.0
++        - 0.0
++        - 0.0
++      attach_yaw_only: true
++      ray_alignment: base
++      pattern_cfg:
++        func: isaaclab.sensors.ray_caster.patterns.patterns:grid_pattern
++        resolution: 0.15
++        size:
++        - 1.65
++        - 1.5
++        direction:
++        - 0.0
++        - 0.0
++        - -1.0
++        ordering: xy
++      max_distance: 1000000.0
++      drift_range:
++      - 0.0
++      - 0.0
++      ray_cast_drift_range:
++        x:
++        - 0.0
++        - 0.0
++        'y':
++        - 0.0
++        - 0.0
++        z:
++        - 0.0
++        - 0.0
++      visualizer_cfg:
++        prim_path: /Visuals/RayCaster
++        markers:
++          hit:
++            func: isaaclab.sim.spawners.shapes.shapes:spawn_sphere
++            visible: true
++            semantic_tags: null
++            copy_from_source: true
++            mass_props: null
++            rigid_props: null
++            collision_props: null
++            activate_contact_sensors: false
++            visual_material_path: material
++            visual_material:
++              func: isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface
++              diffuse_color:
++              - 1.0
++              - 0.0
++              - 0.0
++              emissive_color:
++              - 0.0
++              - 0.0
++              - 0.0
++              roughness: 0.5
++              metallic: 0.0
++              opacity: 1.0
++            physics_material_path: material
++            physics_material: null
++            radius: 0.02
++    contact_forces:
++      class_type: isaaclab.sensors.contact_sensor.contact_sensor:ContactSensor
++      prim_path: '{ENV_REGEX_NS}/Robot/.*'
++      update_period: 0.02
++      history_length: 2
++      debug_vis: false
++      track_pose: false
++      track_contact_points: false
++      max_contact_data_count_per_prim: 4
++      track_air_time: true
++      force_threshold: 1.0
++      filter_prim_paths_expr: []
++      visualizer_cfg:
++        prim_path: /Visuals/ContactSensor
++        markers:
++          contact:
++            func: isaaclab.sim.spawners.shapes.shapes:spawn_sphere
++            visible: true
++            semantic_tags: null
++            copy_from_source: true
++            mass_props: null
++            rigid_props: null
++            collision_props: null
++            activate_contact_sensors: false
++            visual_material_path: material
++            visual_material:
++              func: isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface
++              diffuse_color:
++              - 1.0
++              - 0.0
++              - 0.0
++              emissive_color:
++              - 0.0
++              - 0.0
++              - 0.0
++              roughness: 0.5
++              metallic: 0.0
++              opacity: 1.0
++            physics_material_path: material
++            physics_material: null
++            radius: 0.02
++          no_contact:
++            func: isaaclab.sim.spawners.shapes.shapes:spawn_sphere
++            visible: false
++            semantic_tags: null
++            copy_from_source: true
++            mass_props: null
++            rigid_props: null
++            collision_props: null
++            activate_contact_sensors: false
++            visual_material_path: material
++            visual_material:
++              func: isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface
++              diffuse_color:
++              - 0.0
++              - 1.0
++              - 0.0
++              emissive_color:
++              - 0.0
++              - 0.0
++              - 0.0
++              roughness: 0.5
++              metallic: 0.0
++              opacity: 1.0
++            physics_material_path: material
++            physics_material: null
++            radius: 0.02
++  recorders:
++    dataset_file_handler_class_type: isaaclab.utils.datasets.hdf5_dataset_file_handler:HDF5DatasetFileHandler
++    dataset_export_dir_path: /tmp/isaaclab/logs
++    dataset_filename: dataset
++    dataset_export_mode:
++      _value_: 1
++      _name_: EXPORT_ALL
++      _sort_order_: 1
++    export_in_record_pre_reset: true
++  observations:
++    policy:
++      concatenate_terms: true
++      concatenate_dim: -1
++      enable_corruption: false
++      history_length: null
++      flatten_history_dim: true
++      extreme_parkour_observations:
++        func: parkour_isaaclab.envs.mdp.observations:ExtremeParkourObservations
++        params:
++          asset_cfg:
++            name: robot
++            joint_names: null
++            joint_ids: slice(None,None,None)
++            fixed_tendon_names: null
++            fixed_tendon_ids: slice(None,None,None)
++            body_names: null
++            body_ids: slice(None,None,None)
++            object_collection_names: null
++            object_collection_ids: slice(None,None,None)
++            preserve_order: false
++          sensor_cfg:
++            name: contact_forces
++            joint_names: null
++            joint_ids: slice(None,None,None)
++            fixed_tendon_names: null
++            fixed_tendon_ids: slice(None,None,None)
++            body_names: .*_foot
++            body_ids: slice(None,None,None)
++            object_collection_names: null
++            object_collection_ids: slice(None,None,None)
++            preserve_order: false
++          parkour_name: base_parkour
++          history_length: 10
++        modifiers: null
++        noise: null
++        clip:
++        - -100
++        - 100
++        scale: null
++        history_length: 0
++        flatten_history_dim: true
++  actions:
++    joint_pos:
++      class_type: parkour_isaaclab.envs.mdp.parkour_actions.joint_actions:DelayedJointPositionAction
++      asset_name: robot
++      debug_vis: false
++      clip:
++        .*:
++        - -4.8
++        - 4.8
++      joint_names:
++      - .*
++      scale: 0.25
++      offset: 0.0
++      preserve_order: false
++      use_default_offset: true
++      delay_update_global_steps: 192000
++      history_length: 1
++      action_delay_steps:
++      - 1
++      - 1
++      use_delay: false
++  events:
++    reset_root_state:
++      func: parkour_isaaclab.envs.mdp.events:reset_root_state
++      params:
++        offset: 3.0
++      mode: reset
++      interval_range_s: null
++      is_global_time: false
++      min_step_count_between_reset: 0
++    reset_robot_joints:
++      func: isaaclab.envs.mdp.events:reset_joints_by_scale
++      params:
++        position_range:
++        - 0.95
++        - 1.05
++        velocity_range:
++        - 0.0
++        - 0.0
++      mode: reset
++      interval_range_s: null
++      is_global_time: false
++      min_step_count_between_reset: 0
++    physics_material:
++      func: parkour_isaaclab.envs.mdp.events:randomize_rigid_body_material
++      params:
++        asset_cfg:
++          name: robot
++          joint_names: null
++          joint_ids: slice(None,None,None)
++          fixed_tendon_names: null
++          fixed_tendon_ids: slice(None,None,None)
++          body_names: .*
++          body_ids: slice(None,None,None)
++          object_collection_names: null
++          object_collection_ids: slice(None,None,None)
++          preserve_order: false
++        friction_range:
++        - 0.6
++        - 2.0
++        num_buckets: 64
++      mode: startup
++      interval_range_s: null
++      is_global_time: false
++      min_step_count_between_reset: 0
++    randomize_rigid_body_mass:
++      func: isaaclab.envs.mdp.events:randomize_rigid_body_mass
++      params:
++        asset_cfg:
++          name: robot
++          joint_names: null
++          joint_ids: slice(None,None,None)
++          fixed_tendon_names: null
++          fixed_tendon_ids: slice(None,None,None)
++          body_names: base
++          body_ids: slice(None,None,None)
++          object_collection_names: null
++          object_collection_ids: slice(None,None,None)
++          preserve_order: false
++        mass_distribution_params:
++        - -1.0
++        - 3.0
++        operation: add
++      mode: startup
++      interval_range_s: null
++      is_global_time: false
++      min_step_count_between_reset: 0
++    randomize_rigid_body_com:
++      func: parkour_isaaclab.envs.mdp.events:randomize_rigid_body_com
++      params:
++        asset_cfg:
++          name: robot
++          joint_names: null
++          joint_ids: slice(None,None,None)
++          fixed_tendon_names: null
++          fixed_tendon_ids: slice(None,None,None)
++          body_names: base
++          body_ids: slice(None,None,None)
++          object_collection_names: null
++          object_collection_ids: slice(None,None,None)
++          preserve_order: false
++        com_range:
++          x:
++          - -0.02
++          - 0.02
++          'y':
++          - -0.02
++          - 0.02
++          z:
++          - -0.02
++          - 0.02
++      mode: startup
++      interval_range_s: null
++      is_global_time: false
++      min_step_count_between_reset: 0
++    random_camera_position: null
++    push_by_setting_velocity:
++      func: parkour_isaaclab.envs.mdp.events:push_by_setting_velocity
++      params:
++        velocity_range:
++          x:
++          - -0.5
++          - 0.5
++          'y':
++          - -0.5
++          - 0.5
++      mode: interval
++      interval_range_s:
++      - 8.0
++      - 8.0
++      is_global_time: true
++      min_step_count_between_reset: 0
++    base_external_force_torque:
++      func: isaaclab.envs.mdp.events:apply_external_force_torque
++      params:
++        asset_cfg:
++          name: robot
++          joint_names: null
++          joint_ids: slice(None,None,None)
++          fixed_tendon_names: null
++          fixed_tendon_ids: slice(None,None,None)
++          body_names: base
++          body_ids: slice(None,None,None)
++          object_collection_names: null
++          object_collection_ids: slice(None,None,None)
++          preserve_order: false
++        force_range:
++        - 0.0
++        - 0.0
++        torque_range:
++        - -0.0
++        - 0.0
++      mode: reset
++      interval_range_s: null
++      is_global_time: false
++      min_step_count_between_reset: 0
++  rerender_on_reset: false
++  num_rerenders_on_reset: 0
++  wait_for_textures: true
++  xr: null
++  teleop_devices:
++    devices: {}
++  export_io_descriptors: false
++  log_dir: null
++  is_finite_horizon: false
++  episode_length_s: 20.0
++  rewards:
++    reward_collision:
++      func: parkour_isaaclab.envs.mdp.rewards:reward_collision
++      params:
++        sensor_cfg:
++          name: contact_forces
++          joint_names: null
++          joint_ids: slice(None,None,None)
++          fixed_tendon_names: null
++          fixed_tendon_ids: slice(None,None,None)
++          body_names:
++          - base
++          - .*_calf
++          - .*_thigh
++          body_ids: slice(None,None,None)
++          object_collection_names: null
++          object_collection_ids: slice(None,None,None)
++          preserve_order: false
++      weight: -10.0
++    reward_feet_edge:
++      func: parkour_isaaclab.envs.mdp.rewards:reward_feet_edge
++      params:
++        asset_cfg:
++          name: robot
++          joint_names: null
++          joint_ids: slice(None,None,None)
++          fixed_tendon_names: null
++          fixed_tendon_ids: slice(None,None,None)
++          body_names:
++          - FL_foot
++          - FR_foot
++          - RL_foot
++          - RR_foot
++          body_ids: slice(None,None,None)
++          object_collection_names: null
++          object_collection_ids: slice(None,None,None)
++          preserve_order: false
++        sensor_cfg:
++          name: contact_forces
++          joint_names: null
++          joint_ids: slice(None,None,None)
++          fixed_tendon_names: null
++          fixed_tendon_ids: slice(None,None,None)
++          body_names: .*_foot
++          body_ids: slice(None,None,None)
++          object_collection_names: null
++          object_collection_ids: slice(None,None,None)
++          preserve_order: false
++        parkour_name: base_parkour
++      weight: -1.0
++    reward_torques:
++      func: parkour_isaaclab.envs.mdp.rewards:reward_torques
++      params:
++        asset_cfg:
++          name: robot
++          joint_names: null
++          joint_ids: slice(None,None,None)
++          fixed_tendon_names: null
++          fixed_tendon_ids: slice(None,None,None)
++          body_names: null
++          body_ids: slice(None,None,None)
++          object_collection_names: null
++          object_collection_ids: slice(None,None,None)
++          preserve_order: false
++      weight: -1.0e-05
++    reward_dof_error:
++      func: parkour_isaaclab.envs.mdp.rewards:reward_dof_error
++      params:
++        asset_cfg:
++          name: robot
++          joint_names: null
++          joint_ids: slice(None,None,None)
++          fixed_tendon_names: null
++          fixed_tendon_ids: slice(None,None,None)
++          body_names: null
++          body_ids: slice(None,None,None)
++          object_collection_names: null
++          object_collection_ids: slice(None,None,None)
++          preserve_order: false
++      weight: -0.04
++    reward_hip_pos:
++      func: parkour_isaaclab.envs.mdp.rewards:reward_hip_pos
++      params:
++        asset_cfg:
++          name: robot
++          joint_names: .*_hip_joint
++          joint_ids: slice(None,None,None)
++          fixed_tendon_names: null
++          fixed_tendon_ids: slice(None,None,None)
++          body_names: null
++          body_ids: slice(None,None,None)
++          object_collection_names: null
++          object_collection_ids: slice(None,None,None)
++          preserve_order: false
++      weight: -0.5
++    reward_ang_vel_xy:
++      func: parkour_isaaclab.envs.mdp.rewards:reward_ang_vel_xy
++      params:
++        asset_cfg:
++          name: robot
++          joint_names: null
++          joint_ids: slice(None,None,None)
++          fixed_tendon_names: null
++          fixed_tendon_ids: slice(None,None,None)
++          body_names: null
++          body_ids: slice(None,None,None)
++          object_collection_names: null
++          object_collection_ids: slice(None,None,None)
++          preserve_order: false
++      weight: -0.05
++    reward_action_rate:
++      func: parkour_isaaclab.envs.mdp.rewards:reward_action_rate
++      params:
++        asset_cfg:
++          name: robot
++          joint_names: null
++          joint_ids: slice(None,None,None)
++          fixed_tendon_names: null
++          fixed_tendon_ids: slice(None,None,None)
++          body_names: null
++          body_ids: slice(None,None,None)
++          object_collection_names: null
++          object_collection_ids: slice(None,None,None)
++          preserve_order: false
++      weight: -0.1
++    reward_dof_acc:
++      func: parkour_isaaclab.envs.mdp.rewards:reward_dof_acc
++      params:
++        asset_cfg:
++          name: robot
++          joint_names: null
++          joint_ids: slice(None,None,None)
++          fixed_tendon_names: null
++          fixed_tendon_ids: slice(None,None,None)
++          body_names: null
++          body_ids: slice(None,None,None)
++          object_collection_names: null
++          object_collection_ids: slice(None,None,None)
++          preserve_order: false
++      weight: -2.5e-07
++    reward_lin_vel_z:
++      func: parkour_isaaclab.envs.mdp.rewards:reward_lin_vel_z
++      params:
++        asset_cfg:
++          name: robot
++          joint_names: null
++          joint_ids: slice(None,None,None)
++          fixed_tendon_names: null
++          fixed_tendon_ids: slice(None,None,None)
++          body_names: null
++          body_ids: slice(None,None,None)
++          object_collection_names: null
++          object_collection_ids: slice(None,None,None)
++          preserve_order: false
++        parkour_name: base_parkour
++      weight: -1.0
++    reward_orientation:
++      func: parkour_isaaclab.envs.mdp.rewards:reward_orientation
++      params:
++        asset_cfg:
++          name: robot
++          joint_names: null
++          joint_ids: slice(None,None,None)
++          fixed_tendon_names: null
++          fixed_tendon_ids: slice(None,None,None)
++          body_names: null
++          body_ids: slice(None,None,None)
++          object_collection_names: null
++          object_collection_ids: slice(None,None,None)
++          preserve_order: false
++        parkour_name: base_parkour
++      weight: -1.0
++    reward_feet_stumble:
++      func: parkour_isaaclab.envs.mdp.rewards:reward_feet_stumble
++      params:
++        sensor_cfg:
++          name: contact_forces
++          joint_names: null
++          joint_ids: slice(None,None,None)
++          fixed_tendon_names: null
++          fixed_tendon_ids: slice(None,None,None)
++          body_names: .*_foot
++          body_ids: slice(None,None,None)
++          object_collection_names: null
++          object_collection_ids: slice(None,None,None)
++          preserve_order: false
++      weight: -1.0
++    reward_tracking_goal_vel:
++      func: parkour_isaaclab.envs.mdp.rewards:reward_tracking_goal_vel
++      params:
++        asset_cfg:
++          name: robot
++          joint_names: null
++          joint_ids: slice(None,None,None)
++          fixed_tendon_names: null
++          fixed_tendon_ids: slice(None,None,None)
++          body_names: null
++          body_ids: slice(None,None,None)
++          object_collection_names: null
++          object_collection_ids: slice(None,None,None)
++          preserve_order: false
++        parkour_name: base_parkour
++      weight: 1.5
++    reward_tracking_yaw:
++      func: parkour_isaaclab.envs.mdp.rewards:reward_tracking_yaw
++      params:
++        asset_cfg:
++          name: robot
++          joint_names: null
++          joint_ids: slice(None,None,None)
++          fixed_tendon_names: null
++          fixed_tendon_ids: slice(None,None,None)
++          body_names: null
++          body_ids: slice(None,None,None)
++          object_collection_names: null
++          object_collection_ids: slice(None,None,None)
++          preserve_order: false
++        parkour_name: base_parkour
++      weight: 0.5
++    reward_delta_torques:
++      func: parkour_isaaclab.envs.mdp.rewards:reward_delta_torques
++      params:
++        asset_cfg:
++          name: robot
++          joint_names: null
++          joint_ids: slice(None,None,None)
++          fixed_tendon_names: null
++          fixed_tendon_ids: slice(None,None,None)
++          body_names: null
++          body_ids: slice(None,None,None)
++          object_collection_names: null
++          object_collection_ids: slice(None,None,None)
++          preserve_order: false
++      weight: -1.0e-07
++  terminations:
++    total_terminates:
++      func: parkour_isaaclab.envs.mdp.terminations:terminate_episode
++      params:
++        asset_cfg:
++          name: robot
++          joint_names: null
++          joint_ids: slice(None,None,None)
++          fixed_tendon_names: null
++          fixed_tendon_ids: slice(None,None,None)
++          body_names: null
++          body_ids: slice(None,None,None)
++          object_collection_names: null
++          object_collection_ids: slice(None,None,None)
++          preserve_order: false
++      time_out: true
++  curriculum: null
++  commands:
++    base_velocity:
++      class_type: parkour_isaaclab.envs.mdp.parkour_commands.uniform_parkour_command:UniformParkourCommand
++      resampling_time_range:
++      - 6.0
++      - 6.0
++      debug_vis: false
++      asset_name: robot
++      heading_control_stiffness: 0.8
++      small_commands_to_zero: true
++      ranges:
++        lin_vel_x:
++        - 0.3
++        - 0.8
++        heading:
++        - -1.6
++        - 1.6
++      clips:
++        lin_vel_clip: 0.2
++        ang_vel_clip: 0.4
++      goal_vel_visualizer_cfg:
++        prim_path: /Visuals/Command/velocity_goal
++        markers:
++          arrow:
++            func: isaaclab.sim.spawners.from_files.from_files:spawn_from_usd
++            visible: true
++            semantic_tags: null
++            copy_from_source: true
++            mass_props: null
++            deformable_props: null
++            rigid_props: null
++            collision_props: null
++            activate_contact_sensors: false
++            scale:
++            - 0.5
++            - 0.5
++            - 0.5
++            articulation_props: null
++            fixed_tendons_props: null
++            spatial_tendons_props: null
++            joint_drive_props: null
++            visual_material_path: material
++            visual_material:
++              func: isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface
++              diffuse_color:
++              - 0.0
++              - 1.0
++              - 0.0
++              emissive_color:
++              - 0.0
++              - 0.0
++              - 0.0
++              roughness: 0.5
++              metallic: 0.0
++              opacity: 1.0
++            usd_path: https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/5.1/Isaac/Props/UIElements/arrow_x.usd
++            variants: null
++      current_vel_visualizer_cfg:
++        prim_path: /Visuals/Command/velocity_current
++        markers:
++          arrow:
++            func: isaaclab.sim.spawners.from_files.from_files:spawn_from_usd
++            visible: true
++            semantic_tags: null
++            copy_from_source: true
++            mass_props: null
++            deformable_props: null
++            rigid_props: null
++            collision_props: null
++            activate_contact_sensors: false
++            scale:
++            - 0.5
++            - 0.5
++            - 0.5
++            articulation_props: null
++            fixed_tendons_props: null
++            spatial_tendons_props: null
++            joint_drive_props: null
++            visual_material_path: material
++            visual_material:
++              func: isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface
++              diffuse_color:
++              - 0.0
++              - 0.0
++              - 1.0
++              emissive_color:
++              - 0.0
++              - 0.0
++              - 0.0
++              roughness: 0.5
++              metallic: 0.0
++              opacity: 1.0
++            usd_path: https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/5.1/Isaac/Props/UIElements/arrow_x.usd
++            variants: null
++  parkours:
++    base_parkour:
++      class_type: parkour_isaaclab.envs.mdp.parkours.parkour_event:ParkourEvent
++      debug_vis: false
++      asset_name: robot
++      num_future_goal_obs: 2
++      arrow_num: 8
++      reach_goal_delay: 0.1
++      next_goal_threshold: 0.2
++      future_goal_poses_visualizer_cfg:
++        prim_path: /Visuals/Command/future_goal_poses
++        markers:
++          frame:
++            func: isaaclab.sim.spawners.shapes.shapes:spawn_sphere
++            visible: true
++            semantic_tags: null
++            copy_from_source: true
++            mass_props: null
++            rigid_props: null
++            collision_props: null
++            activate_contact_sensors: false
++            visual_material_path: material
++            visual_material:
++              func: isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface
++              diffuse_color:
++              - 1.0
++              - 0.0
++              - 0.0
++              emissive_color:
++              - 0.0
++              - 0.0
++              - 0.0
++              roughness: 0.5
++              metallic: 0.0
++              opacity: 1.0
++            physics_material_path: material
++            physics_material: null
++            radius: 0.15
++            scale:
++            - 1.1
++            - 1.1
++            - 1.1
++      current_goal_pose_visualizer_cfg:
++        prim_path: /Visuals/Command/current_goal_pose
++        markers:
++          frame:
++            func: isaaclab.sim.spawners.shapes.shapes:spawn_sphere
++            visible: true
++            semantic_tags: null
++            copy_from_source: true
++            mass_props: null
++            rigid_props: null
++            collision_props: null
++            activate_contact_sensors: false
++            visual_material_path: material
++            visual_material:
++              func: isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface
++              diffuse_color:
++              - 0.0
++              - 1.0
++              - 0.0
++              emissive_color:
++              - 0.0
++              - 0.0
++              - 0.0
++              roughness: 0.5
++              metallic: 0.0
++              opacity: 1.0
++            physics_material_path: material
++            physics_material: null
++            radius: 0.15
++            scale:
++            - 1.1
++            - 1.1
++            - 1.1
++      future_arrow_visualizer_cfg:
++        prim_path: /Visuals/Command/future_arrow
++        markers:
++          frame:
++            func: isaaclab.sim.spawners.shapes.shapes:spawn_sphere
++            visible: true
++            semantic_tags: null
++            copy_from_source: true
++            mass_props: null
++            rigid_props: null
++            collision_props: null
++            activate_contact_sensors: false
++            visual_material_path: material
++            visual_material:
++              func: isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface
++              diffuse_color:
++              - 1.0
++              - 0.0
++              - 0.0
++              emissive_color:
++              - 0.0
++              - 0.0
++              - 0.0
++              roughness: 0.5
++              metallic: 0.0
++              opacity: 1.0
++            physics_material_path: material
++            physics_material: null
++            radius: 0.05
++            scale:
++            - 0.1
++            - 0.1
++            - 0.1
++      current_arrow_visualizer_cfg:
++        prim_path: /Visuals/Command/current_arrow
++        markers:
++          frame:
++            func: isaaclab.sim.spawners.shapes.shapes:spawn_sphere
++            visible: true
++            semantic_tags: null
++            copy_from_source: true
++            mass_props: null
++            rigid_props: null
++            collision_props: null
++            activate_contact_sensors: false
++            visual_material_path: material
++            visual_material:
++              func: isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface
++              diffuse_color:
++              - 0.0
++              - 1.0
++              - 0.0
++              emissive_color:
++              - 0.0
++              - 0.0
++              - 0.0
++              roughness: 0.5
++              metallic: 0.0
++              opacity: 1.0
++            physics_material_path: material
++            physics_material: null
++            radius: 0.05
++            scale:
++            - 0.1
++            - 0.1
++            - 0.1
++agent:
++  seed: 42
++  device: cuda:0
++  num_steps_per_env: 24
++  max_iterations: 50000
++  empirical_normalization: false
++  obs_groups: {}
++  clip_actions: null
++  save_interval: 100
++  experiment_name: unitree_go2_parkour
++  run_name: ''
++  logger: tensorboard
++  neptune_project: isaaclab
++  wandb_project: isaaclab
++  resume: false
++  load_run: .*
++  load_checkpoint: model_.*.pt
++  class_name: OnPolicyRunner
++  policy:
++    class_name: ActorCriticRMA
++    init_noise_std: 1.0
++    noise_std_type: scalar
++    actor_obs_normalization: {}
++    critic_obs_normalization: {}
++    actor_hidden_dims:
++    - 512
++    - 256
++    - 128
++    critic_hidden_dims:
++    - 512
++    - 256
++    - 128
++    activation: elu
++    tanh_encoder_output: false
++    scan_encoder_dims:
++    - 128
++    - 64
++    - 32
++    priv_encoder_dims:
++    - 64
++    - 20
++    actor:
++      num_priv_explicit: 9
++      num_priv_latent: 29
++      num_prop: 53
++      num_scan: 132
++      num_hist: 10
++      class_name: Actor
++      state_history_encoder:
++        num_priv_explicit: 9
++        num_priv_latent: 29
++        num_prop: 53
++        num_scan: 132
++        num_hist: 10
++        class_name: StateHistoryEncoder
++        channel_size: 10
++  algorithm:
++    class_name: PPOWithExtractor
++    num_learning_epochs: 5
++    num_mini_batches: 4
++    learning_rate: 0.0002
++    schedule: adaptive
++    gamma: 0.99
++    lam: 0.95
++    entropy_coef: 0.01
++    desired_kl: 0.01
++    max_grad_norm: 1.0
++    value_loss_coef: 1.0
++    use_clipped_value_loss: true
++    clip_param: 0.2
++    normalize_advantage_per_mini_batch: false
++    rnd_cfg: null
++    symmetry_cfg: null
++    dagger_update_freq: 20
++    priv_reg_coef_schedual:
++    - 0.0
++    - 0.1
++    - 2000.0
++    - 3000.0
++  estimator:
++    num_priv_explicit: 9
++    num_priv_latent: 29
++    num_prop: 53
++    num_scan: 132
++    num_hist: 10
++    class_name: DefaultEstimator
++    train_with_estimated_states: true
++    learning_rate: 0.0001
++    hidden_dims:
++    - 128
++    - 64
++  depth_encoder: null
+diff --git a/outputs/2025-11-22/14-59-09/.hydra/hydra.yaml b/outputs/2025-11-22/14-59-09/.hydra/hydra.yaml
+new file mode 100644
+index 0000000..591e749
+--- /dev/null
++++ b/outputs/2025-11-22/14-59-09/.hydra/hydra.yaml
+@@ -0,0 +1,154 @@
++hydra:
++  run:
++    dir: outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
++  sweep:
++    dir: multirun/${now:%Y-%m-%d}/${now:%H-%M-%S}
++    subdir: ${hydra.job.num}
++  launcher:
++    _target_: hydra._internal.core_plugins.basic_launcher.BasicLauncher
++  sweeper:
++    _target_: hydra._internal.core_plugins.basic_sweeper.BasicSweeper
++    max_batch_size: null
++    params: null
++  help:
++    app_name: ${hydra.job.name}
++    header: '${hydra.help.app_name} is powered by Hydra.
++
++      '
++    footer: 'Powered by Hydra (https://hydra.cc)
++
++      Use --hydra-help to view Hydra specific help
++
++      '
++    template: '${hydra.help.header}
++
++      == Configuration groups ==
++
++      Compose your configuration from those groups (group=option)
++
++
++      $APP_CONFIG_GROUPS
++
++
++      == Config ==
++
++      Override anything in the config (foo.bar=value)
++
++
++      $CONFIG
++
++
++      ${hydra.help.footer}
++
++      '
++  hydra_help:
++    template: 'Hydra (${hydra.runtime.version})
++
++      See https://hydra.cc for more info.
++
++
++      == Flags ==
++
++      $FLAGS_HELP
++
++
++      == Configuration groups ==
++
++      Compose your configuration from those groups (For example, append hydra/job_logging=disabled
++      to command line)
++
++
++      $HYDRA_CONFIG_GROUPS
++
++
++      Use ''--cfg hydra'' to Show the Hydra config.
++
++      '
++    hydra_help: ???
++  hydra_logging:
++    version: 1
++    formatters:
++      simple:
++        format: '[%(asctime)s][HYDRA] %(message)s'
++    handlers:
++      console:
++        class: logging.StreamHandler
++        formatter: simple
++        stream: ext://sys.stdout
++    root:
++      level: INFO
++      handlers:
++      - console
++    loggers:
++      logging_example:
++        level: DEBUG
++    disable_existing_loggers: false
++  job_logging:
++    version: 1
++    formatters:
++      simple:
++        format: '[%(asctime)s][%(name)s][%(levelname)s] - %(message)s'
++    handlers:
++      console:
++        class: logging.StreamHandler
++        formatter: simple
++        stream: ext://sys.stdout
++      file:
++        class: logging.FileHandler
++        formatter: simple
++        filename: ${hydra.runtime.output_dir}/${hydra.job.name}.log
++    root:
++      level: INFO
++      handlers:
++      - console
++      - file
++    disable_existing_loggers: false
++  env: {}
++  mode: RUN
++  searchpath: []
++  callbacks: {}
++  output_subdir: .hydra
++  overrides:
++    hydra:
++    - hydra.mode=RUN
++    task: []
++  job:
++    name: hydra
++    chdir: null
++    override_dirname: ''
++    id: ???
++    num: ???
++    config_name: Isaac-Extreme-Parkour-Teacher-Unitree-Go2-v0
++    env_set: {}
++    env_copy: []
++    config:
++      override_dirname:
++        kv_sep: '='
++        item_sep: ','
++        exclude_keys: []
++  runtime:
++    version: 1.3.2
++    version_base: '1.3'
++    cwd: /home/lz/Project/IsaacLab/Isaaclab_Parkour
++    config_sources:
++    - path: hydra.conf
++      schema: pkg
++      provider: hydra
++    - path: isaaclab_tasks.utils
++      schema: pkg
++      provider: main
++    - path: ''
++      schema: structured
++      provider: schema
++    output_dir: /home/lz/Project/IsaacLab/Isaaclab_Parkour/outputs/2025-11-22/14-59-09
++    choices:
++      hydra/env: default
++      hydra/callbacks: null
++      hydra/job_logging: default
++      hydra/hydra_logging: default
++      hydra/hydra_help: default
++      hydra/help: default
++      hydra/sweeper: basic
++      hydra/launcher: basic
++      hydra/output: default
++  verbose: false
+diff --git a/outputs/2025-11-22/14-59-09/.hydra/overrides.yaml b/outputs/2025-11-22/14-59-09/.hydra/overrides.yaml
+new file mode 100644
+index 0000000..fe51488
+--- /dev/null
++++ b/outputs/2025-11-22/14-59-09/.hydra/overrides.yaml
+@@ -0,0 +1 @@
++[]
+diff --git a/outputs/2025-11-22/14-59-09/hydra.log b/outputs/2025-11-22/14-59-09/hydra.log
+new file mode 100644
+index 0000000..ef757e2
+--- /dev/null
++++ b/outputs/2025-11-22/14-59-09/hydra.log
+@@ -0,0 +1,2 @@
++[2025-11-22 14:59:34,577][isaaclab.sensors.ray_caster.ray_caster][WARNING] - Raycaster attribute 'attach_yaw_only' property will be deprecated in a future release. Please use the parameter 'ray_alignment' instead. Setting ray_alignment to 'yaw'.
++[2025-11-22 14:59:35,587][isaaclab.sensors.ray_caster.ray_caster][WARNING] - Raycaster attribute 'attach_yaw_only' property will be deprecated in a future release. Please use the parameter 'ray_alignment' instead. Setting ray_alignment to 'yaw'.
+diff --git a/outputs/2025-11-22/15-05-29/.hydra/config.yaml b/outputs/2025-11-22/15-05-29/.hydra/config.yaml
+new file mode 100644
+index 0000000..d29ac8f
+--- /dev/null
++++ b/outputs/2025-11-22/15-05-29/.hydra/config.yaml
+@@ -0,0 +1,1424 @@
++env:
++  viewer:
++    eye:
++    - 7.5
++    - 7.5
++    - 7.5
++    lookat:
++    - 0.0
++    - 0.0
++    - 0.0
++    cam_prim_path: /OmniverseKit_Persp
++    resolution:
++    - 1280
++    - 720
++    origin_type: world
++    env_index: 0
++    asset_name: null
++    body_name: null
++  sim:
++    physics_prim_path: /physicsScene
++    device: cuda:0
++    dt: 0.005
++    render_interval: 4
++    gravity:
++    - 0.0
++    - 0.0
++    - -9.81
++    enable_scene_query_support: false
++    use_fabric: true
++    physx:
++      solver_type: 1
++      min_position_iteration_count: 1
++      max_position_iteration_count: 255
++      min_velocity_iteration_count: 0
++      max_velocity_iteration_count: 255
++      enable_ccd: false
++      enable_stabilization: false
++      enable_enhanced_determinism: false
++      bounce_threshold_velocity: 0.5
++      friction_offset_threshold: 0.04
++      friction_correlation_distance: 0.025
++      gpu_max_rigid_contact_count: 8388608
++      gpu_max_rigid_patch_count: 2621440
++      gpu_found_lost_pairs_capacity: 2097152
++      gpu_found_lost_aggregate_pairs_capacity: 33554432
++      gpu_total_aggregate_pairs_capacity: 2097152
++      gpu_collision_stack_size: 67108864
++      gpu_heap_capacity: 67108864
++      gpu_temp_buffer_capacity: 16777216
++      gpu_max_num_partitions: 8
++      gpu_max_soft_body_contacts: 1048576
++      gpu_max_particle_contacts: 1048576
++      solve_articulation_contact_last: false
++    physics_material:
++      func: isaaclab.sim.spawners.materials.physics_materials:spawn_rigid_body_material
++      static_friction: 1.0
++      dynamic_friction: 1.0
++      restitution: 0.0
++      friction_combine_mode: average
++      restitution_combine_mode: average
++      compliant_contact_stiffness: 0.0
++      compliant_contact_damping: 0.0
++    render:
++      enable_translucency: null
++      enable_reflections: null
++      enable_global_illumination: null
++      antialiasing_mode: null
++      enable_dlssg: null
++      enable_dl_denoiser: null
++      dlss_mode: null
++      enable_direct_lighting: null
++      samples_per_pixel: null
++      enable_shadows: null
++      enable_ambient_occlusion: null
++      dome_light_upper_lower_strategy: null
++      carb_settings: null
++      rendering_mode: null
++    create_stage_in_memory: false
++    logging_level: WARNING
++    save_logs_to_file: true
++  ui_window_class_type: parkour_isaaclab.envs.parkour_ui:ParkourManagerBasedRLEnvWindow
++  seed: null
++  decimation: 4
++  scene:
++    num_envs: 6144
++    env_spacing: 1.0
++    lazy_sensor_update: true
++    replicate_physics: true
++    filter_collisions: true
++    clone_in_fabric: false
++    robot:
++      class_type: isaaclab.assets.articulation.articulation:Articulation
++      prim_path: '{ENV_REGEX_NS}/Robot'
++      spawn:
++        func: isaaclab.sim.spawners.from_files.from_files:spawn_from_usd
++        visible: true
++        semantic_tags: null
++        copy_from_source: true
++        mass_props: null
++        deformable_props: null
++        rigid_props:
++          rigid_body_enabled: null
++          kinematic_enabled: null
++          disable_gravity: false
++          linear_damping: 0.0
++          angular_damping: 0.0
++          max_linear_velocity: 1000.0
++          max_angular_velocity: 1000.0
++          max_depenetration_velocity: 1.0
++          max_contact_impulse: null
++          enable_gyroscopic_forces: null
++          retain_accelerations: false
++          solver_position_iteration_count: null
++          solver_velocity_iteration_count: null
++          sleep_threshold: null
++          stabilization_threshold: null
++        collision_props: null
++        activate_contact_sensors: true
++        scale: null
++        articulation_props:
++          articulation_enabled: null
++          enabled_self_collisions: true
++          solver_position_iteration_count: 4
++          solver_velocity_iteration_count: 0
++          sleep_threshold: null
++          stabilization_threshold: null
++          fix_root_link: null
++        fixed_tendons_props: null
++        spatial_tendons_props: null
++        joint_drive_props: null
++        visual_material_path: material
++        visual_material: null
++        usd_path: https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/5.1/Isaac/IsaacLab/Robots/Unitree/Go2/go2.usd
++        variants: null
++      init_state:
++        pos:
++        - 0.0
++        - 0.0
++        - 0.4
++        rot:
++        - 1.0
++        - 0.0
++        - 0.0
++        - 0.0
++        lin_vel:
++        - 0.0
++        - 0.0
++        - 0.0
++        ang_vel:
++        - 0.0
++        - 0.0
++        - 0.0
++        joint_pos:
++          .*L_hip_joint: 0.1
++          .*R_hip_joint: -0.1
++          F[L,R]_thigh_joint: 0.8
++          R[L,R]_thigh_joint: 1.0
++          .*_calf_joint: -1.5
++        joint_vel:
++          .*: 0.0
++      collision_group: 0
++      debug_vis: false
++      articulation_root_prim_path: null
++      soft_joint_pos_limit_factor: 0.9
++      actuators:
++        base_legs:
++          class_type: parkour_isaaclab.actuators.parkour_actuator_pd:ParkourDCMotor
++          joint_names_expr:
++          - .*_hip_joint
++          - .*_thigh_joint
++          - .*_calf_joint
++          effort_limit:
++            .*_hip_joint: 35.0
++            .*_thigh_joint: 40.0
++            .*_calf_joint: 40.0
++          velocity_limit:
++            .*_hip_joint: 52.4
++            .*_thigh_joint: 30.1
++            .*_calf_joint: 30.1
++          effort_limit_sim: null
++          velocity_limit_sim: null
++          stiffness: 40.0
++          damping: 1.0
++          armature: null
++          friction: 0.0
++          dynamic_friction: null
++          viscous_friction: null
++          saturation_effort:
++            .*_hip_joint: 35.0
++            .*_thigh_joint: 45.0
++            .*_calf_joint: 45.0
++      actuator_value_resolution_debug_print: false
++    sky_light:
++      class_type: null
++      prim_path: /World/skyLight
++      spawn:
++        func: isaaclab.sim.spawners.lights.lights:spawn_light
++        visible: true
++        semantic_tags: null
++        copy_from_source: true
++        prim_type: DomeLight
++        color:
++        - 1.0
++        - 1.0
++        - 1.0
++        enable_color_temperature: false
++        color_temperature: 6500.0
++        normalize: false
++        exposure: 0.0
++        intensity: 750.0
++        texture_file: https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/5.1/Isaac/Materials/Textures/Skies/PolyHaven/kloofendal_43d_clear_puresky_4k.hdr
++        texture_format: automatic
++        visible_in_primary_ray: true
++      init_state:
++        pos:
++        - 0.0
++        - 0.0
++        - 0.0
++        rot:
++        - 1.0
++        - 0.0
++        - 0.0
++        - 0.0
++      collision_group: 0
++      debug_vis: false
++    terrain:
++      class_type: parkour_isaaclab.terrains.parkour_terrain_importer:ParkourTerrainImporter
++      collision_group: -1
++      prim_path: /World/ground
++      num_envs: 1
++      terrain_type: generator
++      terrain_generator:
++        class_type: isaaclab.terrains.terrain_generator:TerrainGenerator
++        seed: null
++        curriculum: true
++        size:
++        - 16.0
++        - 4.0
++        border_width: 20.0
++        border_height: 1.0
++        num_rows: 10
++        num_cols: 40
++        color_scheme: none
++        horizontal_scale: 0.08
++        vertical_scale: 0.005
++        slope_threshold: 1.5
++        sub_terrains:
++          parkour_gap:
++            function: parkour_isaaclab.terrains.extreme_parkour.extreme_parkour_terrians:parkour_gap_terrain
++            proportion: 0.2
++            size:
++            - 10.0
++            - 10.0
++            flat_patch_sampling: null
++            border_width: 0.0
++            horizontal_scale: 0.05
++            vertical_scale: 0.005
++            slope_threshold: 1.5
++            platform_len: 2.5
++            platform_height: 0.0
++            use_simplified: false
++            edge_width_thresh: 0.05
++            apply_roughness: true
++            apply_flat: false
++            downsampled_scale: 0.075
++            noise_range:
++            - 0.02
++            - 0.06
++            noise_step: 0.005
++            x_range:
++            - 0.8
++            - 1.5
++            y_range:
++            - -0.4
++            - 0.4
++            half_valid_width:
++            - 0.6
++            - 1.2
++            pad_width: 0.1
++            pad_height: 0.0
++            gap_size: 0.1 + 0.7*difficulty
++            gap_depth:
++            - 0.2
++            - 1
++          parkour_hurdle:
++            function: parkour_isaaclab.terrains.extreme_parkour.extreme_parkour_terrians:parkour_hurdle_terrain
++            proportion: 0.2
++            size:
++            - 10.0
++            - 10.0
++            flat_patch_sampling: null
++            border_width: 0.0
++            horizontal_scale: 0.05
++            vertical_scale: 0.005
++            slope_threshold: 1.5
++            platform_len: 2.5
++            platform_height: 0.0
++            use_simplified: false
++            edge_width_thresh: 0.05
++            apply_roughness: true
++            apply_flat: false
++            downsampled_scale: 0.075
++            noise_range:
++            - 0.02
++            - 0.06
++            noise_step: 0.005
++            x_range:
++            - 1.2
++            - 2.2
++            y_range:
++            - -0.4
++            - 0.4
++            half_valid_width:
++            - 0.4
++            - 0.8
++            pad_width: 0.1
++            pad_height: 0.0
++            stone_len: 0.1 + 0.3 * difficulty
++            hurdle_height_range: 0.1+0.1*difficulty, 0.15+0.25*difficulty
++          parkour_flat:
++            function: parkour_isaaclab.terrains.extreme_parkour.extreme_parkour_terrians:parkour_hurdle_terrain
++            proportion: 0.2
++            size:
++            - 10.0
++            - 10.0
++            flat_patch_sampling: null
++            border_width: 0.0
++            horizontal_scale: 0.05
++            vertical_scale: 0.005
++            slope_threshold: 1.5
++            platform_len: 2.5
++            platform_height: 0.0
++            use_simplified: false
++            edge_width_thresh: 0.05
++            apply_roughness: true
++            apply_flat: true
++            downsampled_scale: 0.075
++            noise_range:
++            - 0.02
++            - 0.06
++            noise_step: 0.005
++            x_range:
++            - 1.2
++            - 2.2
++            y_range:
++            - -0.4
++            - 0.4
++            half_valid_width:
++            - 0.4
++            - 0.8
++            pad_width: 0.1
++            pad_height: 0.0
++            stone_len: 0.1 + 0.3 * difficulty
++            hurdle_height_range: 0.1+0.1*difficulty, 0.15+0.15*difficulty
++          parkour_step:
++            function: parkour_isaaclab.terrains.extreme_parkour.extreme_parkour_terrians:parkour_step_terrain
++            proportion: 0.2
++            size:
++            - 10.0
++            - 10.0
++            flat_patch_sampling: null
++            border_width: 0.0
++            horizontal_scale: 0.05
++            vertical_scale: 0.005
++            slope_threshold: 1.5
++            platform_len: 2.5
++            platform_height: 0.0
++            use_simplified: false
++            edge_width_thresh: 0.05
++            apply_roughness: true
++            apply_flat: false
++            downsampled_scale: 0.075
++            noise_range:
++            - 0.02
++            - 0.06
++            noise_step: 0.005
++            x_range:
++            - 0.3
++            - 1.5
++            y_range:
++            - -0.4
++            - 0.4
++            half_valid_width:
++            - 0.5
++            - 1
++            pad_width: 0.1
++            pad_height: 0.0
++            step_height: 0.1 + 0.35*difficulty
++          parkour:
++            function: parkour_isaaclab.terrains.extreme_parkour.extreme_parkour_terrians:parkour_terrain
++            proportion: 0.2
++            size:
++            - 10.0
++            - 10.0
++            flat_patch_sampling: null
++            border_width: 0.0
++            horizontal_scale: 0.05
++            vertical_scale: 0.005
++            slope_threshold: 1.5
++            platform_len: 2.5
++            platform_height: 0.0
++            use_simplified: false
++            edge_width_thresh: 0.05
++            apply_roughness: true
++            apply_flat: false
++            downsampled_scale: 0.075
++            noise_range:
++            - 0.02
++            - 0.06
++            noise_step: 0.005
++            x_range: -0.1, 0.1+0.3*difficulty
++            y_range: 0.2, 0.3+0.1*difficulty
++            half_valid_width:
++            - 0.6
++            - 1.2
++            pad_width: 0.1
++            pad_height: 0.0
++            pit_depth:
++            - 0.2
++            - 1
++            stone_width: 1.0
++            last_stone_len: 1.6
++            stone_len: 0.9 - 0.3*difficulty, 1 - 0.2*difficulty
++            incline_height: 0.25*difficulty
++            last_incline_height: incline_height + 0.1 - 0.1*difficulty
++          parkour_demo:
++            function: parkour_isaaclab.terrains.extreme_parkour.extreme_parkour_terrians:parkour_demo_terrain
++            proportion: 0.0
++            size:
++            - 10.0
++            - 10.0
++            flat_patch_sampling: null
++            border_width: 0.0
++            horizontal_scale: 0.05
++            vertical_scale: 0.005
++            slope_threshold: 1.5
++            platform_len: 2.5
++            platform_height: 0.0
++            use_simplified: false
++            edge_width_thresh: 0.05
++            apply_roughness: true
++            apply_flat: false
++            downsampled_scale: 0.075
++            noise_range:
++            - 0.02
++            - 0.06
++            noise_step: 0.005
++            x_range:
++            - 0.8
++            - 1.5
++            y_range:
++            - -0.4
++            - 0.4
++            half_valid_width:
++            - 0.6
++            - 1.2
++            pad_width: 0.1
++            pad_height: 0.0
++        difficulty_range:
++        - 0.0
++        - 1.0
++        use_cache: false
++        cache_dir: /tmp/isaaclab/terrains
++        num_goals: 8
++        terrain_names: []
++        random_difficulty: false
++      usd_path: null
++      env_spacing: null
++      use_terrain_origins: true
++      visual_material:
++        func: isaaclab.sim.spawners.materials.visual_materials:spawn_from_mdl_file
++        mdl_path: https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/5.1/Isaac/IsaacLab/Materials/TilesMarbleSpiderWhiteBrickBondHoned/TilesMarbleSpiderWhiteBrickBondHoned.mdl
++        project_uvw: true
++        albedo_brightness: null
++        texture_scale:
++        - 0.25
++        - 0.25
++      physics_material:
++        func: isaaclab.sim.spawners.materials.physics_materials:spawn_rigid_body_material
++        static_friction: 1.0
++        dynamic_friction: 1.0
++        restitution: 0.0
++        friction_combine_mode: average
++        restitution_combine_mode: average
++        compliant_contact_stiffness: 0.0
++        compliant_contact_damping: 0.0
++      max_init_terrain_level: 2
++      debug_vis: false
++    height_scanner:
++      class_type: isaaclab.sensors.ray_caster.ray_caster:RayCaster
++      prim_path: '{ENV_REGEX_NS}/Robot/base'
++      update_period: 0.02
++      history_length: 0
++      debug_vis: false
++      mesh_prim_paths:
++      - /World/ground
++      offset:
++        pos:
++        - 0.375
++        - 0.0
++        - 20.0
++        rot:
++        - 1.0
++        - 0.0
++        - 0.0
++        - 0.0
++      attach_yaw_only: true
++      ray_alignment: base
++      pattern_cfg:
++        func: isaaclab.sensors.ray_caster.patterns.patterns:grid_pattern
++        resolution: 0.15
++        size:
++        - 1.65
++        - 1.5
++        direction:
++        - 0.0
++        - 0.0
++        - -1.0
++        ordering: xy
++      max_distance: 1000000.0
++      drift_range:
++      - 0.0
++      - 0.0
++      ray_cast_drift_range:
++        x:
++        - 0.0
++        - 0.0
++        'y':
++        - 0.0
++        - 0.0
++        z:
++        - 0.0
++        - 0.0
++      visualizer_cfg:
++        prim_path: /Visuals/RayCaster
++        markers:
++          hit:
++            func: isaaclab.sim.spawners.shapes.shapes:spawn_sphere
++            visible: true
++            semantic_tags: null
++            copy_from_source: true
++            mass_props: null
++            rigid_props: null
++            collision_props: null
++            activate_contact_sensors: false
++            visual_material_path: material
++            visual_material:
++              func: isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface
++              diffuse_color:
++              - 1.0
++              - 0.0
++              - 0.0
++              emissive_color:
++              - 0.0
++              - 0.0
++              - 0.0
++              roughness: 0.5
++              metallic: 0.0
++              opacity: 1.0
++            physics_material_path: material
++            physics_material: null
++            radius: 0.02
++    contact_forces:
++      class_type: isaaclab.sensors.contact_sensor.contact_sensor:ContactSensor
++      prim_path: '{ENV_REGEX_NS}/Robot/.*'
++      update_period: 0.02
++      history_length: 2
++      debug_vis: false
++      track_pose: false
++      track_contact_points: false
++      max_contact_data_count_per_prim: 4
++      track_air_time: true
++      force_threshold: 1.0
++      filter_prim_paths_expr: []
++      visualizer_cfg:
++        prim_path: /Visuals/ContactSensor
++        markers:
++          contact:
++            func: isaaclab.sim.spawners.shapes.shapes:spawn_sphere
++            visible: true
++            semantic_tags: null
++            copy_from_source: true
++            mass_props: null
++            rigid_props: null
++            collision_props: null
++            activate_contact_sensors: false
++            visual_material_path: material
++            visual_material:
++              func: isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface
++              diffuse_color:
++              - 1.0
++              - 0.0
++              - 0.0
++              emissive_color:
++              - 0.0
++              - 0.0
++              - 0.0
++              roughness: 0.5
++              metallic: 0.0
++              opacity: 1.0
++            physics_material_path: material
++            physics_material: null
++            radius: 0.02
++          no_contact:
++            func: isaaclab.sim.spawners.shapes.shapes:spawn_sphere
++            visible: false
++            semantic_tags: null
++            copy_from_source: true
++            mass_props: null
++            rigid_props: null
++            collision_props: null
++            activate_contact_sensors: false
++            visual_material_path: material
++            visual_material:
++              func: isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface
++              diffuse_color:
++              - 0.0
++              - 1.0
++              - 0.0
++              emissive_color:
++              - 0.0
++              - 0.0
++              - 0.0
++              roughness: 0.5
++              metallic: 0.0
++              opacity: 1.0
++            physics_material_path: material
++            physics_material: null
++            radius: 0.02
++  recorders:
++    dataset_file_handler_class_type: isaaclab.utils.datasets.hdf5_dataset_file_handler:HDF5DatasetFileHandler
++    dataset_export_dir_path: /tmp/isaaclab/logs
++    dataset_filename: dataset
++    dataset_export_mode:
++      _value_: 1
++      _name_: EXPORT_ALL
++      _sort_order_: 1
++    export_in_record_pre_reset: true
++  observations:
++    policy:
++      concatenate_terms: true
++      concatenate_dim: -1
++      enable_corruption: false
++      history_length: null
++      flatten_history_dim: true
++      extreme_parkour_observations:
++        func: parkour_isaaclab.envs.mdp.observations:ExtremeParkourObservations
++        params:
++          asset_cfg:
++            name: robot
++            joint_names: null
++            joint_ids: slice(None,None,None)
++            fixed_tendon_names: null
++            fixed_tendon_ids: slice(None,None,None)
++            body_names: null
++            body_ids: slice(None,None,None)
++            object_collection_names: null
++            object_collection_ids: slice(None,None,None)
++            preserve_order: false
++          sensor_cfg:
++            name: contact_forces
++            joint_names: null
++            joint_ids: slice(None,None,None)
++            fixed_tendon_names: null
++            fixed_tendon_ids: slice(None,None,None)
++            body_names: .*_foot
++            body_ids: slice(None,None,None)
++            object_collection_names: null
++            object_collection_ids: slice(None,None,None)
++            preserve_order: false
++          parkour_name: base_parkour
++          history_length: 10
++        modifiers: null
++        noise: null
++        clip:
++        - -100
++        - 100
++        scale: null
++        history_length: 0
++        flatten_history_dim: true
++  actions:
++    joint_pos:
++      class_type: parkour_isaaclab.envs.mdp.parkour_actions.joint_actions:DelayedJointPositionAction
++      asset_name: robot
++      debug_vis: false
++      clip:
++        .*:
++        - -4.8
++        - 4.8
++      joint_names:
++      - .*
++      scale: 0.25
++      offset: 0.0
++      preserve_order: false
++      use_default_offset: true
++      delay_update_global_steps: 192000
++      history_length: 1
++      action_delay_steps:
++      - 1
++      - 1
++      use_delay: false
++  events:
++    reset_root_state:
++      func: parkour_isaaclab.envs.mdp.events:reset_root_state
++      params:
++        offset: 3.0
++      mode: reset
++      interval_range_s: null
++      is_global_time: false
++      min_step_count_between_reset: 0
++    reset_robot_joints:
++      func: isaaclab.envs.mdp.events:reset_joints_by_scale
++      params:
++        position_range:
++        - 0.95
++        - 1.05
++        velocity_range:
++        - 0.0
++        - 0.0
++      mode: reset
++      interval_range_s: null
++      is_global_time: false
++      min_step_count_between_reset: 0
++    physics_material:
++      func: parkour_isaaclab.envs.mdp.events:randomize_rigid_body_material
++      params:
++        asset_cfg:
++          name: robot
++          joint_names: null
++          joint_ids: slice(None,None,None)
++          fixed_tendon_names: null
++          fixed_tendon_ids: slice(None,None,None)
++          body_names: .*
++          body_ids: slice(None,None,None)
++          object_collection_names: null
++          object_collection_ids: slice(None,None,None)
++          preserve_order: false
++        friction_range:
++        - 0.6
++        - 2.0
++        num_buckets: 64
++      mode: startup
++      interval_range_s: null
++      is_global_time: false
++      min_step_count_between_reset: 0
++    randomize_rigid_body_mass:
++      func: isaaclab.envs.mdp.events:randomize_rigid_body_mass
++      params:
++        asset_cfg:
++          name: robot
++          joint_names: null
++          joint_ids: slice(None,None,None)
++          fixed_tendon_names: null
++          fixed_tendon_ids: slice(None,None,None)
++          body_names: base
++          body_ids: slice(None,None,None)
++          object_collection_names: null
++          object_collection_ids: slice(None,None,None)
++          preserve_order: false
++        mass_distribution_params:
++        - -1.0
++        - 3.0
++        operation: add
++      mode: startup
++      interval_range_s: null
++      is_global_time: false
++      min_step_count_between_reset: 0
++    randomize_rigid_body_com:
++      func: parkour_isaaclab.envs.mdp.events:randomize_rigid_body_com
++      params:
++        asset_cfg:
++          name: robot
++          joint_names: null
++          joint_ids: slice(None,None,None)
++          fixed_tendon_names: null
++          fixed_tendon_ids: slice(None,None,None)
++          body_names: base
++          body_ids: slice(None,None,None)
++          object_collection_names: null
++          object_collection_ids: slice(None,None,None)
++          preserve_order: false
++        com_range:
++          x:
++          - -0.02
++          - 0.02
++          'y':
++          - -0.02
++          - 0.02
++          z:
++          - -0.02
++          - 0.02
++      mode: startup
++      interval_range_s: null
++      is_global_time: false
++      min_step_count_between_reset: 0
++    random_camera_position: null
++    push_by_setting_velocity:
++      func: parkour_isaaclab.envs.mdp.events:push_by_setting_velocity
++      params:
++        velocity_range:
++          x:
++          - -0.5
++          - 0.5
++          'y':
++          - -0.5
++          - 0.5
++      mode: interval
++      interval_range_s:
++      - 8.0
++      - 8.0
++      is_global_time: true
++      min_step_count_between_reset: 0
++    base_external_force_torque:
++      func: isaaclab.envs.mdp.events:apply_external_force_torque
++      params:
++        asset_cfg:
++          name: robot
++          joint_names: null
++          joint_ids: slice(None,None,None)
++          fixed_tendon_names: null
++          fixed_tendon_ids: slice(None,None,None)
++          body_names: base
++          body_ids: slice(None,None,None)
++          object_collection_names: null
++          object_collection_ids: slice(None,None,None)
++          preserve_order: false
++        force_range:
++        - 0.0
++        - 0.0
++        torque_range:
++        - -0.0
++        - 0.0
++      mode: reset
++      interval_range_s: null
++      is_global_time: false
++      min_step_count_between_reset: 0
++  rerender_on_reset: false
++  num_rerenders_on_reset: 0
++  wait_for_textures: true
++  xr: null
++  teleop_devices:
++    devices: {}
++  export_io_descriptors: false
++  log_dir: null
++  is_finite_horizon: false
++  episode_length_s: 20.0
++  rewards:
++    reward_collision:
++      func: parkour_isaaclab.envs.mdp.rewards:reward_collision
++      params:
++        sensor_cfg:
++          name: contact_forces
++          joint_names: null
++          joint_ids: slice(None,None,None)
++          fixed_tendon_names: null
++          fixed_tendon_ids: slice(None,None,None)
++          body_names:
++          - base
++          - .*_calf
++          - .*_thigh
++          body_ids: slice(None,None,None)
++          object_collection_names: null
++          object_collection_ids: slice(None,None,None)
++          preserve_order: false
++      weight: -10.0
++    reward_feet_edge:
++      func: parkour_isaaclab.envs.mdp.rewards:reward_feet_edge
++      params:
++        asset_cfg:
++          name: robot
++          joint_names: null
++          joint_ids: slice(None,None,None)
++          fixed_tendon_names: null
++          fixed_tendon_ids: slice(None,None,None)
++          body_names:
++          - FL_foot
++          - FR_foot
++          - RL_foot
++          - RR_foot
++          body_ids: slice(None,None,None)
++          object_collection_names: null
++          object_collection_ids: slice(None,None,None)
++          preserve_order: false
++        sensor_cfg:
++          name: contact_forces
++          joint_names: null
++          joint_ids: slice(None,None,None)
++          fixed_tendon_names: null
++          fixed_tendon_ids: slice(None,None,None)
++          body_names: .*_foot
++          body_ids: slice(None,None,None)
++          object_collection_names: null
++          object_collection_ids: slice(None,None,None)
++          preserve_order: false
++        parkour_name: base_parkour
++      weight: -1.0
++    reward_torques:
++      func: parkour_isaaclab.envs.mdp.rewards:reward_torques
++      params:
++        asset_cfg:
++          name: robot
++          joint_names: null
++          joint_ids: slice(None,None,None)
++          fixed_tendon_names: null
++          fixed_tendon_ids: slice(None,None,None)
++          body_names: null
++          body_ids: slice(None,None,None)
++          object_collection_names: null
++          object_collection_ids: slice(None,None,None)
++          preserve_order: false
++      weight: -1.0e-05
++    reward_dof_error:
++      func: parkour_isaaclab.envs.mdp.rewards:reward_dof_error
++      params:
++        asset_cfg:
++          name: robot
++          joint_names: null
++          joint_ids: slice(None,None,None)
++          fixed_tendon_names: null
++          fixed_tendon_ids: slice(None,None,None)
++          body_names: null
++          body_ids: slice(None,None,None)
++          object_collection_names: null
++          object_collection_ids: slice(None,None,None)
++          preserve_order: false
++      weight: -0.04
++    reward_hip_pos:
++      func: parkour_isaaclab.envs.mdp.rewards:reward_hip_pos
++      params:
++        asset_cfg:
++          name: robot
++          joint_names: .*_hip_joint
++          joint_ids: slice(None,None,None)
++          fixed_tendon_names: null
++          fixed_tendon_ids: slice(None,None,None)
++          body_names: null
++          body_ids: slice(None,None,None)
++          object_collection_names: null
++          object_collection_ids: slice(None,None,None)
++          preserve_order: false
++      weight: -0.5
++    reward_ang_vel_xy:
++      func: parkour_isaaclab.envs.mdp.rewards:reward_ang_vel_xy
++      params:
++        asset_cfg:
++          name: robot
++          joint_names: null
++          joint_ids: slice(None,None,None)
++          fixed_tendon_names: null
++          fixed_tendon_ids: slice(None,None,None)
++          body_names: null
++          body_ids: slice(None,None,None)
++          object_collection_names: null
++          object_collection_ids: slice(None,None,None)
++          preserve_order: false
++      weight: -0.05
++    reward_action_rate:
++      func: parkour_isaaclab.envs.mdp.rewards:reward_action_rate
++      params:
++        asset_cfg:
++          name: robot
++          joint_names: null
++          joint_ids: slice(None,None,None)
++          fixed_tendon_names: null
++          fixed_tendon_ids: slice(None,None,None)
++          body_names: null
++          body_ids: slice(None,None,None)
++          object_collection_names: null
++          object_collection_ids: slice(None,None,None)
++          preserve_order: false
++      weight: -0.1
++    reward_dof_acc:
++      func: parkour_isaaclab.envs.mdp.rewards:reward_dof_acc
++      params:
++        asset_cfg:
++          name: robot
++          joint_names: null
++          joint_ids: slice(None,None,None)
++          fixed_tendon_names: null
++          fixed_tendon_ids: slice(None,None,None)
++          body_names: null
++          body_ids: slice(None,None,None)
++          object_collection_names: null
++          object_collection_ids: slice(None,None,None)
++          preserve_order: false
++      weight: -2.5e-07
++    reward_lin_vel_z:
++      func: parkour_isaaclab.envs.mdp.rewards:reward_lin_vel_z
++      params:
++        asset_cfg:
++          name: robot
++          joint_names: null
++          joint_ids: slice(None,None,None)
++          fixed_tendon_names: null
++          fixed_tendon_ids: slice(None,None,None)
++          body_names: null
++          body_ids: slice(None,None,None)
++          object_collection_names: null
++          object_collection_ids: slice(None,None,None)
++          preserve_order: false
++        parkour_name: base_parkour
++      weight: -1.0
++    reward_orientation:
++      func: parkour_isaaclab.envs.mdp.rewards:reward_orientation
++      params:
++        asset_cfg:
++          name: robot
++          joint_names: null
++          joint_ids: slice(None,None,None)
++          fixed_tendon_names: null
++          fixed_tendon_ids: slice(None,None,None)
++          body_names: null
++          body_ids: slice(None,None,None)
++          object_collection_names: null
++          object_collection_ids: slice(None,None,None)
++          preserve_order: false
++        parkour_name: base_parkour
++      weight: -1.0
++    reward_feet_stumble:
++      func: parkour_isaaclab.envs.mdp.rewards:reward_feet_stumble
++      params:
++        sensor_cfg:
++          name: contact_forces
++          joint_names: null
++          joint_ids: slice(None,None,None)
++          fixed_tendon_names: null
++          fixed_tendon_ids: slice(None,None,None)
++          body_names: .*_foot
++          body_ids: slice(None,None,None)
++          object_collection_names: null
++          object_collection_ids: slice(None,None,None)
++          preserve_order: false
++      weight: -1.0
++    reward_tracking_goal_vel:
++      func: parkour_isaaclab.envs.mdp.rewards:reward_tracking_goal_vel
++      params:
++        asset_cfg:
++          name: robot
++          joint_names: null
++          joint_ids: slice(None,None,None)
++          fixed_tendon_names: null
++          fixed_tendon_ids: slice(None,None,None)
++          body_names: null
++          body_ids: slice(None,None,None)
++          object_collection_names: null
++          object_collection_ids: slice(None,None,None)
++          preserve_order: false
++        parkour_name: base_parkour
++      weight: 1.5
++    reward_tracking_yaw:
++      func: parkour_isaaclab.envs.mdp.rewards:reward_tracking_yaw
++      params:
++        asset_cfg:
++          name: robot
++          joint_names: null
++          joint_ids: slice(None,None,None)
++          fixed_tendon_names: null
++          fixed_tendon_ids: slice(None,None,None)
++          body_names: null
++          body_ids: slice(None,None,None)
++          object_collection_names: null
++          object_collection_ids: slice(None,None,None)
++          preserve_order: false
++        parkour_name: base_parkour
++      weight: 0.5
++    reward_delta_torques:
++      func: parkour_isaaclab.envs.mdp.rewards:reward_delta_torques
++      params:
++        asset_cfg:
++          name: robot
++          joint_names: null
++          joint_ids: slice(None,None,None)
++          fixed_tendon_names: null
++          fixed_tendon_ids: slice(None,None,None)
++          body_names: null
++          body_ids: slice(None,None,None)
++          object_collection_names: null
++          object_collection_ids: slice(None,None,None)
++          preserve_order: false
++      weight: -1.0e-07
++  terminations:
++    total_terminates:
++      func: parkour_isaaclab.envs.mdp.terminations:terminate_episode
++      params:
++        asset_cfg:
++          name: robot
++          joint_names: null
++          joint_ids: slice(None,None,None)
++          fixed_tendon_names: null
++          fixed_tendon_ids: slice(None,None,None)
++          body_names: null
++          body_ids: slice(None,None,None)
++          object_collection_names: null
++          object_collection_ids: slice(None,None,None)
++          preserve_order: false
++      time_out: true
++  curriculum: null
++  commands:
++    base_velocity:
++      class_type: parkour_isaaclab.envs.mdp.parkour_commands.uniform_parkour_command:UniformParkourCommand
++      resampling_time_range:
++      - 6.0
++      - 6.0
++      debug_vis: false
++      asset_name: robot
++      heading_control_stiffness: 0.8
++      small_commands_to_zero: true
++      ranges:
++        lin_vel_x:
++        - 0.3
++        - 0.8
++        heading:
++        - -1.6
++        - 1.6
++      clips:
++        lin_vel_clip: 0.2
++        ang_vel_clip: 0.4
++      goal_vel_visualizer_cfg:
++        prim_path: /Visuals/Command/velocity_goal
++        markers:
++          arrow:
++            func: isaaclab.sim.spawners.from_files.from_files:spawn_from_usd
++            visible: true
++            semantic_tags: null
++            copy_from_source: true
++            mass_props: null
++            deformable_props: null
++            rigid_props: null
++            collision_props: null
++            activate_contact_sensors: false
++            scale:
++            - 0.5
++            - 0.5
++            - 0.5
++            articulation_props: null
++            fixed_tendons_props: null
++            spatial_tendons_props: null
++            joint_drive_props: null
++            visual_material_path: material
++            visual_material:
++              func: isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface
++              diffuse_color:
++              - 0.0
++              - 1.0
++              - 0.0
++              emissive_color:
++              - 0.0
++              - 0.0
++              - 0.0
++              roughness: 0.5
++              metallic: 0.0
++              opacity: 1.0
++            usd_path: https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/5.1/Isaac/Props/UIElements/arrow_x.usd
++            variants: null
++      current_vel_visualizer_cfg:
++        prim_path: /Visuals/Command/velocity_current
++        markers:
++          arrow:
++            func: isaaclab.sim.spawners.from_files.from_files:spawn_from_usd
++            visible: true
++            semantic_tags: null
++            copy_from_source: true
++            mass_props: null
++            deformable_props: null
++            rigid_props: null
++            collision_props: null
++            activate_contact_sensors: false
++            scale:
++            - 0.5
++            - 0.5
++            - 0.5
++            articulation_props: null
++            fixed_tendons_props: null
++            spatial_tendons_props: null
++            joint_drive_props: null
++            visual_material_path: material
++            visual_material:
++              func: isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface
++              diffuse_color:
++              - 0.0
++              - 0.0
++              - 1.0
++              emissive_color:
++              - 0.0
++              - 0.0
++              - 0.0
++              roughness: 0.5
++              metallic: 0.0
++              opacity: 1.0
++            usd_path: https://omniverse-content-production.s3-us-west-2.amazonaws.com/Assets/Isaac/5.1/Isaac/Props/UIElements/arrow_x.usd
++            variants: null
++  parkours:
++    base_parkour:
++      class_type: parkour_isaaclab.envs.mdp.parkours.parkour_event:ParkourEvent
++      debug_vis: false
++      asset_name: robot
++      num_future_goal_obs: 2
++      arrow_num: 8
++      reach_goal_delay: 0.1
++      next_goal_threshold: 0.2
++      future_goal_poses_visualizer_cfg:
++        prim_path: /Visuals/Command/future_goal_poses
++        markers:
++          frame:
++            func: isaaclab.sim.spawners.shapes.shapes:spawn_sphere
++            visible: true
++            semantic_tags: null
++            copy_from_source: true
++            mass_props: null
++            rigid_props: null
++            collision_props: null
++            activate_contact_sensors: false
++            visual_material_path: material
++            visual_material:
++              func: isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface
++              diffuse_color:
++              - 1.0
++              - 0.0
++              - 0.0
++              emissive_color:
++              - 0.0
++              - 0.0
++              - 0.0
++              roughness: 0.5
++              metallic: 0.0
++              opacity: 1.0
++            physics_material_path: material
++            physics_material: null
++            radius: 0.15
++            scale:
++            - 1.1
++            - 1.1
++            - 1.1
++      current_goal_pose_visualizer_cfg:
++        prim_path: /Visuals/Command/current_goal_pose
++        markers:
++          frame:
++            func: isaaclab.sim.spawners.shapes.shapes:spawn_sphere
++            visible: true
++            semantic_tags: null
++            copy_from_source: true
++            mass_props: null
++            rigid_props: null
++            collision_props: null
++            activate_contact_sensors: false
++            visual_material_path: material
++            visual_material:
++              func: isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface
++              diffuse_color:
++              - 0.0
++              - 1.0
++              - 0.0
++              emissive_color:
++              - 0.0
++              - 0.0
++              - 0.0
++              roughness: 0.5
++              metallic: 0.0
++              opacity: 1.0
++            physics_material_path: material
++            physics_material: null
++            radius: 0.15
++            scale:
++            - 1.1
++            - 1.1
++            - 1.1
++      future_arrow_visualizer_cfg:
++        prim_path: /Visuals/Command/future_arrow
++        markers:
++          frame:
++            func: isaaclab.sim.spawners.shapes.shapes:spawn_sphere
++            visible: true
++            semantic_tags: null
++            copy_from_source: true
++            mass_props: null
++            rigid_props: null
++            collision_props: null
++            activate_contact_sensors: false
++            visual_material_path: material
++            visual_material:
++              func: isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface
++              diffuse_color:
++              - 1.0
++              - 0.0
++              - 0.0
++              emissive_color:
++              - 0.0
++              - 0.0
++              - 0.0
++              roughness: 0.5
++              metallic: 0.0
++              opacity: 1.0
++            physics_material_path: material
++            physics_material: null
++            radius: 0.05
++            scale:
++            - 0.1
++            - 0.1
++            - 0.1
++      current_arrow_visualizer_cfg:
++        prim_path: /Visuals/Command/current_arrow
++        markers:
++          frame:
++            func: isaaclab.sim.spawners.shapes.shapes:spawn_sphere
++            visible: true
++            semantic_tags: null
++            copy_from_source: true
++            mass_props: null
++            rigid_props: null
++            collision_props: null
++            activate_contact_sensors: false
++            visual_material_path: material
++            visual_material:
++              func: isaaclab.sim.spawners.materials.visual_materials:spawn_preview_surface
++              diffuse_color:
++              - 0.0
++              - 1.0
++              - 0.0
++              emissive_color:
++              - 0.0
++              - 0.0
++              - 0.0
++              roughness: 0.5
++              metallic: 0.0
++              opacity: 1.0
++            physics_material_path: material
++            physics_material: null
++            radius: 0.05
++            scale:
++            - 0.1
++            - 0.1
++            - 0.1
++agent:
++  seed: 42
++  device: cuda:0
++  num_steps_per_env: 24
++  max_iterations: 50000
++  empirical_normalization: false
++  obs_groups: {}
++  clip_actions: null
++  save_interval: 100
++  experiment_name: unitree_go2_parkour
++  run_name: ''
++  logger: tensorboard
++  neptune_project: isaaclab
++  wandb_project: isaaclab
++  resume: false
++  load_run: .*
++  load_checkpoint: model_.*.pt
++  class_name: OnPolicyRunner
++  policy:
++    class_name: ActorCriticRMA
++    init_noise_std: 1.0
++    noise_std_type: scalar
++    actor_obs_normalization: {}
++    critic_obs_normalization: {}
++    actor_hidden_dims:
++    - 512
++    - 256
++    - 128
++    critic_hidden_dims:
++    - 512
++    - 256
++    - 128
++    activation: elu
++    tanh_encoder_output: false
++    scan_encoder_dims:
++    - 128
++    - 64
++    - 32
++    priv_encoder_dims:
++    - 64
++    - 20
++    actor:
++      num_priv_explicit: 9
++      num_priv_latent: 29
++      num_prop: 53
++      num_scan: 132
++      num_hist: 10
++      class_name: Actor
++      state_history_encoder:
++        num_priv_explicit: 9
++        num_priv_latent: 29
++        num_prop: 53
++        num_scan: 132
++        num_hist: 10
++        class_name: StateHistoryEncoder
++        channel_size: 10
++  algorithm:
++    class_name: PPOWithExtractor
++    num_learning_epochs: 5
++    num_mini_batches: 4
++    learning_rate: 0.0002
++    schedule: adaptive
++    gamma: 0.99
++    lam: 0.95
++    entropy_coef: 0.01
++    desired_kl: 0.01
++    max_grad_norm: 1.0
++    value_loss_coef: 1.0
++    use_clipped_value_loss: true
++    clip_param: 0.2
++    normalize_advantage_per_mini_batch: false
++    rnd_cfg: null
++    symmetry_cfg: null
++    dagger_update_freq: 20
++    priv_reg_coef_schedual:
++    - 0.0
++    - 0.1
++    - 2000.0
++    - 3000.0
++  estimator:
++    num_priv_explicit: 9
++    num_priv_latent: 29
++    num_prop: 53
++    num_scan: 132
++    num_hist: 10
++    class_name: DefaultEstimator
++    train_with_estimated_states: true
++    learning_rate: 0.0001
++    hidden_dims:
++    - 128
++    - 64
++  depth_encoder: null
+diff --git a/outputs/2025-11-22/15-05-29/.hydra/hydra.yaml b/outputs/2025-11-22/15-05-29/.hydra/hydra.yaml
+new file mode 100644
+index 0000000..7ba01fd
+--- /dev/null
++++ b/outputs/2025-11-22/15-05-29/.hydra/hydra.yaml
+@@ -0,0 +1,154 @@
++hydra:
++  run:
++    dir: outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
++  sweep:
++    dir: multirun/${now:%Y-%m-%d}/${now:%H-%M-%S}
++    subdir: ${hydra.job.num}
++  launcher:
++    _target_: hydra._internal.core_plugins.basic_launcher.BasicLauncher
++  sweeper:
++    _target_: hydra._internal.core_plugins.basic_sweeper.BasicSweeper
++    max_batch_size: null
++    params: null
++  help:
++    app_name: ${hydra.job.name}
++    header: '${hydra.help.app_name} is powered by Hydra.
++
++      '
++    footer: 'Powered by Hydra (https://hydra.cc)
++
++      Use --hydra-help to view Hydra specific help
++
++      '
++    template: '${hydra.help.header}
++
++      == Configuration groups ==
++
++      Compose your configuration from those groups (group=option)
++
++
++      $APP_CONFIG_GROUPS
++
++
++      == Config ==
++
++      Override anything in the config (foo.bar=value)
++
++
++      $CONFIG
++
++
++      ${hydra.help.footer}
++
++      '
++  hydra_help:
++    template: 'Hydra (${hydra.runtime.version})
++
++      See https://hydra.cc for more info.
++
++
++      == Flags ==
++
++      $FLAGS_HELP
++
++
++      == Configuration groups ==
++
++      Compose your configuration from those groups (For example, append hydra/job_logging=disabled
++      to command line)
++
++
++      $HYDRA_CONFIG_GROUPS
++
++
++      Use ''--cfg hydra'' to Show the Hydra config.
++
++      '
++    hydra_help: ???
++  hydra_logging:
++    version: 1
++    formatters:
++      simple:
++        format: '[%(asctime)s][HYDRA] %(message)s'
++    handlers:
++      console:
++        class: logging.StreamHandler
++        formatter: simple
++        stream: ext://sys.stdout
++    root:
++      level: INFO
++      handlers:
++      - console
++    loggers:
++      logging_example:
++        level: DEBUG
++    disable_existing_loggers: false
++  job_logging:
++    version: 1
++    formatters:
++      simple:
++        format: '[%(asctime)s][%(name)s][%(levelname)s] - %(message)s'
++    handlers:
++      console:
++        class: logging.StreamHandler
++        formatter: simple
++        stream: ext://sys.stdout
++      file:
++        class: logging.FileHandler
++        formatter: simple
++        filename: ${hydra.runtime.output_dir}/${hydra.job.name}.log
++    root:
++      level: INFO
++      handlers:
++      - console
++      - file
++    disable_existing_loggers: false
++  env: {}
++  mode: RUN
++  searchpath: []
++  callbacks: {}
++  output_subdir: .hydra
++  overrides:
++    hydra:
++    - hydra.mode=RUN
++    task: []
++  job:
++    name: hydra
++    chdir: null
++    override_dirname: ''
++    id: ???
++    num: ???
++    config_name: Isaac-Extreme-Parkour-Teacher-Unitree-Go2-v0
++    env_set: {}
++    env_copy: []
++    config:
++      override_dirname:
++        kv_sep: '='
++        item_sep: ','
++        exclude_keys: []
++  runtime:
++    version: 1.3.2
++    version_base: '1.3'
++    cwd: /home/lz/Project/IsaacLab/Isaaclab_Parkour
++    config_sources:
++    - path: hydra.conf
++      schema: pkg
++      provider: hydra
++    - path: isaaclab_tasks.utils
++      schema: pkg
++      provider: main
++    - path: ''
++      schema: structured
++      provider: schema
++    output_dir: /home/lz/Project/IsaacLab/Isaaclab_Parkour/outputs/2025-11-22/15-05-29
++    choices:
++      hydra/env: default
++      hydra/callbacks: null
++      hydra/job_logging: default
++      hydra/hydra_logging: default
++      hydra/hydra_help: default
++      hydra/help: default
++      hydra/sweeper: basic
++      hydra/launcher: basic
++      hydra/output: default
++  verbose: false
+diff --git a/outputs/2025-11-22/15-05-29/.hydra/overrides.yaml b/outputs/2025-11-22/15-05-29/.hydra/overrides.yaml
+new file mode 100644
+index 0000000..fe51488
+--- /dev/null
++++ b/outputs/2025-11-22/15-05-29/.hydra/overrides.yaml
+@@ -0,0 +1 @@
++[]
+diff --git a/outputs/2025-11-22/15-05-29/hydra.log b/outputs/2025-11-22/15-05-29/hydra.log
+new file mode 100644
+index 0000000..2c9309c
+--- /dev/null
++++ b/outputs/2025-11-22/15-05-29/hydra.log
+@@ -0,0 +1,6 @@
++[2025-11-22 15:05:54,778][isaaclab.sensors.ray_caster.ray_caster][WARNING] - Raycaster attribute 'attach_yaw_only' property will be deprecated in a future release. Please use the parameter 'ray_alignment' instead. Setting ray_alignment to 'yaw'.
++[2025-11-22 15:05:55,949][isaaclab.sensors.ray_caster.ray_caster][WARNING] - Raycaster attribute 'attach_yaw_only' property will be deprecated in a future release. Please use the parameter 'ray_alignment' instead. Setting ray_alignment to 'yaw'.
++[2025-11-22 15:05:58,097][isaaclab.sensors.ray_caster.ray_caster][WARNING] - Raycaster attribute 'attach_yaw_only' property will be deprecated in a future release. Please use the parameter 'ray_alignment' instead. Setting ray_alignment to 'yaw'.
++[2025-11-22 15:05:59,035][isaaclab.sensors.ray_caster.ray_caster][WARNING] - Raycaster attribute 'attach_yaw_only' property will be deprecated in a future release. Please use the parameter 'ray_alignment' instead. Setting ray_alignment to 'yaw'.
++[2025-11-22 15:05:59,952][isaaclab.sensors.ray_caster.ray_caster][WARNING] - Raycaster attribute 'attach_yaw_only' property will be deprecated in a future release. Please use the parameter 'ray_alignment' instead. Setting ray_alignment to 'yaw'.
++[2025-11-22 15:06:00,897][isaaclab.sensors.ray_caster.ray_caster][WARNING] - Raycaster attribute 'attach_yaw_only' property will be deprecated in a future release. Please use the parameter 'ray_alignment' instead. Setting ray_alignment to 'yaw'.
+diff --git a/parkour_isaaclab/actuators/__pycache__/__init__.cpython-311.pyc b/parkour_isaaclab/actuators/__pycache__/__init__.cpython-311.pyc
+new file mode 100644
+index 0000000..d20dcbc
+Binary files /dev/null and b/parkour_isaaclab/actuators/__pycache__/__init__.cpython-311.pyc differ
+diff --git a/parkour_isaaclab/actuators/__pycache__/parkour_actuator_cfg.cpython-311.pyc b/parkour_isaaclab/actuators/__pycache__/parkour_actuator_cfg.cpython-311.pyc
+new file mode 100644
+index 0000000..92a733e
+Binary files /dev/null and b/parkour_isaaclab/actuators/__pycache__/parkour_actuator_cfg.cpython-311.pyc differ
+diff --git a/parkour_isaaclab/actuators/__pycache__/parkour_actuator_pd.cpython-311.pyc b/parkour_isaaclab/actuators/__pycache__/parkour_actuator_pd.cpython-311.pyc
+new file mode 100644
+index 0000000..7685657
+Binary files /dev/null and b/parkour_isaaclab/actuators/__pycache__/parkour_actuator_pd.cpython-311.pyc differ
+diff --git a/parkour_isaaclab/envs/__pycache__/__init__.cpython-311.pyc b/parkour_isaaclab/envs/__pycache__/__init__.cpython-311.pyc
+new file mode 100644
+index 0000000..d94908b
+Binary files /dev/null and b/parkour_isaaclab/envs/__pycache__/__init__.cpython-311.pyc differ
+diff --git a/parkour_isaaclab/envs/__pycache__/parkour_manager_based_env.cpython-311.pyc b/parkour_isaaclab/envs/__pycache__/parkour_manager_based_env.cpython-311.pyc
+new file mode 100644
+index 0000000..e86ac73
+Binary files /dev/null and b/parkour_isaaclab/envs/__pycache__/parkour_manager_based_env.cpython-311.pyc differ
+diff --git a/parkour_isaaclab/envs/__pycache__/parkour_manager_based_env_cfg.cpython-311.pyc b/parkour_isaaclab/envs/__pycache__/parkour_manager_based_env_cfg.cpython-311.pyc
+new file mode 100644
+index 0000000..adf98e4
+Binary files /dev/null and b/parkour_isaaclab/envs/__pycache__/parkour_manager_based_env_cfg.cpython-311.pyc differ
+diff --git a/parkour_isaaclab/envs/__pycache__/parkour_manager_based_rl_env.cpython-311.pyc b/parkour_isaaclab/envs/__pycache__/parkour_manager_based_rl_env.cpython-311.pyc
+new file mode 100644
+index 0000000..c043e88
+Binary files /dev/null and b/parkour_isaaclab/envs/__pycache__/parkour_manager_based_rl_env.cpython-311.pyc differ
+diff --git a/parkour_isaaclab/envs/__pycache__/parkour_manager_based_rl_env_cfg.cpython-311.pyc b/parkour_isaaclab/envs/__pycache__/parkour_manager_based_rl_env_cfg.cpython-311.pyc
+new file mode 100644
+index 0000000..d6e7b8c
+Binary files /dev/null and b/parkour_isaaclab/envs/__pycache__/parkour_manager_based_rl_env_cfg.cpython-311.pyc differ
+diff --git a/parkour_isaaclab/envs/__pycache__/parkour_ui.cpython-311.pyc b/parkour_isaaclab/envs/__pycache__/parkour_ui.cpython-311.pyc
+new file mode 100644
+index 0000000..c0cb851
+Binary files /dev/null and b/parkour_isaaclab/envs/__pycache__/parkour_ui.cpython-311.pyc differ
+diff --git a/parkour_isaaclab/envs/__pycache__/parkour_viewprot_camera_contoller.cpython-311.pyc b/parkour_isaaclab/envs/__pycache__/parkour_viewprot_camera_contoller.cpython-311.pyc
+new file mode 100644
+index 0000000..6368b29
+Binary files /dev/null and b/parkour_isaaclab/envs/__pycache__/parkour_viewprot_camera_contoller.cpython-311.pyc differ
+diff --git a/parkour_isaaclab/envs/mdp/__pycache__/__init__.cpython-311.pyc b/parkour_isaaclab/envs/mdp/__pycache__/__init__.cpython-311.pyc
+new file mode 100644
+index 0000000..90740f1
+Binary files /dev/null and b/parkour_isaaclab/envs/mdp/__pycache__/__init__.cpython-311.pyc differ
+diff --git a/parkour_isaaclab/envs/mdp/__pycache__/events.cpython-311.pyc b/parkour_isaaclab/envs/mdp/__pycache__/events.cpython-311.pyc
+new file mode 100644
+index 0000000..0c7f073
+Binary files /dev/null and b/parkour_isaaclab/envs/mdp/__pycache__/events.cpython-311.pyc differ
+diff --git a/parkour_isaaclab/envs/mdp/__pycache__/observations.cpython-311.pyc b/parkour_isaaclab/envs/mdp/__pycache__/observations.cpython-311.pyc
+new file mode 100644
+index 0000000..04e141d
+Binary files /dev/null and b/parkour_isaaclab/envs/mdp/__pycache__/observations.cpython-311.pyc differ
+diff --git a/parkour_isaaclab/envs/mdp/__pycache__/rewards.cpython-311.pyc b/parkour_isaaclab/envs/mdp/__pycache__/rewards.cpython-311.pyc
+new file mode 100644
+index 0000000..f927d86
+Binary files /dev/null and b/parkour_isaaclab/envs/mdp/__pycache__/rewards.cpython-311.pyc differ
+diff --git a/parkour_isaaclab/envs/mdp/__pycache__/terminations.cpython-311.pyc b/parkour_isaaclab/envs/mdp/__pycache__/terminations.cpython-311.pyc
+new file mode 100644
+index 0000000..d746cbe
+Binary files /dev/null and b/parkour_isaaclab/envs/mdp/__pycache__/terminations.cpython-311.pyc differ
+diff --git a/parkour_isaaclab/envs/mdp/parkour_actions/__pycache__/__init__.cpython-311.pyc b/parkour_isaaclab/envs/mdp/parkour_actions/__pycache__/__init__.cpython-311.pyc
+new file mode 100644
+index 0000000..e544df1
+Binary files /dev/null and b/parkour_isaaclab/envs/mdp/parkour_actions/__pycache__/__init__.cpython-311.pyc differ
+diff --git a/parkour_isaaclab/envs/mdp/parkour_actions/__pycache__/actions_cfg.cpython-311.pyc b/parkour_isaaclab/envs/mdp/parkour_actions/__pycache__/actions_cfg.cpython-311.pyc
+new file mode 100644
+index 0000000..5df5bb9
+Binary files /dev/null and b/parkour_isaaclab/envs/mdp/parkour_actions/__pycache__/actions_cfg.cpython-311.pyc differ
+diff --git a/parkour_isaaclab/envs/mdp/parkour_actions/__pycache__/joint_actions.cpython-311.pyc b/parkour_isaaclab/envs/mdp/parkour_actions/__pycache__/joint_actions.cpython-311.pyc
+new file mode 100644
+index 0000000..1b0a313
+Binary files /dev/null and b/parkour_isaaclab/envs/mdp/parkour_actions/__pycache__/joint_actions.cpython-311.pyc differ
+diff --git a/parkour_isaaclab/envs/mdp/parkour_commands/__pycache__/__init__.cpython-311.pyc b/parkour_isaaclab/envs/mdp/parkour_commands/__pycache__/__init__.cpython-311.pyc
+new file mode 100644
+index 0000000..de08f10
+Binary files /dev/null and b/parkour_isaaclab/envs/mdp/parkour_commands/__pycache__/__init__.cpython-311.pyc differ
+diff --git a/parkour_isaaclab/envs/mdp/parkour_commands/__pycache__/parkour_command_cfg.cpython-311.pyc b/parkour_isaaclab/envs/mdp/parkour_commands/__pycache__/parkour_command_cfg.cpython-311.pyc
+new file mode 100644
+index 0000000..c5630e9
+Binary files /dev/null and b/parkour_isaaclab/envs/mdp/parkour_commands/__pycache__/parkour_command_cfg.cpython-311.pyc differ
+diff --git a/parkour_isaaclab/envs/mdp/parkour_commands/__pycache__/uniform_parkour_command.cpython-311.pyc b/parkour_isaaclab/envs/mdp/parkour_commands/__pycache__/uniform_parkour_command.cpython-311.pyc
+new file mode 100644
+index 0000000..c2c68c1
+Binary files /dev/null and b/parkour_isaaclab/envs/mdp/parkour_commands/__pycache__/uniform_parkour_command.cpython-311.pyc differ
+diff --git a/parkour_isaaclab/envs/mdp/parkours/__pycache__/__init__.cpython-311.pyc b/parkour_isaaclab/envs/mdp/parkours/__pycache__/__init__.cpython-311.pyc
+new file mode 100644
+index 0000000..313f33b
+Binary files /dev/null and b/parkour_isaaclab/envs/mdp/parkours/__pycache__/__init__.cpython-311.pyc differ
+diff --git a/parkour_isaaclab/envs/mdp/parkours/__pycache__/parkour_event.cpython-311.pyc b/parkour_isaaclab/envs/mdp/parkours/__pycache__/parkour_event.cpython-311.pyc
+new file mode 100644
+index 0000000..ebae4be
+Binary files /dev/null and b/parkour_isaaclab/envs/mdp/parkours/__pycache__/parkour_event.cpython-311.pyc differ
+diff --git a/parkour_isaaclab/envs/mdp/parkours/__pycache__/parkour_events_cfg.cpython-311.pyc b/parkour_isaaclab/envs/mdp/parkours/__pycache__/parkour_events_cfg.cpython-311.pyc
+new file mode 100644
+index 0000000..71f139a
+Binary files /dev/null and b/parkour_isaaclab/envs/mdp/parkours/__pycache__/parkour_events_cfg.cpython-311.pyc differ
+diff --git a/parkour_isaaclab/managers/__pycache__/__init__.cpython-311.pyc b/parkour_isaaclab/managers/__pycache__/__init__.cpython-311.pyc
+new file mode 100644
+index 0000000..537c9bc
+Binary files /dev/null and b/parkour_isaaclab/managers/__pycache__/__init__.cpython-311.pyc differ
+diff --git a/parkour_isaaclab/managers/__pycache__/parkour_manager.cpython-311.pyc b/parkour_isaaclab/managers/__pycache__/parkour_manager.cpython-311.pyc
+new file mode 100644
+index 0000000..eb75850
+Binary files /dev/null and b/parkour_isaaclab/managers/__pycache__/parkour_manager.cpython-311.pyc differ
+diff --git a/parkour_isaaclab/managers/__pycache__/parkour_manager_term_cfg.cpython-311.pyc b/parkour_isaaclab/managers/__pycache__/parkour_manager_term_cfg.cpython-311.pyc
+new file mode 100644
+index 0000000..f57d0a8
+Binary files /dev/null and b/parkour_isaaclab/managers/__pycache__/parkour_manager_term_cfg.cpython-311.pyc differ
+diff --git a/parkour_isaaclab/managers/__pycache__/parkour_reward_manager.cpython-311.pyc b/parkour_isaaclab/managers/__pycache__/parkour_reward_manager.cpython-311.pyc
+new file mode 100644
+index 0000000..6c997d1
+Binary files /dev/null and b/parkour_isaaclab/managers/__pycache__/parkour_reward_manager.cpython-311.pyc differ
+diff --git a/parkour_isaaclab/terrains/__pycache__/__init__.cpython-311.pyc b/parkour_isaaclab/terrains/__pycache__/__init__.cpython-311.pyc
+new file mode 100644
+index 0000000..e0ecc2e
+Binary files /dev/null and b/parkour_isaaclab/terrains/__pycache__/__init__.cpython-311.pyc differ
+diff --git a/parkour_isaaclab/terrains/__pycache__/parkour_terrain_generator.cpython-311.pyc b/parkour_isaaclab/terrains/__pycache__/parkour_terrain_generator.cpython-311.pyc
+new file mode 100644
+index 0000000..17962e2
+Binary files /dev/null and b/parkour_isaaclab/terrains/__pycache__/parkour_terrain_generator.cpython-311.pyc differ
+diff --git a/parkour_isaaclab/terrains/__pycache__/parkour_terrain_generator_cfg.cpython-311.pyc b/parkour_isaaclab/terrains/__pycache__/parkour_terrain_generator_cfg.cpython-311.pyc
+new file mode 100644
+index 0000000..2f8b862
+Binary files /dev/null and b/parkour_isaaclab/terrains/__pycache__/parkour_terrain_generator_cfg.cpython-311.pyc differ
+diff --git a/parkour_isaaclab/terrains/__pycache__/parkour_terrain_importer.cpython-311.pyc b/parkour_isaaclab/terrains/__pycache__/parkour_terrain_importer.cpython-311.pyc
+new file mode 100644
+index 0000000..9a3a671
+Binary files /dev/null and b/parkour_isaaclab/terrains/__pycache__/parkour_terrain_importer.cpython-311.pyc differ
+diff --git a/parkour_isaaclab/terrains/__pycache__/utils.cpython-311.pyc b/parkour_isaaclab/terrains/__pycache__/utils.cpython-311.pyc
+new file mode 100644
+index 0000000..8a35dc4
+Binary files /dev/null and b/parkour_isaaclab/terrains/__pycache__/utils.cpython-311.pyc differ
+diff --git a/parkour_isaaclab/terrains/extreme_parkour/__pycache__/__init__.cpython-311.pyc b/parkour_isaaclab/terrains/extreme_parkour/__pycache__/__init__.cpython-311.pyc
+new file mode 100644
+index 0000000..cdb4ad3
+Binary files /dev/null and b/parkour_isaaclab/terrains/extreme_parkour/__pycache__/__init__.cpython-311.pyc differ
+diff --git a/parkour_isaaclab/terrains/extreme_parkour/__pycache__/extreme_parkour_terrains_cfg.cpython-311.pyc b/parkour_isaaclab/terrains/extreme_parkour/__pycache__/extreme_parkour_terrains_cfg.cpython-311.pyc
+new file mode 100644
+index 0000000..38e7477
+Binary files /dev/null and b/parkour_isaaclab/terrains/extreme_parkour/__pycache__/extreme_parkour_terrains_cfg.cpython-311.pyc differ
+diff --git a/parkour_isaaclab/terrains/extreme_parkour/__pycache__/extreme_parkour_terrians.cpython-311.pyc b/parkour_isaaclab/terrains/extreme_parkour/__pycache__/extreme_parkour_terrians.cpython-311.pyc
+new file mode 100644
+index 0000000..3d779cc
+Binary files /dev/null and b/parkour_isaaclab/terrains/extreme_parkour/__pycache__/extreme_parkour_terrians.cpython-311.pyc differ
+diff --git a/parkour_isaaclab/terrains/extreme_parkour/config/__pycache__/__init__.cpython-311.pyc b/parkour_isaaclab/terrains/extreme_parkour/config/__pycache__/__init__.cpython-311.pyc
+new file mode 100644
+index 0000000..9a02c34
+Binary files /dev/null and b/parkour_isaaclab/terrains/extreme_parkour/config/__pycache__/__init__.cpython-311.pyc differ
+diff --git a/parkour_isaaclab/terrains/extreme_parkour/config/__pycache__/parkour.cpython-311.pyc b/parkour_isaaclab/terrains/extreme_parkour/config/__pycache__/parkour.cpython-311.pyc
+new file mode 100644
+index 0000000..217a624
+Binary files /dev/null and b/parkour_isaaclab/terrains/extreme_parkour/config/__pycache__/parkour.cpython-311.pyc differ
+diff --git a/parkour_tasks/parkour_tasks/__pycache__/default_cfg.cpython-311.pyc b/parkour_tasks/parkour_tasks/__pycache__/default_cfg.cpython-311.pyc
+new file mode 100644
+index 0000000..dc29eb4
+Binary files /dev/null and b/parkour_tasks/parkour_tasks/__pycache__/default_cfg.cpython-311.pyc differ
+diff --git a/parkour_tasks/parkour_tasks/extreme_parkour_task/__pycache__/__init__.cpython-311.pyc b/parkour_tasks/parkour_tasks/extreme_parkour_task/__pycache__/__init__.cpython-311.pyc
+new file mode 100644
+index 0000000..84833f7
+Binary files /dev/null and b/parkour_tasks/parkour_tasks/extreme_parkour_task/__pycache__/__init__.cpython-311.pyc differ
+diff --git a/parkour_tasks/parkour_tasks/extreme_parkour_task/config/go2/__pycache__/__init__.cpython-311.pyc b/parkour_tasks/parkour_tasks/extreme_parkour_task/config/go2/__pycache__/__init__.cpython-311.pyc
+new file mode 100644
+index 0000000..c3c8e8f
+Binary files /dev/null and b/parkour_tasks/parkour_tasks/extreme_parkour_task/config/go2/__pycache__/__init__.cpython-311.pyc differ
+diff --git a/parkour_tasks/parkour_tasks/extreme_parkour_task/config/go2/__pycache__/parkour_mdp_cfg.cpython-311.pyc b/parkour_tasks/parkour_tasks/extreme_parkour_task/config/go2/__pycache__/parkour_mdp_cfg.cpython-311.pyc
+new file mode 100644
+index 0000000..ef02729
+Binary files /dev/null and b/parkour_tasks/parkour_tasks/extreme_parkour_task/config/go2/__pycache__/parkour_mdp_cfg.cpython-311.pyc differ
+diff --git a/parkour_tasks/parkour_tasks/extreme_parkour_task/config/go2/__pycache__/parkour_teacher_cfg.cpython-311.pyc b/parkour_tasks/parkour_tasks/extreme_parkour_task/config/go2/__pycache__/parkour_teacher_cfg.cpython-311.pyc
+new file mode 100644
+index 0000000..5bb455c
+Binary files /dev/null and b/parkour_tasks/parkour_tasks/extreme_parkour_task/config/go2/__pycache__/parkour_teacher_cfg.cpython-311.pyc differ
+diff --git a/parkour_tasks/parkour_tasks/extreme_parkour_task/config/go2/agents/__pycache__/__init__.cpython-311.pyc b/parkour_tasks/parkour_tasks/extreme_parkour_task/config/go2/agents/__pycache__/__init__.cpython-311.pyc
+new file mode 100644
+index 0000000..989792c
+Binary files /dev/null and b/parkour_tasks/parkour_tasks/extreme_parkour_task/config/go2/agents/__pycache__/__init__.cpython-311.pyc differ
+diff --git a/parkour_tasks/parkour_tasks/extreme_parkour_task/config/go2/agents/__pycache__/parkour_rl_cfg.cpython-311.pyc b/parkour_tasks/parkour_tasks/extreme_parkour_task/config/go2/agents/__pycache__/parkour_rl_cfg.cpython-311.pyc
+new file mode 100644
+index 0000000..951dafd
+Binary files /dev/null and b/parkour_tasks/parkour_tasks/extreme_parkour_task/config/go2/agents/__pycache__/parkour_rl_cfg.cpython-311.pyc differ
+diff --git a/parkour_tasks/parkour_tasks/extreme_parkour_task/config/go2/agents/__pycache__/rsl_teacher_ppo_cfg.cpython-311.pyc b/parkour_tasks/parkour_tasks/extreme_parkour_task/config/go2/agents/__pycache__/rsl_teacher_ppo_cfg.cpython-311.pyc
+new file mode 100644
+index 0000000..06ceeaa
+Binary files /dev/null and b/parkour_tasks/parkour_tasks/extreme_parkour_task/config/go2/agents/__pycache__/rsl_teacher_ppo_cfg.cpython-311.pyc differ
+diff --git a/scripts/rsl_rl/__pycache__/__init__.cpython-311.pyc b/scripts/rsl_rl/__pycache__/__init__.cpython-311.pyc
+new file mode 100644
+index 0000000..659e1c0
+Binary files /dev/null and b/scripts/rsl_rl/__pycache__/__init__.cpython-311.pyc differ
+diff --git a/scripts/rsl_rl/__pycache__/cli_args.cpython-311.pyc b/scripts/rsl_rl/__pycache__/cli_args.cpython-311.pyc
+new file mode 100644
+index 0000000..0b5cdd6
+Binary files /dev/null and b/scripts/rsl_rl/__pycache__/cli_args.cpython-311.pyc differ
+diff --git a/scripts/rsl_rl/__pycache__/exporter.cpython-311.pyc b/scripts/rsl_rl/__pycache__/exporter.cpython-311.pyc
+new file mode 100644
+index 0000000..789550c
+Binary files /dev/null and b/scripts/rsl_rl/__pycache__/exporter.cpython-311.pyc differ
+diff --git a/scripts/rsl_rl/__pycache__/vecenv_wrapper.cpython-311.pyc b/scripts/rsl_rl/__pycache__/vecenv_wrapper.cpython-311.pyc
+new file mode 100644
+index 0000000..900bbea
+Binary files /dev/null and b/scripts/rsl_rl/__pycache__/vecenv_wrapper.cpython-311.pyc differ
+diff --git a/scripts/rsl_rl/demo.py b/scripts/rsl_rl/demo.py
+index d2a9ac0..eb2985e 100644
+--- a/scripts/rsl_rl/demo.py
++++ b/scripts/rsl_rl/demo.py
+@@ -8,7 +8,13 @@ import argparse
+ import os
+ import sys
+ import weakref
+-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../.."))
++from pathlib import Path
++
++# Ensure repository root is on sys.path for `scripts.*` imports.
++_REPO_ROOT = Path(__file__).resolve().parents[2]
++if str(_REPO_ROOT) not in sys.path:
++    sys.path.insert(0, str(_REPO_ROOT))
++
+ import cli_args  # isort: skip
+ from isaaclab.app import AppLauncher
+ 
+diff --git a/scripts/rsl_rl/evaluation.py b/scripts/rsl_rl/evaluation.py
+index b6bbaf7..fedc072 100644
+--- a/scripts/rsl_rl/evaluation.py
++++ b/scripts/rsl_rl/evaluation.py
+@@ -8,6 +8,13 @@
+ """Launch Isaac Sim Simulator first."""
+ 
+ import argparse
++import sys
++from pathlib import Path
++
++# Ensure repository root is on sys.path for `scripts.*` imports.
++_REPO_ROOT = Path(__file__).resolve().parents[2]
++if str(_REPO_ROOT) not in sys.path:
++    sys.path.insert(0, str(_REPO_ROOT))
+ 
+ from isaaclab.app import AppLauncher
+ from tqdm import tqdm
+diff --git a/scripts/rsl_rl/modules/__pycache__/__init__.cpython-311.pyc b/scripts/rsl_rl/modules/__pycache__/__init__.cpython-311.pyc
+new file mode 100644
+index 0000000..ad827fe
+Binary files /dev/null and b/scripts/rsl_rl/modules/__pycache__/__init__.cpython-311.pyc differ
+diff --git a/scripts/rsl_rl/modules/__pycache__/actor_critic_with_encoder.cpython-311.pyc b/scripts/rsl_rl/modules/__pycache__/actor_critic_with_encoder.cpython-311.pyc
+new file mode 100644
+index 0000000..ddfe00e
+Binary files /dev/null and b/scripts/rsl_rl/modules/__pycache__/actor_critic_with_encoder.cpython-311.pyc differ
+diff --git a/scripts/rsl_rl/modules/__pycache__/distillation_with_extractor.cpython-311.pyc b/scripts/rsl_rl/modules/__pycache__/distillation_with_extractor.cpython-311.pyc
+new file mode 100644
+index 0000000..029ef2d
+Binary files /dev/null and b/scripts/rsl_rl/modules/__pycache__/distillation_with_extractor.cpython-311.pyc differ
+diff --git a/scripts/rsl_rl/modules/__pycache__/on_policy_runner_with_extractor.cpython-311.pyc b/scripts/rsl_rl/modules/__pycache__/on_policy_runner_with_extractor.cpython-311.pyc
+new file mode 100644
+index 0000000..52975f8
+Binary files /dev/null and b/scripts/rsl_rl/modules/__pycache__/on_policy_runner_with_extractor.cpython-311.pyc differ
+diff --git a/scripts/rsl_rl/modules/__pycache__/ppo_with_extractor.cpython-311.pyc b/scripts/rsl_rl/modules/__pycache__/ppo_with_extractor.cpython-311.pyc
+new file mode 100644
+index 0000000..0102d7f
+Binary files /dev/null and b/scripts/rsl_rl/modules/__pycache__/ppo_with_extractor.cpython-311.pyc differ
+diff --git a/scripts/rsl_rl/modules/feature_extractors/__pycache__/__init__.cpython-311.pyc b/scripts/rsl_rl/modules/feature_extractors/__pycache__/__init__.cpython-311.pyc
+new file mode 100644
+index 0000000..8ac5724
+Binary files /dev/null and b/scripts/rsl_rl/modules/feature_extractors/__pycache__/__init__.cpython-311.pyc differ
+diff --git a/scripts/rsl_rl/modules/feature_extractors/__pycache__/depth_backbone.cpython-311.pyc b/scripts/rsl_rl/modules/feature_extractors/__pycache__/depth_backbone.cpython-311.pyc
+new file mode 100644
+index 0000000..b894d44
+Binary files /dev/null and b/scripts/rsl_rl/modules/feature_extractors/__pycache__/depth_backbone.cpython-311.pyc differ
+diff --git a/scripts/rsl_rl/modules/feature_extractors/__pycache__/estimator.cpython-311.pyc b/scripts/rsl_rl/modules/feature_extractors/__pycache__/estimator.cpython-311.pyc
+new file mode 100644
+index 0000000..80ff038
+Binary files /dev/null and b/scripts/rsl_rl/modules/feature_extractors/__pycache__/estimator.cpython-311.pyc differ
+diff --git a/scripts/rsl_rl/modules/feature_extractors/__pycache__/state_encoder.cpython-311.pyc b/scripts/rsl_rl/modules/feature_extractors/__pycache__/state_encoder.cpython-311.pyc
+new file mode 100644
+index 0000000..ea3f987
+Binary files /dev/null and b/scripts/rsl_rl/modules/feature_extractors/__pycache__/state_encoder.cpython-311.pyc differ
+diff --git a/scripts/rsl_rl/modules/on_policy_runner_with_extractor.py b/scripts/rsl_rl/modules/on_policy_runner_with_extractor.py
+index 077d7e0..aa3c5cc 100644
+--- a/scripts/rsl_rl/modules/on_policy_runner_with_extractor.py
++++ b/scripts/rsl_rl/modules/on_policy_runner_with_extractor.py
+@@ -9,9 +9,43 @@ from collections import deque
+ 
+ import rsl_rl
+ from rsl_rl.env import VecEnv
+-from rsl_rl.modules import (
+-    EmpiricalNormalization,
+-)
++try:
++    from rsl_rl.modules import EmpiricalNormalization  # type: ignore
++except ImportError:
++    import torch
++
++    class EmpiricalNormalization(torch.nn.Module):
++        """Fallback normalizer when rsl_rl version lacks EmpiricalNormalization."""
++
++        def __init__(self, shape, until=1.0e8):
++            super().__init__()
++            self.register_buffer("count", torch.tensor(0.0))
++            self.register_buffer("mean", torch.zeros(shape))
++            self.register_buffer("var", torch.ones(shape))
++            self.until = until
++
++        def forward(self, x):
++            if self.training and self.count < self.until:
++                # Simple running mean/var update
++                batch_mean = x.mean(dim=0)
++                batch_var = x.var(dim=0, unbiased=False)
++                batch_count = x.shape[0]
++
++                delta = batch_mean - self.mean
++                tot_count = self.count + batch_count
++
++                new_mean = self.mean + delta * batch_count / tot_count
++                m_a = self.var * self.count
++                m_b = batch_var * batch_count
++                M2 = m_a + m_b + delta.pow(2) * self.count * batch_count / tot_count
++                new_var = M2 / tot_count
++
++                self.mean = new_mean
++                self.var = new_var
++                self.count = tot_count
++
++            std = torch.sqrt(self.var + 1e-8)
++            return (x - self.mean) / std
+ from .actor_critic_with_encoder import ActorCriticRMA
+ from rsl_rl.utils import store_code_state
+ from rsl_rl.runners.on_policy_runner import OnPolicyRunner
+@@ -128,9 +162,9 @@ class OnPolicyRunnerWithExtractor(OnPolicyRunner):
+                 self.training_type,
+                 self.env.num_envs,
+                 self.num_steps_per_env,
+-                [num_obs],
+-                [num_privileged_obs],
+-                [self.env.num_actions],
++                (num_obs,),
++                (num_privileged_obs,),
++                (self.env.num_actions,),
+             )
+ 
+         self.disable_logs = self.is_distributed and self.gpu_global_rank != 0
+@@ -226,7 +260,7 @@ class OnPolicyRunnerWithExtractor(OnPolicyRunner):
+                         privileged_obs = obs
+ 
+                     # process the step
+-                    self.alg.process_env_step(rewards, dones, infos)
++                    self.alg.process_env_step(obs, rewards, dones, infos)
+ 
+                     # Extract intrinsic rewards (only for logging)
+                     intrinsic_rewards = self.alg.intrinsic_rewards if self.alg.rnd else None
+diff --git a/scripts/rsl_rl/modules/ppo_with_extractor.py b/scripts/rsl_rl/modules/ppo_with_extractor.py
+index fca629d..f111730 100644
+--- a/scripts/rsl_rl/modules/ppo_with_extractor.py
++++ b/scripts/rsl_rl/modules/ppo_with_extractor.py
+@@ -4,6 +4,7 @@ from __future__ import annotations
+ import torch
+ import torch.nn as nn
+ import torch.optim as optim
++from tensordict import TensorDict
+ 
+ from .actor_critic_with_encoder import ActorCriticRMA
+ from rsl_rl.algorithms import PPO
+@@ -75,9 +76,31 @@ class PPOWithExtractor(PPO):
+         self.counter = 0
+ 
+ 
++    def init_storage(self, training_type, num_envs, num_transitions_per_env, obs, privileged_obs=None, actions_shape=None):
++        """Accept legacy signature and create storage compatible with rsl-rl>=3.1."""
++        if actions_shape is None:
++            actions_shape = (self.policy.num_actions,) if hasattr(self.policy, "num_actions") else (1,)
++        if isinstance(actions_shape, list):
++            actions_shape = tuple(actions_shape)
++        if isinstance(obs, TensorDict):
++            obs_td = obs.to(self.device)
++        else:
++            # obs is shape list like [num_obs]
++            obs_shape = obs if isinstance(obs, (list, tuple)) else (obs,)
++            obs_tensor = torch.zeros((num_envs, *obs_shape), device=self.device)
++            obs_dict = {"obs": obs_tensor}
++            if privileged_obs is not None and privileged_obs[0] > 0:
++                priv_tensor = torch.zeros((num_envs, *privileged_obs), device=self.device)
++                obs_dict["critic_obs"] = priv_tensor
++            obs_td = TensorDict(obs_dict, batch_size=[num_envs], device=self.device)
++        super().init_storage(training_type, num_envs, num_transitions_per_env, obs_td, actions_shape)
++
+     def act(self, obs, critic_obs, hist_encoding=False):
+         if self.policy.is_recurrent:
+             self.transition.hidden_states = self.policy.get_hidden_states()
++        obs_td = TensorDict({"obs": obs}, batch_size=[obs.shape[0]], device=self.device)
++        if critic_obs is not None:
++            obs_td["critic_obs"] = critic_obs
+         # compute the actions and values
+         if self.train_with_estimated_states:
+             obs_est = obs.clone()
+@@ -92,10 +115,47 @@ class PPOWithExtractor(PPO):
+         self.transition.action_mean = self.policy.action_mean.detach()
+         self.transition.action_sigma = self.policy.action_std.detach()
+         # need to record obs and critic_obs before env.step()
+-        self.transition.observations = obs
++        self.transition.observations = obs_td
+         self.transition.privileged_observations = critic_obs
+ 
+         return self.transition.actions
++
++    def process_env_step(self, obs, rewards, dones, extras):
++        obs_td = TensorDict({"obs": obs}, batch_size=[obs.shape[0]], device=self.device)
++        # Update the normalizers
++        if hasattr(self.policy, "update_normalization"):
++            self.policy.update_normalization(obs_td)
++        if self.rnd:
++            self.rnd.update_normalization(obs_td)
++
++        # Record the rewards and dones
++        # Note: We clone here because later on we bootstrap the rewards based on timeouts
++        self.transition.rewards = rewards.clone()
++        self.transition.dones = dones
++
++        # Compute the intrinsic rewards and add to extrinsic rewards
++        if self.rnd:
++            # Compute the intrinsic rewards
++            self.intrinsic_rewards = self.rnd.get_intrinsic_reward(obs_td)
++            # Add intrinsic rewards to extrinsic rewards
++            self.transition.rewards += self.intrinsic_rewards
++
++        # Bootstrapping on time outs
++        if "time_outs" in extras:
++            self.transition.rewards += self.gamma * torch.squeeze(
++                self.transition.values * extras["time_outs"].unsqueeze(1).to(self.device), 1
++            )
++
++        # Record the transition
++        self.storage.add_transitions(self.transition)
++        self.transition.clear()
++        self.policy.reset(dones)
++
++    def compute_returns(self, critic_obs):
++        last_values = self.policy.evaluate(critic_obs).detach()
++        self.storage.compute_returns(
++            last_values, self.gamma, self.lam, normalize_advantage=not self.normalize_advantage_per_mini_batch
++        )
+     
+ 
+     def update(self):  # noqa: C901
+@@ -121,21 +181,43 @@ class PPOWithExtractor(PPO):
+         else:
+             generator = self.storage.mini_batch_generator(self.num_mini_batches, self.num_learning_epochs)
+ 
+-        # iterate over batches
+-        for (
+-            obs_batch,
+-            critic_obs_batch,
+-            actions_batch,
+-            target_values_batch,
+-            advantages_batch,
+-            returns_batch,
+-            old_actions_log_prob_batch,
+-            old_mu_batch,
+-            old_sigma_batch,
+-            hid_states_batch,
+-            masks_batch,
+-            rnd_state_batch,
+-        ) in generator:
++        # iterate over batches (handle both legacy and current rollout generators)
++        for batch in generator:
++            if len(batch) == 10:
++                (
++                    obs_batch,
++                    actions_batch,
++                    target_values_batch,
++                    advantages_batch,
++                    returns_batch,
++                    old_actions_log_prob_batch,
++                    old_mu_batch,
++                    old_sigma_batch,
++                    hid_states_batch,
++                    masks_batch,
++                ) = batch
++                rnd_state_batch = None
++                # unpack tensordict if present
++                if isinstance(obs_batch, TensorDict):
++                    critic_obs_batch = obs_batch.get("critic_obs", obs_batch.get("obs"))
++                    obs_batch = obs_batch.get("obs")
++                else:
++                    critic_obs_batch = obs_batch
++            else:
++                (
++                    obs_batch,
++                    critic_obs_batch,
++                    actions_batch,
++                    target_values_batch,
++                    advantages_batch,
++                    returns_batch,
++                    old_actions_log_prob_batch,
++                    old_mu_batch,
++                    old_sigma_batch,
++                    hid_states_batch,
++                    masks_batch,
++                    rnd_state_batch,
++                ) = batch
+ 
+             # number of augmentations per sample
+             # we start with 1 and increase it if we use symmetry augmentation
+@@ -293,6 +375,8 @@ class PPOWithExtractor(PPO):
+ 
+             # Random Network Distillation loss
+             if self.rnd:
++                if rnd_state_batch is None:
++                    rnd_state_batch = obs_batch
+                 # predict the embedding and the target
+                 predicted_embedding = self.rnd.predictor(rnd_state_batch)
+                 target_embedding = self.rnd.target(rnd_state_batch).detach()
+@@ -367,20 +451,41 @@ class PPOWithExtractor(PPO):
+             generator = self.storage.recurrent_mini_batch_generator(self.num_mini_batches, self.num_learning_epochs)
+         else:
+             generator = self.storage.mini_batch_generator(self.num_mini_batches, self.num_learning_epochs)
+-        for (
+-            obs_batch,
+-            critic_obs_batch,
+-            actions_batch,
+-            target_values_batch,
+-            advantages_batch,
+-            returns_batch,
+-            old_actions_log_prob_batch,
+-            old_mu_batch,
+-            old_sigma_batch,
+-            hid_states_batch,
+-            masks_batch,
+-            rnd_state_batch,
+-        ) in generator:
++        for batch in generator:
++            if len(batch) == 10:
++                (
++                    obs_batch,
++                    actions_batch,
++                    target_values_batch,
++                    advantages_batch,
++                    returns_batch,
++                    old_actions_log_prob_batch,
++                    old_mu_batch,
++                    old_sigma_batch,
++                    hid_states_batch,
++                    masks_batch,
++                ) = batch
++                if isinstance(obs_batch, TensorDict):
++                    obs_batch = obs_batch.get("obs")
++                critic_obs_batch = obs_batch
++            else:
++                (
++                    obs_batch,
++                    critic_obs_batch,
++                    actions_batch,
++                    target_values_batch,
++                    advantages_batch,
++                    returns_batch,
++                    old_actions_log_prob_batch,
++                    old_mu_batch,
++                    old_sigma_batch,
++                    hid_states_batch,
++                    masks_batch,
++                    rnd_state_batch,
++                ) = batch
++                if isinstance(obs_batch, TensorDict):
++                    critic_obs_batch = obs_batch.get("critic_obs", obs_batch.get("obs"))
++                    obs_batch = obs_batch.get("obs")
+             with torch.inference_mode():
+                 self.policy.act(obs_batch, 
+                                 hist_encoding=True, 
+diff --git a/scripts/rsl_rl/play.py b/scripts/rsl_rl/play.py
+index 7604a3d..630ae39 100644
+--- a/scripts/rsl_rl/play.py
++++ b/scripts/rsl_rl/play.py
+@@ -8,6 +8,13 @@
+ """Launch Isaac Sim Simulator first."""
+ 
+ import argparse
++import sys
++from pathlib import Path
++
++# Ensure repository root is on sys.path for `scripts.*` imports.
++_REPO_ROOT = Path(__file__).resolve().parents[2]
++if str(_REPO_ROOT) not in sys.path:
++    sys.path.insert(0, str(_REPO_ROOT))
+ 
+ from isaaclab.app import AppLauncher
+ 
+diff --git a/scripts/rsl_rl/train.py b/scripts/rsl_rl/train.py
+index c5addbc..fb12ec5 100644
+--- a/scripts/rsl_rl/train.py
++++ b/scripts/rsl_rl/train.py
+@@ -9,6 +9,14 @@
+ import os 
+ import argparse
+ import sys
++from pathlib import Path
++import pickle
++
++# Ensure repository root is on sys.path so `scripts.*` imports work even if the
++# working directory is changed by the Isaac app launcher.
++_REPO_ROOT = Path(__file__).resolve().parents[2]
++if str(_REPO_ROOT) not in sys.path:
++    sys.path.insert(0, str(_REPO_ROOT))
+ 
+ from isaaclab.app import AppLauncher
+ 
+@@ -84,7 +92,7 @@ from isaaclab.envs import (
+     multi_agent_to_single_agent,
+ )
+ from isaaclab.utils.dict import print_dict
+-from isaaclab.utils.io import dump_pickle, dump_yaml
++from isaaclab.utils.io import dump_yaml
+ from parkour_tasks.extreme_parkour_task.config.go2.agents.parkour_rl_cfg import ParkourRslRlOnPolicyRunnerCfg
+ from scripts.rsl_rl.vecenv_wrapper import ParkourRslRlVecEnvWrapper
+ # import isaaclab_tasks  # noqa: F401
+@@ -102,6 +110,17 @@ torch.backends.cudnn.deterministic = False
+ torch.backends.cudnn.benchmark = False
+ 
+ 
++def dump_pickle(filename: str, data: object):
++    """Lightweight pickle dumper to replace removed helper in isaaclab.utils.io."""
++    if not filename.endswith(".pkl"):
++        filename += ".pkl"
++    directory = os.path.dirname(filename)
++    if directory and not os.path.exists(directory):
++        os.makedirs(directory, exist_ok=True)
++    with open(filename, "wb") as f:
++        pickle.dump(data, f)
++
++
+ @hydra_task_config(args_cli.task, "rsl_rl_cfg_entry_point")
+ def main(env_cfg: ParkourManagerBasedRLEnv |ManagerBasedRLEnvCfg | DirectRLEnvCfg | DirectMARLEnvCfg, agent_cfg: ParkourRslRlOnPolicyRunnerCfg):
+     """Train with RSL-RL agent."""

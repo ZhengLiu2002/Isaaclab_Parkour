@@ -9,6 +9,14 @@
 import os 
 import argparse
 import sys
+from pathlib import Path
+import pickle
+
+# Ensure repository root is on sys.path so `scripts.*` imports work even if the
+# working directory is changed by the Isaac app launcher.
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
 from isaaclab.app import AppLauncher
 
@@ -84,7 +92,7 @@ from isaaclab.envs import (
     multi_agent_to_single_agent,
 )
 from isaaclab.utils.dict import print_dict
-from isaaclab.utils.io import dump_pickle, dump_yaml
+from isaaclab.utils.io import dump_yaml
 from parkour_tasks.extreme_parkour_task.config.go2.agents.parkour_rl_cfg import ParkourRslRlOnPolicyRunnerCfg
 from scripts.rsl_rl.vecenv_wrapper import ParkourRslRlVecEnvWrapper
 # import isaaclab_tasks  # noqa: F401
@@ -100,6 +108,17 @@ torch.backends.cuda.matmul.allow_tf32 = True
 torch.backends.cudnn.allow_tf32 = True
 torch.backends.cudnn.deterministic = False
 torch.backends.cudnn.benchmark = False
+
+
+def dump_pickle(filename: str, data: object):
+    """Lightweight pickle dumper to replace removed helper in isaaclab.utils.io."""
+    if not filename.endswith(".pkl"):
+        filename += ".pkl"
+    directory = os.path.dirname(filename)
+    if directory and not os.path.exists(directory):
+        os.makedirs(directory, exist_ok=True)
+    with open(filename, "wb") as f:
+        pickle.dump(data, f)
 
 
 @hydra_task_config(args_cli.task, "rsl_rl_cfg_entry_point")

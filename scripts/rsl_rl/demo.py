@@ -8,7 +8,13 @@ import argparse
 import os
 import sys
 import weakref
-sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../.."))
+from pathlib import Path
+
+# Ensure repository root is on sys.path for `scripts.*` imports.
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+
 import cli_args  # isort: skip
 from isaaclab.app import AppLauncher
 

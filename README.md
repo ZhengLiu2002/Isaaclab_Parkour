@@ -10,19 +10,15 @@ https://github.com/user-attachments/assets/aa9f7ece-83c1-404f-be50-6ae6a3ba3530
 ## How to install 
 
 ```
-cd IsaacLab ## going to IsaacLab
-```
+cd IsaacLab                                   # go to IsaacLab workspace
+git clone https://github.com/CAI23sbP/Isaaclab_Parkour.git
+cd Isaaclab_Parkour
+pip install -e .                              # install root package
 
-```
-https://github.com/CAI23sbP/Isaaclab_Parkour.git ## cloning this repo
-```
-
-```
-cd Isaaclab_Parkour && pip3 install -e .
-```
-
-```
-cd parkour_tasks && pip3 install -e .
+cd parkour_tasks
+pip install --no-build-isolation -e .         # avoid network fetch; toml already bundled
+# 如果之前装过旧版本失败，可先卸载再重装：
+# pip uninstall -y parkour_tasks && pip install --no-build-isolation -e .
 ```
 
 ## How to train policies
