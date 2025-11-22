@@ -1,48 +1,46 @@
-# Isaaclab_Parkour
+# 艾萨克实验室（Isaaclab）跑酷项目
 
-Isaaclab based Parkour locomotion 
+基于艾萨克实验室的跑酷运动
 
-Base model: [Extreme-Parkour](https://extreme-parkour.github.io/)
+基础模型：[极限跑酷](https://extreme-parkour.github.io/)
 
 https://github.com/user-attachments/assets/aa9f7ece-83c1-404f-be50-6ae6a3ba3530
 
-
-## How to install 
+## 安装方法
 
 ```
-cd IsaacLab                                   # go to IsaacLab workspace
+cd IsaacLab                                   # 进入艾萨克实验室工作区
 git clone https://github.com/CAI23sbP/Isaaclab_Parkour.git
 cd Isaaclab_Parkour
-pip install -e .                              # install root package
+pip install -e .                              # 安装根包
 
 cd parkour_tasks
-pip install --no-build-isolation -e .         # avoid network fetch; toml already bundled
+pip install --no-build-isolation -e .         # 避免网络获取；toml 文件已包含在内
 # 如果之前装过旧版本失败，可先卸载再重装：
 # pip uninstall -y parkour_tasks && pip install --no-build-isolation -e .
 ```
 
-## How to train policies
+## 训练策略的方法
 
-### 1.1. Training Teacher Policy
+### 1.1 训练教师策略
 
 ```
 python scripts/rsl_rl/train.py --task Isaac-Extreme-Parkour-Teacher-Unitree-Go2-v0 --seed 1 --headless
 ```
 
-### 1.2. Training Student Policy
+### 1.2 训练学生策略
 
 ```
 python scripts/rsl_rl/train.py --task Isaac-Extreme-Parkour-Student-Unitree-Go2-v0 --seed 1 --headless
 ```
 
-## How to play your policy 
+## 运行策略的方法
 
-### 2.1. Pretrained Teacher Policy 
+### 2.1 预训练教师策略
 
-Download Teacher Policy by this [link](https://drive.google.com/file/d/1JtGzwkBixDHUWD_npz2Codc82tsaec_w/view?usp=sharing)
+通过此[链接](https://drive.google.com/file/d/1JtGzwkBixDHUWD_npz2Codc82tsaec_w/view?usp=sharing)下载教师策略
 
-
-### 2.2. Playing Teacher Policy 
+### 2.2 运行教师策略
 
 ```
 python scripts/rsl_rl/play.py --task Isaac-Extreme-Parkour-Teacher-Unitree-Go2-Play-v0 --num_envs 16
@@ -50,18 +48,17 @@ python scripts/rsl_rl/play.py --task Isaac-Extreme-Parkour-Teacher-Unitree-Go2-P
 
 [Screencast from 2025년 08월 16일 12시 43분 38초.webm](https://github.com/user-attachments/assets/ff1f58db-2439-449c-b596-5a047c526f1f)
 
-
-### 2.3. Evaluation Teacher Policy
+### 2.3 评估教师策略
 
 ```
 python scripts/rsl_rl/evaluation.py --task Isaac-Extreme-Parkour-Teacher-Unitree-Go2-Eval-v0 
 ```
 
-### 3.1 Pretrained Student Policy 
+### 3.1 预训练学生策略
 
-Download Student Policy by this [link](https://drive.google.com/file/d/1qter_3JZgbBcpUnTmTrexKnle7sUpDVe/view?usp=sharing)
+通过此[链接](https://drive.google.com/file/d/1qter_3JZgbBcpUnTmTrexKnle7sUpDVe/view?usp=sharing)下载学生策略
 
-### 3.2. Playing Student Policy 
+### 3.2 运行学生策略
 
 ```
 python scripts/rsl_rl/play.py --task Isaac-Extreme-Parkour-Student-Unitree-Go2-Play-v0 --num_envs 16
@@ -69,81 +66,66 @@ python scripts/rsl_rl/play.py --task Isaac-Extreme-Parkour-Student-Unitree-Go2-P
 
 https://github.com/user-attachments/assets/82a5cecb-ffbf-4a46-8504-79188a147c40
 
-
-### 3.3. Evaluation Student Policy
+### 3.3 评估学生策略
 
 ```
 python scripts/rsl_rl/evaluation.py --task Isaac-Extreme-Parkour-Student-Unitree-Go2-Eval-v0 
 ```
 
-## How to deploy in IsaacLab
+## 在艾萨克实验室中部署的方法
 
 [Screencast from 2025년 08월 20일 18시 55분 01초.webm](https://github.com/user-attachments/assets/4fb1ba4b-1780-49b0-a739-bff0b95d9b66)
 
-### 4.1. Deployment Teacher Policy 
+### 4.1 部署教师策略
 
 ```
 python scripts/rsl_rl/demo.py --task Isaac-Extreme-Parkour-Teacher-Unitree-Go2-Play-v0 
 ```
 
-
-### 4.2. Deployment Student Policy 
+### 4.2 部署学生策略
 
 ```
 python scripts/rsl_rl/demo.py --task Isaac-Extreme-Parkour-Student-Unitree-Go2-Play-v0 
 ```
 
-## Testing your modules
+## 测试模块
 
 ```
-cd parkour_test/ ## You can test your modules in here
+cd parkour_test/ ## 你可以在这里测试你的模块
 ```
 
-## Visualize Control (ParkourViewportCameraController)
+## 可视化控制（跑酷视口相机控制器）
 
 ```
-press 1 or 2: Going to environment
-
-press 8: camera forward    
-
-press 4: camera leftward   
-
-press 6: camera rightward   
-
-press 5: camera backward
-
-press 0: Use free camera (can use mouse)
-
-press 1: Not use free camera (default)
+按 1 或 2：进入环境
+按 8：相机向前
+按 4：相机向左
+按 6：相机向右
+按 5：相机向后
+按 0：使用自由相机（可使用鼠标）
+按 1：不使用自由相机（默认）
 ```
 
+## 如何进行仿真到仿真或仿真到现实的部署
 
-## How to Deploy sim2sim or sim2real
+这是未来的工作，我会尽快开放这个仓库
 
-it is a future work, i will open this repo as soon as possible
+* [x] 仿真到仿真：从艾萨克实验室到 MuJoCo
+* [ ] 仿真到现实：从艾萨克实验室到现实世界
 
-* [x] sim2sim: isaaclab to mujoco
+查看此[仓库](https://github.com/CAI23sbP/go2_parkour_deploy)
 
-* [ ] sim2real: isaaclab to real world
+### 待办事项列表
 
-see this [repo](https://github.com/CAI23sbP/go2_parkour_deploy)
+* [x] 开放训练教师模型的代码
+* [x] 开放训练蒸馏的代码
+* [x] 通过演示开放在艾萨克实验室中部署策略的代码：代码参考[网站](https://isaac-sim.github.io/IsaacLab/main/source/overview/showroom.html)
+* [x] 开放通过仿真到仿真（MuJoCo）部署策略的代码
+* [ ] 开放在现实世界中部署策略的代码
 
+## 引用
 
-### TODO list
-
-* [x] Opening code for training Teacher model  
-
-* [x] Opening code for training Distillation 
-
-* [x] Opening code for deploying policy in IsaacLab by demo: code refer [site](https://isaac-sim.github.io/IsaacLab/main/source/overview/showroom.html)  
-
-* [x] Opening code for deploying policy by sim2sim (mujoco)
-
-* [ ] Opening code for deploying policy in real world 
-
-## Citation
-
-If you use this code for your research, you **must** cite the following paper:
+如果你将此代码用于你的研究，你**必须**引用以下论文：
 
 ```
 @article{cheng2023parkour,
@@ -179,7 +161,7 @@ explicit citation of the following repository:
 https://github.com/CAI23sbP/Isaaclab_Parkour
 ```
 
-## contact us 
+## 联系我们
 
 ```
 sbp0783@hanyang.ac.kr
