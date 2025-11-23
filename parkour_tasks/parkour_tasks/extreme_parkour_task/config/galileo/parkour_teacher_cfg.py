@@ -80,7 +80,15 @@ def _galileo_robot_cfg():
     )
 
 
-def place_galileo_hurdles(env, env_ids, spacing: float = 2.0, start: float = 2.0, layout: str = "train"):
+def place_galileo_hurdles(
+    env,
+    env_ids,
+    spacing: float = 2.0,
+    start: float = 2.0,
+    layout: str = "auto",
+    jump_to_mix_level: int = 6,
+    mix_refresh_prob: float = 0.1,
+):
     """Mixed curriculum: col 0-1 侧为“跳跃”，col 2-3 侧为“钻爬”。
 
     - 难度依据 terrain_level 归一化（level/8.0），逐步提高栏杆高度。
@@ -93,13 +101,24 @@ def place_galileo_hurdles(env, env_ids, spacing: float = 2.0, start: float = 2.0
     terrain_types = terrain.terrain_types[env_ids]  # 列索引
     env_origins = terrain.env_origins[env_ids]
     curriculum_on = getattr(terrain.cfg.terrain_generator, "curriculum", True)
+    # 自动课程：先 jump-only，达标后切混合，保留少量 jump-only 防遗忘
+    layout_mode = layout
+    if layout == "auto":
+        mean_level = terrain.terrain_levels.float().mean()
+        if mean_level >= jump_to_mix_level:
+            # 大概率使用竞赛布局，小概率回到 jump-only 保持记忆
+            layout_mode = "competition"
+            if torch.rand(1, device=env.device) < mix_refresh_prob:
+                layout_mode = "jump_train"
+        else:
+            layout_mode = "jump_train"
 
     # 固定比赛布局：直接使用 20/30/40/50cm 四根栏杆（有序递增）
-    if layout == "competition":
+    if layout_mode == "competition":
         num_visible = torch.full_like(terrain_levels, 4)
         difficulty = torch.ones_like(terrain_levels, dtype=torch.float)
         target_h = torch.tensor([0.20, 0.30, 0.40, 0.50], device=env.device).repeat(len(env_ids), 1)
-    elif layout == "fixed":
+    elif layout_mode == "fixed":
         num_visible = torch.full_like(terrain_levels, 4)
         difficulty = torch.ones_like(terrain_levels, dtype=torch.float)
         fixed_sequences = torch.tensor(
@@ -112,6 +131,15 @@ def place_galileo_hurdles(env, env_ids, spacing: float = 2.0, start: float = 2.0
         )
         seq_idx = torch.remainder(terrain_levels, fixed_sequences.shape[0])
         target_h = fixed_sequences[seq_idx]
+    elif layout_mode == "jump_train":
+        # 只在 jump 列练习跳跃，crawl 列隐藏
+        num_visible = torch.clamp(terrain_levels // 2 + 1, min=1, max=4)
+        difficulty = torch.clamp(terrain_levels.float() / 8.0, 0.0, 1.0)
+        target_h = torch.clamp(
+            (0.05 + 0.30 * difficulty).unsqueeze(1) + increments, 0.05, 0.50
+        )
+        # 隐藏 crawl 列
+        num_visible = torch.where(terrain_types < 2, num_visible, torch.zeros_like(num_visible))
     elif curriculum_on:
         num_visible = torch.clamp(terrain_levels // 2 + 1, min=1, max=4)
         difficulty = torch.clamp(terrain_levels.float() / 8.0, 0.0, 1.0)
@@ -337,7 +365,13 @@ class GalileoTeacherParkourEnvCfg(ParkourManagerBasedRLEnvCfg):
         self.events.place_hurdles = EventTermCfg(
             func=place_galileo_hurdles,
             mode="reset",
-            params={"spacing": 2.0, "start": 2.0, "layout": "train"},
+            params={
+                "spacing": 2.0,
+                "start": 2.0,
+                "layout": "auto",
+                "jump_to_mix_level": 6,
+                "mix_refresh_prob": 0.1,
+            },
         )
         # sensor update periods
         self.scene.height_scanner.update_period = self.sim.dt * self.decimation

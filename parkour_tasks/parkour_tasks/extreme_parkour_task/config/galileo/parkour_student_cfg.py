@@ -61,11 +61,17 @@ class GalileoStudentParkourEnvCfg(ParkourManagerBasedRLEnvCfg):
             self.events.place_hurdles = EventTermCfg(
                 func=place_galileo_hurdles,
                 mode="reset",
-                params={"spacing": 2.0, "start": 2.0, "layout": "train"},
+                params={
+                    "spacing": 2.0,
+                    "start": 2.0,
+                    "layout": "auto",
+                    "jump_to_mix_level": 6,
+                    "mix_refresh_prob": 0.1,
+                },
             )
         self.events.place_hurdles.params["spacing"] = 2.0  # type: ignore[attr-defined]
         self.events.place_hurdles.params["start"] = 2.0  # type: ignore[attr-defined]
-        self.events.place_hurdles.params["layout"] = "train"  # type: ignore[attr-defined]
+        self.events.place_hurdles.params["layout"] = "auto"  # type: ignore[attr-defined]
         # ensure mass/com events target base_link
         self.events.randomize_rigid_body_mass.params["asset_cfg"].body_names = "base_link"
         self.events.randomize_rigid_body_com.params["asset_cfg"].body_names = "base_link"

@@ -188,12 +188,12 @@ class TeacherRewardsCfg:
     )
     reward_jump_clearance = RewTerm(
         func=rewards.reward_jump_clearance,
-        weight=2.0,
+        weight=3.0,
         params={"asset_cfg": SceneEntityCfg("robot")},
     )
     reward_crawl_clearance = RewTerm(
         func=rewards.reward_crawl_clearance,
-        weight=-1.0,
+        weight=-2.0,
         params={"asset_cfg": SceneEntityCfg("robot")},
     )
     reward_delta_torques = RewTerm(

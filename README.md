@@ -22,27 +22,43 @@ pip install --no-build-isolation -e .         # 避免网络获取；toml 文件
 
 ## 训练策略的方法
 
-### 1.1 训练教师策略
+### Galileo 训练流程（自动跳→混合）
 
+- 课程逻辑：`layout="auto"` 先在跳跃列练习低杆跳（jump_train），平均 terrain_level 达阈值后自动切换到竞赛布局（20/30/40/50），并以小概率回到 jump_train 防遗忘。
+- 奖励：跳跃奖励权重高（3.0），钻爬惩罚加大（-2.0），引导先学跳跃再学策略切换。
+- 教师建议开启特权杆高观测（默认），学生保持非特权。
+
+**单机单卡示例**
 ```bash
 cd /home/lz/Project/IsaacLab/Isaaclab_Parkour
+LOG_RUN_NAME=galileo_auto_teacher python scripts/rsl_rl/train.py \
+  --task parkour_tasks/extreme_parkour_task/config/galileo/parkour_teacher_cfg.py \
+  --num_envs 2048 --max_iterations 50000 --run_name auto
 
-python scripts/rsl_rl/train.py --task Isaac-Extreme-Parkour-Teacher-Unitree-Go2-v0 --seed 1 --headless
-
-python scripts/rsl_rl/train.py --task Isaac-Galileo-Parkour-Teacher-v0 --seed 1 --headless --enable_cameras  # Galileo 栏杆课程
-
+LOG_RUN_NAME=galileo_auto_student python scripts/rsl_rl/train.py \
+  --task parkour_tasks/extreme_parkour_task/config/galileo/parkour_student_cfg.py \
+  --num_envs 1024 --max_iterations 50000 --run_name auto
 ```
 
-### 1.2 训练学生策略
-
+**多卡分布式（4 卡示例）**
 ```bash
 cd /home/lz/Project/IsaacLab/Isaaclab_Parkour
-
-python scripts/rsl_rl/train.py --task Isaac-Extreme-Parkour-Student-Unitree-Go2-v0 --seed 1 --headless
-
-python scripts/rsl_rl/train.py --task Isaac-Galileo-Parkour-Student-v0 --seed 1 --headless --enable_cameras
-
+torchrun --nproc_per_node=4 scripts/rsl_rl/train.py \
+  --task parkour_tasks/extreme_parkour_task/config/galileo/parkour_teacher_cfg.py \
+  --distributed --num_envs 2048 --max_iterations 50000 \
+  --run_name auto --device cuda:0
 ```
+- `LOG_RUN_NAME` 环境变量可固定日志目录名，日志路径为 `logs/rsl_rl/<experiment>/<LOG_RUN_NAME>_<run_name>`。
+- `--num_envs` 为每卡环境数，按显存调整。
+
+**Play 可视化**
+```bash
+python scripts/rsl_rl/play.py \
+  --task parkour_tasks/extreme_parkour_task/config/galileo/parkour_teacher_cfg.py \
+  --checkpoint logs/rsl_rl/<exp>/<run>/checkpoints/ckpt_<iter>.pt \
+  --num_envs 16 --video_length 500
+```
+- Play 默认 `layout="competition"` 展示 20/30/40/50 固定栏杆；可在 cfg 中切换为 `fixed`（5/10/20/30/40/50 档）或 `auto` 复现训练逻辑。
 
 ## 运行策略的方法
 
@@ -50,7 +66,7 @@ python scripts/rsl_rl/train.py --task Isaac-Galileo-Parkour-Student-v0 --seed 1 
 
 通过此[链接](https://drive.google.com/file/d/1JtGzwkBixDHUWD_npz2Codc82tsaec_w/view?usp=sharing)下载教师策略
 
-### 2.2 运行教师策略
+### 2.2 可视化教师策略
 
 ```bash
 python scripts/rsl_rl/play.py --task Isaac-Extreme-Parkour-Teacher-Unitree-Go2-Play-v0 --num_envs 16
@@ -61,7 +77,7 @@ python scripts/rsl_rl/play.py --task Isaac-Galileo-Parkour-Teacher-Play-v0 --num
 
 [Screencast from 2025년 08월 16일 12시 43분 38초.webm](https://github.com/user-attachments/assets/ff1f58db-2439-449c-b596-5a047c526f1f)
 
-### 2.3 评估教师策略
+### 2.3 可视化教师策略
 
 ```bash
 python scripts/rsl_rl/evaluation.py --task Isaac-Extreme-Parkour-Teacher-Unitree-Go2-Eval-v0 
