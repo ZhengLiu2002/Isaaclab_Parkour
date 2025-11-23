@@ -155,6 +155,8 @@ class ParkourEvent(ParkourTerm):
         temp = self.terrain_goals[self.terrain.terrain_levels, self.terrain.terrain_types]
         last_col = temp[:, -1].unsqueeze(1)
         self.env_goals[:] = torch.cat((temp, last_col.repeat(1, self.cfg.num_future_goal_obs, 1)), dim=1)[:]
+        # 将航向点置于跑道中心（y=0），避免偏移
+        self.env_goals[:, :, 1] = 0.0
         self.cur_goals = self._gather_cur_goals()
         self.next_goals = self._gather_cur_goals(future=1)
 
@@ -182,7 +184,10 @@ class ParkourEvent(ParkourTerm):
 
     def _update_metrics(self):
         # logs data
-        self.metrics["terrain_levels"] = (self.terrain.terrain_levels.float()).to(device = 'cpu')
+        levels = self.terrain.terrain_levels.float()
+        self.metrics["terrain_levels"] = levels.to(device='cpu')
+        self.metrics["terrain_level_mean"] = torch.mean(levels).to(device='cpu')
+        self.metrics["terrain_level_max"] = torch.max(levels).to(device='cpu')
         robot_root_pos_w = self.robot.data.root_pos_w[:, :2] - self.env_origins[:, :2]
         self.metrics["far_from_current_goal"] = (torch.norm(self.cur_goals[:, :2] - robot_root_pos_w,dim =-1) - self.next_goal_threshold).to(device = 'cpu')
         self.metrics["current_goal_idx"] = self.cur_goal_idx.to(device='cpu', dtype=float)

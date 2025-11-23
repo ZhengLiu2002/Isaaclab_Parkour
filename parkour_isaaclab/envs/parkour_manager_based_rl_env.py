@@ -161,6 +161,22 @@ class ParkourManagerBasedRLEnv(ParkourManagerBasedEnv, gym.Env):
         # note: done after reset to get the correct observations for reset envs
         self.obs_buf = self.observation_manager.compute()
 
+        # logging: terrain level stats
+        if "log" not in self.extras:
+            self.extras["log"] = dict()
+        try:
+            levels = self.scene.terrain.terrain_levels
+            self.extras["log"]["terrain_level_mean"] = levels.float().mean().item()
+            max_lvl_cfg = getattr(self.scene.terrain, "max_terrain_level", None)
+            fixed_len = int(max_lvl_cfg) if max_lvl_cfg is not None else 10
+            fixed_len = max(fixed_len, int(levels.max().item()) if levels.numel() > 0 else 0)
+            hist = torch.zeros(fixed_len + 1, dtype=torch.long)
+            binc = torch.bincount(levels.cpu(), minlength=fixed_len + 1)
+            hist[: len(binc)] = binc[: len(hist)]
+            self.extras["log"]["terrain_level_hist"] = hist.tolist()
+        except Exception:
+            pass
+
         # return observations, rewards, resets and extras
         return self.obs_buf, self.reward_buf, self.reset_terminated, self.reset_time_outs, self.extras
 

@@ -30,7 +30,11 @@ class ParkourTerm(CommandTerm):
         extras = {}
         for metric_name, metric_value in self.metrics.items():
             extras[metric_name] = torch.mean(metric_value).item()
-            metric_value[env_ids] = 0.0
+            if torch.is_tensor(metric_value):
+                if metric_value.ndim == 0:
+                    metric_value.zero_()
+                else:
+                    metric_value[env_ids] = 0.0
 
         self._resample(env_ids)
 
@@ -103,4 +107,3 @@ class ParkourManager(CommandManager):
                 raise TypeError(f"Returned object for the term '{term_name}' is not of type ParkourType.")
             # add class to dict
             self._terms[term_name] = term
-

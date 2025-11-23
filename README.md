@@ -1,4 +1,4 @@
-# 艾萨克实验室（Isaaclab）跑酷项目
+# Isaaclab Parkour 项目
 
 基于艾萨克实验室的跑酷运动
 
@@ -8,7 +8,7 @@ https://github.com/user-attachments/assets/aa9f7ece-83c1-404f-be50-6ae6a3ba3530
 
 ## 安装方法
 
-```
+```bash
 cd IsaacLab                                   # 进入艾萨克实验室工作区
 git clone https://github.com/CAI23sbP/Isaaclab_Parkour.git
 cd Isaaclab_Parkour
@@ -24,14 +24,24 @@ pip install --no-build-isolation -e .         # 避免网络获取；toml 文件
 
 ### 1.1 训练教师策略
 
-```
+```bash
+cd /home/lz/Project/IsaacLab/Isaaclab_Parkour
+
 python scripts/rsl_rl/train.py --task Isaac-Extreme-Parkour-Teacher-Unitree-Go2-v0 --seed 1 --headless
+
+python scripts/rsl_rl/train.py --task Isaac-Galileo-Parkour-Teacher-v0 --seed 1 --headless --enable_cameras  # Galileo 栏杆课程
+
 ```
 
 ### 1.2 训练学生策略
 
-```
+```bash
+cd /home/lz/Project/IsaacLab/Isaaclab_Parkour
+
 python scripts/rsl_rl/train.py --task Isaac-Extreme-Parkour-Student-Unitree-Go2-v0 --seed 1 --headless
+
+python scripts/rsl_rl/train.py --task Isaac-Galileo-Parkour-Student-v0 --seed 1 --headless --enable_cameras
+
 ```
 
 ## 运行策略的方法
@@ -42,16 +52,22 @@ python scripts/rsl_rl/train.py --task Isaac-Extreme-Parkour-Student-Unitree-Go2-
 
 ### 2.2 运行教师策略
 
-```
+```bash
 python scripts/rsl_rl/play.py --task Isaac-Extreme-Parkour-Teacher-Unitree-Go2-Play-v0 --num_envs 16
+
+# Galileo 教师（四栏杆满难度）
+python scripts/rsl_rl/play.py --task Isaac-Galileo-Parkour-Teacher-Play-v0 --num_envs 16 --enable_cameras
 ```
 
 [Screencast from 2025년 08월 16일 12시 43분 38초.webm](https://github.com/user-attachments/assets/ff1f58db-2439-449c-b596-5a047c526f1f)
 
 ### 2.3 评估教师策略
 
-```
+```bash
 python scripts/rsl_rl/evaluation.py --task Isaac-Extreme-Parkour-Teacher-Unitree-Go2-Eval-v0 
+
+# Galileo 教师评估
+python scripts/rsl_rl/evaluation.py --task Isaac-Galileo-Parkour-Teacher-Play-v0 --num_envs 16 --enable_cameras
 ```
 
 ### 3.1 预训练学生策略
@@ -60,43 +76,55 @@ python scripts/rsl_rl/evaluation.py --task Isaac-Extreme-Parkour-Teacher-Unitree
 
 ### 3.2 运行学生策略
 
-```
+```bash
 python scripts/rsl_rl/play.py --task Isaac-Extreme-Parkour-Student-Unitree-Go2-Play-v0 --num_envs 16
+
+# Galileo 学生（深度视觉）
+python scripts/rsl_rl/play.py --task Isaac-Galileo-Parkour-Student-Play-v0 --num_envs 16 --enable_cameras
 ```
 
 https://github.com/user-attachments/assets/82a5cecb-ffbf-4a46-8504-79188a147c40
 
 ### 3.3 评估学生策略
 
-```
+```bash
 python scripts/rsl_rl/evaluation.py --task Isaac-Extreme-Parkour-Student-Unitree-Go2-Eval-v0 
+
+# Galileo 学生评估
+python scripts/rsl_rl/evaluation.py --task Isaac-Galileo-Parkour-Student-Play-v0 --num_envs 16 --enable_cameras
 ```
 
-## 在艾萨克实验室中部署的方法
+## 在 Isaac Lab 中部署的方法
 
 [Screencast from 2025년 08월 20일 18시 55분 01초.webm](https://github.com/user-attachments/assets/4fb1ba4b-1780-49b0-a739-bff0b95d9b66)
 
 ### 4.1 部署教师策略
 
-```
+```bash
 python scripts/rsl_rl/demo.py --task Isaac-Extreme-Parkour-Teacher-Unitree-Go2-Play-v0 
+
+# Galileo 部署（教师）
+python scripts/rsl_rl/demo.py --task Isaac-Galileo-Parkour-Teacher-Play-v0 --num_envs 8 --enable_cameras
 ```
 
 ### 4.2 部署学生策略
 
-```
+```bash
 python scripts/rsl_rl/demo.py --task Isaac-Extreme-Parkour-Student-Unitree-Go2-Play-v0 
+
+# Galileo 部署（学生）
+python scripts/rsl_rl/demo.py --task Isaac-Galileo-Parkour-Student-Play-v0 --num_envs 8 --enable_cameras
 ```
 
 ## 测试模块
 
-```
+```bash
 cd parkour_test/ ## 你可以在这里测试你的模块
 ```
 
 ## 可视化控制（跑酷视口相机控制器）
 
-```
+```bash
 按 1 或 2：进入环境
 按 8：相机向前
 按 4：相机向左
@@ -105,6 +133,24 @@ cd parkour_test/ ## 你可以在这里测试你的模块
 按 0：使用自由相机（可使用鼠标）
 按 1：不使用自由相机（默认）
 ```
+
+### 5.1 使用 tensorboard  
+
+```bash
+cd /home/lz/Project/IsaacLab/Isaaclab_Parkour
+tensorboard --logdir logs --port 6006
+```
+
+
+
+可视化窗口移动/锁视角说明（Isaac Sim 常用操作）：
+
+- 按 Tab 回到 viewport；按 Alt+LMB 旋转、Alt+MMB 平移、Alt+RMB/滚轮 缩放。
+- 开启自由相机：Viewport 工具条 → “Orbit/Fly” 模式；或按 F 聚焦选中物体，再用鼠标/滚轮导航。
+- 若脚本频繁刷新导致视角跳回，可在播放前手动选择 “Perspective” 相机并锁定到自由模式，再开始模拟；必要时关闭 HUD/窗口自动对焦（Viewport 右上角菜单）。
+- 在 play.py 运行时可用 --enable_cameras 保持传感器工作，GUI 模式下按 Space 暂停/继续，方便调整视角。
+
+
 
 ## 如何进行仿真到仿真或仿真到现实的部署
 

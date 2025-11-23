@@ -55,6 +55,7 @@ import gymnasium as gym
 import os
 import time
 import torch
+import numpy as np
 
 from scripts.rsl_rl.modules.on_policy_runner_with_extractor import OnPolicyRunnerWithExtractor
 
@@ -75,6 +76,28 @@ from scripts.rsl_rl.vecenv_wrapper import ParkourRslRlVecEnvWrapper
 import isaaclab_tasks  # noqa: F401
 from isaaclab_tasks.utils import get_checkpoint_path, parse_env_cfg
 
+
+
+def _print_terrain_summary(base_env):
+    """Log terrain generator shape and current terrain level/type distribution."""
+    try:
+        terrain = base_env.scene.terrain
+        levels = terrain.terrain_levels.cpu().numpy()
+        types = terrain.terrain_types.cpu().numpy()
+        uniq_lvl, lvl_counts = np.unique(levels, return_counts=True)
+        uniq_typ, typ_counts = np.unique(types, return_counts=True)
+        gen_cfg = terrain.cfg.terrain_generator
+        print("[INFO] Terrain generator layout:"
+              f" rows={getattr(gen_cfg, 'num_rows', '?')},"
+              f" cols={getattr(gen_cfg, 'num_cols', '?')},"
+              f" curriculum={getattr(gen_cfg, 'curriculum', '?')},"
+              f" difficulty_range={getattr(gen_cfg, 'difficulty_range', '?')}")
+        print("[INFO] Terrain level histogram (level:count):",
+              {int(k): int(v) for k, v in zip(uniq_lvl, lvl_counts)})
+        print("[INFO] Terrain type histogram (col_idx:count):",
+              {int(k): int(v) for k, v in zip(uniq_typ, typ_counts)})
+    except Exception as exc:  # pragma: no cover - debug aid
+        print(f"[WARN] Unable to print terrain summary: {exc}")
 
 
 def main():
@@ -168,6 +191,7 @@ def main():
     num_priv_explicit = estimator_paras["num_priv_explicit"]
     # reset environment
     obs, extras = env.get_observations()
+    _print_terrain_summary(env.unwrapped)
     timestep = 0
     # simulate environment
     while simulation_app.is_running():

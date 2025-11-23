@@ -24,7 +24,15 @@ class reward_feet_edge(ManagerTermBase):
         self.sensor_cfg = cfg.params["sensor_cfg"]
         self.asset_cfg = cfg.params["asset_cfg"]
         self.parkour_event: ParkourEvent =  env.parkour_manager.get_term(cfg.params["parkour_name"])
-        self.body_id = self.contact_sensor.find_bodies('base')[0]
+        # Support base or base_link naming.
+        for cand in ["base", "base_link"]:
+            try:
+                self.body_id = self.contact_sensor.find_bodies(cand)[0]
+                break
+            except Exception:
+                continue
+        else:
+            raise ValueError("Cannot find base/body for feet_edge reward; tried base/base_link")
         self.horizontal_scale = env.scene.terrain.cfg.terrain_generator.horizontal_scale
         size_x, size_y = env.scene.terrain.cfg.terrain_generator.size
         self.rows_offset = (size_x * env.scene.terrain.cfg.terrain_generator.num_rows/2)
@@ -156,6 +164,17 @@ def reward_orientation(
     rew[(terrain_names !='parkour_flat')[:,-1]] = 0.
     return rew
 
+
+def reward_lane_deviation(
+    env: ParkourManagerBasedRLEnv,
+    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+    lane_half_width: float = 1.0,
+) -> torch.Tensor:
+    """Penalize drifting outside the lane (y-axis offset from env origin)."""
+    asset: Articulation = env.scene[asset_cfg.name]
+    lateral = torch.abs(asset.data.root_pos_w[:, 1] - env.scene.env_origins[:, 1])
+    return -torch.clamp(lateral - lane_half_width, min=0.0)
+
 def reward_feet_stumble(
     env: ParkourManagerBasedRLEnv,        
     sensor_cfg: SceneEntityCfg ,
@@ -180,6 +199,48 @@ def reward_tracking_goal_vel(
     command_vel = env.command_manager.get_command('base_velocity')[:, 0]
     rew_move = torch.minimum(proj_vel, command_vel) / (command_vel + 1e-5)
     return rew_move
+
+
+def reward_crawl_clearance(env: ParkourManagerBasedRLEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
+    """在钻爬列惩罚机体最高点超过栏杆高度。"""
+    heights = getattr(env.scene, "hurdle_heights", None)
+    if heights is None:
+        return torch.zeros(env.num_envs, device=env.device)
+    terrain_types = env.scene.terrain.terrain_types
+    hurdle_h = heights.clone()
+    hurdle_h[hurdle_h < 0] = 0.0
+    max_h = hurdle_h.max(dim=1).values
+    ground_z = env.scene.env_origins[:, 2]
+    hurdle_z = ground_z + max_h
+    asset: Articulation = env.scene[asset_cfg.name]
+    body_max_z = asset.data.body_state_w[:, :, 2].max(dim=1).values
+    margin = 0.03
+    excess = torch.clamp(body_max_z - (hurdle_z - margin), min=0.0)
+    return -excess * (terrain_types >= 2)
+
+
+def reward_jump_clearance(env: ParkourManagerBasedRLEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
+    """在跳跃列奖励脚在接近栏杆时抬高越过栏杆。"""
+    heights = getattr(env.scene, "hurdle_heights", None)
+    if heights is None:
+        return torch.zeros(env.num_envs, device=env.device)
+    terrain_types = env.scene.terrain.terrain_types
+    start = env.cfg.events.place_hurdles.params.get("start", 2.0)
+    spacing = env.cfg.events.place_hurdles.params.get("spacing", 2.0)
+    hurdle_x = env.scene.env_origins[:, 0].unsqueeze(1) + start + spacing * torch.arange(4, device=env.device)
+    ground_z = env.scene.env_origins[:, 2].unsqueeze(1)
+    hurdle_z = ground_z + torch.clamp(heights, min=0.0)
+
+    asset: Articulation = env.scene[asset_cfg.name]
+    foot_ids = asset.find_bodies(".*_foot")[0]
+    feet_pos = asset.data.body_state_w[:, foot_ids, :3]
+    dx = feet_pos[:, :, 0].unsqueeze(-1) - hurdle_x.unsqueeze(1)
+    close_mask = torch.any(torch.abs(dx) < 0.3, dim=-1)
+    nearest_idx = torch.argmin(torch.abs(dx), dim=-1)
+    nearest_hurdle_z = torch.gather(hurdle_z, 1, nearest_idx)
+    clearance = feet_pos[:, :, 2] - (nearest_hurdle_z + 0.02)
+    foot_reward = torch.where(close_mask, clearance, torch.zeros_like(clearance))
+    return foot_reward.mean(dim=1) * (terrain_types < 2)
 
 def reward_tracking_yaw(     
     env: ParkourManagerBasedRLEnv, 
@@ -217,5 +278,13 @@ def reward_collision(
     sensor_cfg: SceneEntityCfg ,
 ) -> torch.Tensor:
     contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
+    # For robots with base_link naming, allow fallback if regex "base" fails.
+    if sensor_cfg.body_ids is None or len(sensor_cfg.body_ids) == 0:
+        for cand in ["base_link", "base"]:
+            try:
+                sensor_cfg.body_ids, _ = contact_sensor.find_bodies(cand)
+                break
+            except Exception:
+                continue
     net_contact_forces = contact_sensor.data.net_forces_w_history[:,0,sensor_cfg.body_ids]
     return torch.sum(1.*(torch.norm(net_contact_forces, dim=-1) > 0.1), dim=1)

@@ -36,12 +36,23 @@ class ExtremeParkourObservations(ManagerTermBase):
         self.sensor_cfg = cfg.params["sensor_cfg"]
         self.asset_cfg = cfg.params["asset_cfg"]
         self.history_length = cfg.params['history_length']
-        self._obs_history_buffer = torch.zeros(self.num_envs, self.history_length, 3 + 2 + 3 + 4 + 36 + 5, device=self.device)
+
+        # 延迟初始化，保证维度与实时观测对齐（兼容新增特征）。
+        self._obs_history_buffer = None
         self.delta_yaw = torch.zeros(self.num_envs, device=self.device)
         self.delta_next_yaw = torch.zeros(self.num_envs, device=self.device)
         self.measured_heights = torch.zeros(self.num_envs, 132, device=self.device)
         self.env = env
-        self.body_id = self.asset.find_bodies('base')[0]
+        # Galileo uses base_link; keep regex flexible.
+        base_candidates = ["base", "base_link"]
+        for cand in base_candidates:
+            try:
+                self.body_id = self.asset.find_bodies(cand)[0]
+                break
+            except Exception:
+                continue
+        else:
+            raise ValueError(f"Cannot find base body with patterns {base_candidates}")
         
     def reset(self, env_ids: Sequence[int] | None = None) -> None:
         self._obs_history_buffer[env_ids, :, :] = 0. 
@@ -82,6 +93,8 @@ class ExtremeParkourObservations(ManagerTermBase):
                             ),dim=-1)
         priv_explicit = self._get_priv_explicit()
         priv_latent = self._get_priv_latent()
+        if self._obs_history_buffer is None or self._obs_history_buffer.shape[2] != obs_buf.shape[1]:
+            self._obs_history_buffer = torch.zeros(self.num_envs, self.history_length, obs_buf.shape[1], device=self.device)
         observations = torch.cat([obs_buf, #53
                                   self.measured_heights, #132
                                   priv_explicit, # 9
@@ -116,7 +129,7 @@ class ExtremeParkourObservations(ManagerTermBase):
         return torch.cat((base_lin_vel * 2.0,
                         0 * base_lin_vel,
                         0 * base_lin_vel), dim=-1).to(self.device)
-    
+
     def _get_priv_latent(
         self,
         ):
@@ -137,6 +150,12 @@ class ExtremeParkourObservations(ManagerTermBase):
     
     def _get_heights(self):
         return torch.clip(self.ray_sensor.data.pos_w[:, 2].unsqueeze(1) - self.ray_sensor.data.ray_hits_w[..., 2] - 0.3, -1, 1).to(self.device)
+
+    def _get_hurdle_heights(self, env):
+        """Privileged hurdle heights (up to 4 bars), filled with -1 when absent."""
+        default = torch.full((self.num_envs, 4), -1.0, device=self.device)
+        heights = getattr(env.scene, "hurdle_heights", default)
+        return heights
 
 class image_features(ManagerTermBase):
     
