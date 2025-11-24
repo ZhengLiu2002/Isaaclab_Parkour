@@ -33,11 +33,11 @@ pip install --no-build-isolation -e .         # 避免网络获取；toml 文件
 cd /home/lz/Project/IsaacLab/Isaaclab_Parkour
 LOG_RUN_NAME=galileo_auto_teacher python scripts/rsl_rl/train.py \
   --task parkour_tasks/extreme_parkour_task/config/galileo/parkour_teacher_cfg.py \
-  --num_envs 2048 --max_iterations 50000 --run_name auto
+  --num_envs 4096 --max_iterations 50000 --run_name auto
 
 LOG_RUN_NAME=galileo_auto_student python scripts/rsl_rl/train.py \
   --task parkour_tasks/extreme_parkour_task/config/galileo/parkour_student_cfg.py \
-  --num_envs 1024 --max_iterations 50000 --run_name auto
+  --num_envs 2048 --max_iterations 50000 --run_name auto
 ```
 
 **多卡分布式（4 卡示例）**
@@ -45,7 +45,7 @@ LOG_RUN_NAME=galileo_auto_student python scripts/rsl_rl/train.py \
 cd /home/lz/Project/IsaacLab/Isaaclab_Parkour
 torchrun --nproc_per_node=4 scripts/rsl_rl/train.py \
   --task parkour_tasks/extreme_parkour_task/config/galileo/parkour_teacher_cfg.py \
-  --distributed --num_envs 2048 --max_iterations 50000 \
+  --distributed --num_envs 4096 --max_iterations 50000 \
   --run_name auto --device cuda:0
 ```
 - `LOG_RUN_NAME` 环境变量可固定日志目录名，日志路径为 `logs/rsl_rl/<experiment>/<LOG_RUN_NAME>_<run_name>`。
