@@ -20,7 +20,17 @@ pip install --no-build-isolation -e .         # 避免网络获取；toml 文件
 # pip uninstall -y parkour_tasks && pip install --no-build-isolation -e .
 ```
 
+## 清理缓存
+```bash
+find . -name "*.pyc" -delete
+find . -name "__pycache__" -delete
+```
+
 ## 训练策略的方法
+
+```bash
+conda activate isaaclab
+```
 
 ### Galileo 训练流程（自动跳→混合）
 
@@ -31,13 +41,13 @@ pip install --no-build-isolation -e .         # 避免网络获取；toml 文件
 **单机单卡示例**
 ```bash
 cd /home/lz/Project/IsaacLab/Isaaclab_Parkour
-LOG_RUN_NAME=galileo_auto_teacher python scripts/rsl_rl/train.py \
+LOG_RUN_NAME=galileo_teacher python scripts/rsl_rl/train.py \
   --task Isaac-Galileo-Parkour-Teacher-v0 \
-  --num_envs 4096 --max_iterations 50000 --run_name auto --headless
+  --num_envs 8192 --max_iterations 50000 --run_name auto --headless
 
-LOG_RUN_NAME=galileo_auto_student python scripts/rsl_rl/train.py \
+LOG_RUN_NAME=galileo_student python scripts/rsl_rl/train.py \
   --task Isaac-Galileo-Parkour-Student-v0 \
-  --num_envs 2048 --max_iterations 50000 --run_name auto --headless
+  --num_envs 4096 --max_iterations 50000 --run_name auto --headless
 ```
 
 **多卡分布式（4 卡示例）**

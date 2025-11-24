@@ -55,6 +55,35 @@ class DistillationWithExtractor():
         self.depth_actor = depth_actor
         self.depth_actor_optimizer = optim.Adam([*self.depth_actor.parameters(), *self.depth_encoder.parameters()], lr=depth_encoder_cfg["learning_rate"])
 
+    def broadcast_parameters(self):
+        """Synchronize all trainable modules across GPUs."""
+        if not self.is_multi_gpu:
+            return
+        state_to_sync = {
+            "policy": self.policy.state_dict(),
+            "estimator": self.estimator.state_dict(),
+            "depth_encoder": self.depth_encoder.state_dict(),
+            "depth_actor": self.depth_actor.state_dict(),
+        }
+        obj_list = [state_to_sync]
+        torch.distributed.broadcast_object_list(obj_list, src=0)
+        synced_state = obj_list[0]
+        self.policy.load_state_dict(synced_state["policy"])
+        self.estimator.load_state_dict(synced_state["estimator"])
+        self.depth_encoder.load_state_dict(synced_state["depth_encoder"])
+        self.depth_actor.load_state_dict(synced_state["depth_actor"])
+
+    def reduce_parameters(self):
+        """Average gradients for all modules across GPUs."""
+        if not self.is_multi_gpu:
+            return
+        modules = [self.policy, self.estimator, self.depth_encoder, self.depth_actor]
+        for module in modules:
+            for param in module.parameters():
+                if param.grad is not None:
+                    torch.distributed.all_reduce(param.grad, op=torch.distributed.ReduceOp.SUM)
+                    param.grad /= self.gpu_world_size
+
     def update_depth_actor(self, actions_buffer, yaws_buffer):
         depth_actor_loss = (actions_buffer).norm(p=2, dim=1).mean()
         yaw_loss = (yaws_buffer).norm(p=2, dim=1).mean()
@@ -62,7 +91,10 @@ class DistillationWithExtractor():
         loss = depth_actor_loss + yaw_loss
         self.depth_actor_optimizer.zero_grad()
         loss.backward()
+        if self.is_multi_gpu:
+            self.reduce_parameters()
         nn.utils.clip_grad_norm_(self.depth_actor.parameters(), self.max_grad_norm)
+        nn.utils.clip_grad_norm_(self.depth_encoder.parameters(), self.max_grad_norm)
         self.depth_actor_optimizer.step()
         loss_dict = {
             "depth_actor_loss": depth_actor_loss.item(),

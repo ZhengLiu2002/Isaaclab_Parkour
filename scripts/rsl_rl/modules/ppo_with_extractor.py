@@ -156,6 +156,39 @@ class PPOWithExtractor(PPO):
         self.storage.compute_returns(
             last_values, self.gamma, self.lam, normalize_advantage=not self.normalize_advantage_per_mini_batch
         )
+
+    def broadcast_parameters(self):
+        """Synchronize trainable modules across GPUs."""
+        if not self.is_multi_gpu:
+            return
+        state_to_sync = {
+            "policy": self.policy.state_dict(),
+            "estimator": self.estimator.state_dict(),
+        }
+        if self.rnd:
+            state_to_sync["rnd"] = self.rnd.state_dict()
+        obj_list = [state_to_sync]
+        torch.distributed.broadcast_object_list(obj_list, src=0)
+        synced_state = obj_list[0]
+        self.policy.load_state_dict(synced_state["policy"])
+        self.estimator.load_state_dict(synced_state["estimator"])
+        if self.rnd and "rnd" in synced_state:
+            self.rnd.load_state_dict(synced_state["rnd"])
+
+    def reduce_parameters(self):
+        """Average gradients of all trainable modules across GPUs."""
+        if not self.is_multi_gpu:
+            return
+
+        modules = [self.policy, self.estimator]
+        if self.rnd:
+            modules.append(self.rnd)
+
+        for module in modules:
+            for param in module.parameters():
+                if param.grad is not None:
+                    torch.distributed.all_reduce(param.grad, op=torch.distributed.ReduceOp.SUM)
+                    param.grad /= self.gpu_world_size
     
 
     def update(self):  # noqa: C901
@@ -230,6 +263,12 @@ class PPOWithExtractor(PPO):
                 with torch.no_grad():
                     advantages_batch = (advantages_batch - advantages_batch.mean()) / (advantages_batch.std() + 1e-8)
 
+            # zero grads for all optimizers before computing losses
+            self.optimizer.zero_grad()
+            self.estimator_optimizer.zero_grad()
+            if self.rnd_optimizer:
+                self.rnd_optimizer.zero_grad()
+
             # Perform symmetric augmentation
             if self.symmetry and self.symmetry["use_data_augmentation"]:
                 # augmentation using symmetry
@@ -272,11 +311,6 @@ class PPOWithExtractor(PPO):
             # Estimator
             priv_states_predicted = self.estimator(obs_batch[:, :self.num_prop])  # obs in batch is with true priv_states
             estimator_loss = (priv_states_predicted - obs_batch[:, self.num_prop+self.num_scan:self.num_prop+self.num_scan+self.priv_states_dim]).pow(2).mean()
-            self.estimator_optimizer.zero_grad()
-            estimator_loss.backward()
-            nn.utils.clip_grad_norm_(self.estimator.parameters(), self.max_grad_norm)
-            self.estimator_optimizer.step()
-
             # KL
             if self.desired_kl is not None and self.schedule == "adaptive":
                 with torch.inference_mode():
@@ -385,17 +419,21 @@ class PPOWithExtractor(PPO):
                 rnd_loss = mseloss(predicted_embedding, target_embedding)
 
 
-            self.optimizer.zero_grad()
+            estimator_loss.backward()
             loss.backward()
 
             if self.rnd:
-                self.rnd_optimizer.zero_grad()  # type: ignore
                 rnd_loss.backward()
 
             if self.is_multi_gpu:
                 self.reduce_parameters()
 
             nn.utils.clip_grad_norm_(self.policy.parameters(), self.max_grad_norm)
+            nn.utils.clip_grad_norm_(self.estimator.parameters(), self.max_grad_norm)
+            if self.rnd_optimizer:
+                nn.utils.clip_grad_norm_(self.rnd.predictor.parameters(), self.max_grad_norm)  # type: ignore
+
+            self.estimator_optimizer.step()
             self.optimizer.step()
 
             if self.rnd_optimizer:
