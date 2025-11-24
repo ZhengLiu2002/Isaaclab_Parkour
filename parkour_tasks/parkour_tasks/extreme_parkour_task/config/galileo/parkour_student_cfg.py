@@ -47,6 +47,7 @@ class GalileoStudentParkourEnvCfg(ParkourManagerBasedRLEnvCfg):
         self.sim.render_interval = self.decimation
         self.sim.physics_material = self.scene.terrain.physics_material
         self.sim.physx.gpu_max_rigid_patch_count = 10 * 2**18
+        self.sim.physx.gpu_found_lost_pairs_capacity = 10 * 1024 * 1024
         self.scene.depth_camera.update_period = self.sim.dt * self.decimation
         self.scene.height_scanner.update_period = self.sim.dt * self.decimation
         self.scene.contact_forces.update_period = self.sim.dt * self.decimation

@@ -53,10 +53,32 @@ LOG_RUN_NAME=galileo_student python scripts/rsl_rl/train.py \
 **多卡分布式（4 卡示例）**
 ```bash
 cd /home/lz/Project/IsaacLab/Isaaclab_Parkour
-torchrun --nproc_per_node=4 scripts/rsl_rl/train.py \
+
+
+# 清残留
+pkill -f isaaclab.python.kit || true
+pkill -f torchrun || true
+
+# 环境变量（禁止 P2P/IB/SHM，指定网卡，收窄 NCCL）
+export NCCL_P2P_DISABLE=1
+export NCCL_IB_DISABLE=1
+export NCCL_SHM_DISABLE=1
+export NCCL_SOCKET_IFNAME=ens3f3
+export NCCL_ALGO=Ring
+export NCCL_PROTO=Simple
+export NCCL_MIN_NCHANNELS=1
+export TORCH_NCCL_ASYNC_ERROR_HANDLING=1
+export OMP_NUM_THREADS=1
+export TORCH_DISTRIBUTED_DEBUG=INFO   # 或直接 unset
+
+# 可选：为了更清晰堆栈，定位时再加
+# export CUDA_LAUNCH_BLOCKING=1
+
+
+CUDA_VISIBLE_DEVICES=0,1,2,3 torchrun --nproc_per_node=4 scripts/rsl_rl/train.py \
   --task Isaac-Galileo-Parkour-Teacher-v0 \
-  --distributed --num_envs 4096 --max_iterations 50000 \
-  --run_name auto --device cuda:0
+  --distributed --num_envs 2048 --max_iterations 50000 \
+  --run_name debug-4g-safe --device cuda:0
 ```
 - `LOG_RUN_NAME` 环境变量可固定日志目录名，日志路径为 `logs/rsl_rl/<experiment>/<LOG_RUN_NAME>_<run_name>`。
 - `--num_envs` 为每卡环境数，按显存调整。
@@ -183,6 +205,50 @@ git commit -m "chore: remove large files and retry"
 # 4. 推送
 git push
 ```
+## 多卡训练常见故障与应急环境变量
+
+### 症状与根因
+- 报错：`CUDA error: an illegal memory access was encountered` 出现在第一次 NCCL 广播阶段，多数与服务器 IOMMU 开启或 PCIe 链路不平衡（x8 带宽）导致 P2P 受限有关。
+- 表现：NCCL 构建通信环卡死/崩溃；P2P 带宽/延迟测试很低；单卡正常，多卡失败。
+
+### 现有的“安全模式”环境变量（已验证可让 4 卡跑通）
+```bash
+export NCCL_P2P_DISABLE=1          # 禁用 GPU 间 P2P，绕过 IOMMU/PCIe 受限导致的非法访存
+export NCCL_IB_DISABLE=1           # 禁用 InfiniBand，强制走 socket
+export NCCL_SHM_DISABLE=1          # 禁用 NCCL 共享内存通道，避免 SHM 权限/容量问题
+export NCCL_SOCKET_IFNAME=ens3f3   # 指定网卡接口，避免 NCCL 绑定错误接口
+export NCCL_ALGO=Ring              # 固定 Ring 算法，减少拓扑自适应带来的不稳定
+export NCCL_PROTO=Simple           # 使用简单协议，降低对链路质量的要求
+export NCCL_MIN_NCHANNELS=1        # 减少并行通道数，降低带宽需求
+export TORCH_NCCL_ASYNC_ERROR_HANDLING=1  # 异步错误上报，避免 NCCL 挂死
+export OMP_NUM_THREADS=1           # 限制每进程 CPU 线程数，防止过度占用
+export TORCH_DISTRIBUTED_DEBUG=INFO  # 控制 NCCL/分布式日志量，过大可 unset
+```
+
+### 推荐启动示例（4 卡）
+```bash
+# 导出上述变量后运行
+CUDA_VISIBLE_DEVICES=0,1,2,3 torchrun --nproc_per_node=4 scripts/rsl_rl/train.py \
+  --task Isaac-Galileo-Parkour-Teacher-v0 \
+  --distributed --num_envs 2048 --max_iterations 50000 \
+  --run_name debug-4g-safe --device cuda:0
+```
+
+### 如果仍报错的排查顺序
+1) 进一步减小 `--num_envs`（例如 1024），或先用 2 卡/3 卡避开带宽差的槽位。  
+2) 临时加 `export CUDA_LAUNCH_BLOCKING=1` 获取更清晰堆栈（会变慢）。  
+3) 仍不行时，保持上述变量，抓取首个报错前后的日志定位。  
+
+### 长期最优方案（需运维/BIOS）
+- 关闭 BIOS 的 IOMMU/VT-d（或 grub 内核参数 `intel_iommu=off`），重启后恢复 P2P。
+- 确保 GPU 插在 x16 槽，或至少多卡训练挑同一 NUMA、带宽对称的卡。
+- 关闭 IOMMU 后可移除 `NCCL_P2P_DISABLE/NCCL_IB_DISABLE/NCCL_SHM_DISABLE`，保留 `TORCH_NCCL_ASYNC_ERROR_HANDLING=1`，再逐步放大 `--num_envs` 以获得最高吞吐。
+
+### 如何更高效利用显卡
+- 在安全模式下，逐步提升 `--num_envs`，观察每卡显存与吞吐，找到最优点。  
+- 若 rank0 占用更高，可减少可视化或让主进程不做额外负载。  
+- 关闭 IOMMU 后，恢复 P2P 并移除禁用变量，吞吐和延迟会显著改善。
+
 
 可视化窗口移动/锁视角说明（Isaac Sim 常用操作）：
 

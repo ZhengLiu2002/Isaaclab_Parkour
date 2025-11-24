@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from isaaclab.managers import ManagerTermBase, SceneEntityCfg
 from isaaclab.sensors import ContactSensor
 from isaaclab.assets import Articulation
-from isaaclab.utils.math  import euler_xyz_from_quat, wrap_to_pi, quat_apply
+from isaaclab.utils.math import euler_xyz_from_quat
 from parkour_isaaclab.envs.mdp.parkours import ParkourEvent 
 from collections.abc import Sequence
 
@@ -15,6 +15,197 @@ if TYPE_CHECKING:
 
 import cv2
 import numpy as np 
+
+# --- Galileo hurdle geometry (matched to galileo_parkour assets) ---
+HURDLE_BAR_LENGTH = 1.6
+HURDLE_BAR_THICKNESS = 0.07
+HURDLE_BASE_THICKNESS = 0.04
+
+# --- Guidance defaults tuned for Galileo body dimensions ---
+GUIDANCE_LANE_HALF_WIDTH = 0.45
+GUIDANCE_BACK_SENSE = 0.65
+GUIDANCE_DETECTION_RANGE = 1.8
+OBSTACLE_HEIGHT_THRESHOLD = 0.42
+HEIGHT_TARGET_FLAT = 0.43
+HEIGHT_TARGET_CRAWL_MIN = 0.25
+HEIGHT_TARGET_CRAWL_MAX = 0.34
+HEIGHT_TOLERANCE = 0.04
+GUIDANCE_SPEED_GATE = 0.18
+JUMP_WINDOW_FRONT = 0.55
+JUMP_WINDOW_BACK = -0.2
+JUMP_SAFETY_MARGIN = 0.08
+FEET_CLEARANCE_MARGIN = 0.05
+FEET_CLEARANCE_X = 0.28
+FEET_CLEARANCE_Y = HURDLE_BAR_LENGTH * 0.53
+TRAVERSAL_LAT_THRESHOLD = 0.35
+TRAVERSAL_BACK_WINDOW = 0.55
+
+MODE_FLAT = 0
+MODE_JUMP = 1
+MODE_CRAWL = 2
+
+
+def _get_yaw(quat: torch.Tensor) -> torch.Tensor:
+    """Return body yaw from quaternion."""
+    _, _, yaw = euler_xyz_from_quat(quat)
+    return yaw
+
+
+def _default_hurdle_spacing(env):
+    """Read hurdle spacing/start from the reset event."""
+    start, spacing = 2.0, 2.0
+    try:
+        place_cfg = getattr(env.cfg.events, "place_hurdles", None)
+        if place_cfg is not None:
+            start = place_cfg.params.get("start", start)
+            spacing = place_cfg.params.get("spacing", spacing)
+    except Exception:
+        pass
+    return float(start), float(spacing)
+
+
+def _get_hurdle_layout(
+    env,
+    base_thickness: float = HURDLE_BASE_THICKNESS,
+    bar_thickness: float = HURDLE_BAR_THICKNESS,
+):
+    """Return per-env hurdle positions/heights in world frame."""
+    heights = getattr(env.scene, "hurdle_heights", None)
+    if heights is None:
+        return None
+
+    valid_mask = heights >= 0.0
+    if not torch.any(valid_mask):
+        return None
+
+    start, spacing = _default_hurdle_spacing(env)
+    idxs = torch.arange(
+        heights.shape[1], device=env.device, dtype=env.scene.env_origins.dtype
+    )
+    start_t = torch.tensor(start, device=env.device, dtype=env.scene.env_origins.dtype)
+    spacing_t = torch.tensor(
+        spacing, device=env.device, dtype=env.scene.env_origins.dtype
+    )
+    x_positions = env.scene.env_origins[:, 0:1] + start_t + spacing_t * idxs
+    x_positions = x_positions.expand_as(heights)
+    y_positions = env.scene.env_origins[:, 1:2].expand_as(heights)
+    ground_z = env.scene.env_origins[:, 2:3]
+    # bar_top_z includes base and bar thickness to reflect actual collision height
+    bar_top_z = ground_z + base_thickness + torch.clamp(heights, min=0.0) + bar_thickness
+    return {
+        "x": x_positions,
+        "y": y_positions,
+        "top_z": bar_top_z,
+        "heights": heights,
+        "valid_mask": valid_mask,
+    }
+
+
+def _get_hurdle_cache(
+    env,
+    asset: Articulation,
+    lane_half_width: float = GUIDANCE_LANE_HALF_WIDTH,
+    back_extend: float = GUIDANCE_BACK_SENSE,
+    base_thickness: float = HURDLE_BASE_THICKNESS,
+    bar_thickness: float = HURDLE_BAR_THICKNESS,
+):
+    """Cache relative hurdle geometry to avoid repeated computation across reward terms."""
+    step = getattr(env, "common_step_counter", None)
+    cache = getattr(env, "_hurdle_cache", None)
+    if (
+        cache is not None
+        and cache.get("step") == step
+        and cache.get("lane_half_width") == lane_half_width
+        and cache.get("back_extend") == back_extend
+    ):
+        return cache
+
+    layout = _get_hurdle_layout(env, base_thickness, bar_thickness)
+    if layout is None:
+        env._hurdle_cache = {
+            "step": step,
+            "has_any": False,
+            "valid_mask": None,
+            "layout": None,
+        }
+        return env._hurdle_cache
+
+    root_xy = asset.data.root_pos_w[:, :2]
+    yaw = _get_yaw(asset.data.root_quat_w)
+    cos_yaw = torch.cos(yaw).unsqueeze(1)
+    sin_yaw = torch.sin(yaw).unsqueeze(1)
+
+    rel_x = layout["x"] - root_xy[:, 0:1]
+    rel_y = layout["y"] - root_xy[:, 1:2]
+    forward = rel_x * cos_yaw + rel_y * sin_yaw
+    lateral = -rel_x * sin_yaw + rel_y * cos_yaw
+
+    valid_mask = layout["valid_mask"] & (torch.abs(lateral) <= lane_half_width) & (
+        forward > -back_extend
+    )
+    has_any = torch.any(valid_mask, dim=1)
+
+    default_far = torch.full_like(forward, 1.0e3)
+    dist_abs = torch.where(valid_mask, torch.abs(forward), default_far)
+    min_abs, idx = torch.min(dist_abs, dim=1)
+    idx_expand = idx.unsqueeze(-1)
+    nearest_forward = forward.gather(1, idx_expand).squeeze(-1)
+    nearest_lateral = lateral.gather(1, idx_expand).squeeze(-1)
+    nearest_top_z = layout["top_z"].gather(1, idx_expand).squeeze(-1)
+    nearest_raw_h = layout["heights"].gather(1, idx_expand).squeeze(-1)
+
+    cache = {
+        "step": step,
+        "layout": layout,
+        "forward_distance": forward,
+        "lateral_distance": lateral,
+        "valid_mask": valid_mask,
+        "has_any": has_any,
+        "min_abs_dist": min_abs,
+        "nearest_forward": nearest_forward,
+        "nearest_lateral": nearest_lateral,
+        "nearest_top_z": nearest_top_z,
+        "nearest_raw_height": nearest_raw_h,
+        "yaw": yaw,
+        "lane_half_width": lane_half_width,
+        "back_extend": back_extend,
+    }
+    env._hurdle_cache = cache
+    return cache
+
+
+def _get_locomotion_mode(
+    env,
+    cache: dict | None,
+    height_threshold: float = OBSTACLE_HEIGHT_THRESHOLD,
+    detection_range: float = GUIDANCE_DETECTION_RANGE,
+):
+    """Return per-env mode: flat/jump/crawl based on nearest hurdle height and distance."""
+    mode = torch.full(
+        (env.num_envs,), MODE_FLAT, device=env.device, dtype=torch.long
+    )
+    if cache is None:
+        return mode
+
+    has_any = cache.get("has_any", None)
+    if has_any is None:
+        return mode
+    if isinstance(has_any, bool):
+        if not has_any:
+            return mode
+        has_any_mask = torch.ones(env.num_envs, device=env.device, dtype=torch.bool)
+    else:
+        has_any_mask = has_any
+
+    if not torch.any(has_any_mask):
+        return mode
+
+    is_near = has_any_mask & (cache["min_abs_dist"] < detection_range)
+    is_high = cache["nearest_raw_height"] >= height_threshold
+    mode[is_near & is_high] = MODE_CRAWL
+    mode[is_near & (~is_high)] = MODE_JUMP
+    return mode
+
 
 class reward_feet_edge(ManagerTermBase):
     def __init__(self, cfg: RewardTermCfg, env: ParkourManagerBasedRLEnv):
@@ -201,50 +392,226 @@ def reward_tracking_goal_vel(
     return rew_move
 
 
-def reward_crawl_clearance(env: ParkourManagerBasedRLEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
-    """在钻爬列惩罚机体最高点超过栏杆高度。"""
-    heights = getattr(env.scene, "hurdle_heights", None)
-    if heights is None:
-        return torch.zeros(env.num_envs, device=env.device)
-    terrain_types = env.scene.terrain.terrain_types
-    hurdle_h = heights.clone()
-    hurdle_h[hurdle_h < 0] = 0.0
-    max_h = hurdle_h.max(dim=1).values
-    ground_z = env.scene.env_origins[:, 2]
-    hurdle_z = ground_z + max_h
+def reward_height_guidance(
+    env: ParkourManagerBasedRLEnv,
+    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+    lane_half_width: float = GUIDANCE_LANE_HALF_WIDTH,
+    back_sense: float = GUIDANCE_BACK_SENSE,
+    detection_range: float = GUIDANCE_DETECTION_RANGE,
+    height_threshold: float = OBSTACLE_HEIGHT_THRESHOLD,
+    target_height: float = HEIGHT_TARGET_FLAT,
+    height_tolerance: float = HEIGHT_TOLERANCE,
+    speed_gate: float = GUIDANCE_SPEED_GATE,
+) -> torch.Tensor:
+    """平地高度引导：保持正常站立高度，速度门控避免刷分。"""
     asset: Articulation = env.scene[asset_cfg.name]
-    body_max_z = asset.data.body_state_w[:, :, 2].max(dim=1).values
-    margin = 0.03
-    excess = torch.clamp(body_max_z - (hurdle_z - margin), min=0.0)
-    return -excess * (terrain_types >= 2)
-
-
-def reward_jump_clearance(env: ParkourManagerBasedRLEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
-    """在跳跃列奖励脚在接近栏杆时抬高越过栏杆。"""
-    heights = getattr(env.scene, "hurdle_heights", None)
-    if heights is None:
+    cache = _get_hurdle_cache(
+        env,
+        asset,
+        lane_half_width=lane_half_width,
+        back_extend=back_sense,
+    )
+    mode = _get_locomotion_mode(
+        env,
+        cache,
+        height_threshold=height_threshold,
+        detection_range=detection_range,
+    )
+    active = mode == MODE_FLAT
+    if not torch.any(active):
         return torch.zeros(env.num_envs, device=env.device)
-    terrain_types = env.scene.terrain.terrain_types
-    start = env.cfg.events.place_hurdles.params.get("start", 2.0)
-    spacing = env.cfg.events.place_hurdles.params.get("spacing", 2.0)
-    hurdle_x = env.scene.env_origins[:, 0].unsqueeze(1) + start + spacing * torch.arange(4, device=env.device)
-    ground_z = env.scene.env_origins[:, 2].unsqueeze(1)
-    hurdle_z = ground_z + torch.clamp(heights, min=0.0)
+
+    robot_height = asset.data.root_pos_w[:, 2] - env.scene.env_origins[:, 2]
+    error = torch.abs(robot_height - target_height)
+    reward = torch.exp(-torch.square(error / (height_tolerance + 1e-6)))
+
+    planar_speed = torch.norm(asset.data.root_vel_w[:, :2], dim=1)
+    vel_gate = torch.clamp(planar_speed / (speed_gate + 1e-6), 0.0, 1.0)
+    return reward * active.float() * vel_gate
+
+
+def reward_crawl_clearance(
+    env: ParkourManagerBasedRLEnv,
+    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+    lane_half_width: float = GUIDANCE_LANE_HALF_WIDTH,
+    back_sense: float = GUIDANCE_BACK_SENSE,
+    detection_range: float = GUIDANCE_DETECTION_RANGE,
+    height_threshold: float = OBSTACLE_HEIGHT_THRESHOLD,
+    target_min_height: float = HEIGHT_TARGET_CRAWL_MIN,
+    target_max_height: float = HEIGHT_TARGET_CRAWL_MAX,
+    height_tolerance: float = HEIGHT_TOLERANCE,
+    clearance_margin: float = 0.06,
+) -> torch.Tensor:
+    """钻爬模式：越靠近高杆越要求压低机体，并奖励头部/背部留有余量。"""
+    asset: Articulation = env.scene[asset_cfg.name]
+    cache = _get_hurdle_cache(
+        env,
+        asset,
+        lane_half_width=lane_half_width,
+        back_extend=back_sense,
+    )
+    mode = _get_locomotion_mode(
+        env,
+        cache,
+        height_threshold=height_threshold,
+        detection_range=detection_range,
+    )
+    active = mode == MODE_CRAWL
+    if cache is None or not torch.any(active):
+        return torch.zeros(env.num_envs, device=env.device)
+
+    robot_height = asset.data.root_pos_w[:, 2] - env.scene.env_origins[:, 2]
+    target = torch.clamp(
+        cache["nearest_raw_height"] - 0.15,
+        min=target_min_height,
+        max=target_max_height,
+    )
+    dist_weight = torch.clamp(1.0 - cache["min_abs_dist"] / detection_range, 0.0, 1.0)
+    current_tol = height_tolerance * (1.0 + 2.0 * (1.0 - dist_weight))
+    posture_reward = torch.exp(
+        -torch.square((robot_height - target) / (current_tol + 1e-6))
+    )
+
+    body_max_z = asset.data.body_state_w[:, :, 2].max(dim=1).values
+    clearance = cache["nearest_top_z"] - body_max_z + clearance_margin
+    clearance_reward = torch.sigmoid(clearance * 30.0)
+
+    return active.float() * dist_weight * (0.6 * posture_reward + 0.4 * clearance_reward)
+
+
+def reward_jump_clearance(
+    env: ParkourManagerBasedRLEnv,
+    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+    lane_half_width: float = GUIDANCE_LANE_HALF_WIDTH,
+    back_sense: float = GUIDANCE_BACK_SENSE,
+    detection_range: float = GUIDANCE_DETECTION_RANGE,
+    height_threshold: float = OBSTACLE_HEIGHT_THRESHOLD,
+    jump_window_front: float = JUMP_WINDOW_FRONT,
+    jump_window_back: float = JUMP_WINDOW_BACK,
+    safety_margin: float = JUMP_SAFETY_MARGIN,
+) -> torch.Tensor:
+    """跳跃模式：在障碍窗口内奖励抬脚高度，按杆高自适应尺度。"""
+    asset: Articulation = env.scene[asset_cfg.name]
+    cache = _get_hurdle_cache(
+        env,
+        asset,
+        lane_half_width=lane_half_width,
+        back_extend=back_sense,
+    )
+    if cache is None or cache.get("layout") is None:
+        return torch.zeros(env.num_envs, device=env.device)
+
+    mode = _get_locomotion_mode(
+        env,
+        cache,
+        height_threshold=height_threshold,
+        detection_range=detection_range,
+    )
+    active = mode == MODE_JUMP
+    has_hurdle = cache.get("has_any", torch.zeros(env.num_envs, device=env.device, dtype=torch.bool))
+    in_window = (
+        active
+        & has_hurdle
+        & (cache["nearest_forward"] <= jump_window_front)
+        & (cache["nearest_forward"] >= jump_window_back)
+    )
+    if not torch.any(in_window):
+        return torch.zeros(env.num_envs, device=env.device)
+
+    foot_ids = asset.find_bodies(".*_foot")[0]
+    feet_pos = asset.data.body_state_w[:, foot_ids, 2]
+    max_foot_height = feet_pos.max(dim=1).values
+
+    desired_clearance = cache["nearest_top_z"] + safety_margin
+    height_scale = torch.clamp(cache["nearest_raw_height"] / 0.35, 0.8, 1.4)
+    clearance = max_foot_height - desired_clearance
+    reward = torch.sigmoid(clearance * 25.0) * height_scale
+    return reward * in_window.float()
+
+
+def reward_feet_clearance(
+    env: ParkourManagerBasedRLEnv,
+    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+    check_margin_x: float = FEET_CLEARANCE_X,
+    check_margin_y: float = FEET_CLEARANCE_Y,
+    safety_margin: float = FEET_CLEARANCE_MARGIN,
+) -> torch.Tensor:
+    """惩罚在杆附近脚抬得过低，专门防止后腿挂杆。"""
+    layout = _get_hurdle_layout(env)
+    if layout is None:
+        return torch.zeros(env.num_envs, device=env.device)
 
     asset: Articulation = env.scene[asset_cfg.name]
     foot_ids = asset.find_bodies(".*_foot")[0]
     feet_pos = asset.data.body_state_w[:, foot_ids, :3]
-    dx = feet_pos[:, :, 0].unsqueeze(-1) - hurdle_x.unsqueeze(1)
-    close_mask = torch.any(torch.abs(dx) < 0.3, dim=-1)
-    nearest_idx = torch.argmin(torch.abs(dx), dim=-1)
-    nearest_hurdle_z = torch.gather(hurdle_z, 1, nearest_idx)
-    clearance = feet_pos[:, :, 2] - (nearest_hurdle_z + 0.02)
-    # 高杆给予更大权重，低杆仍有正向引导
-    ground_z = env.scene.env_origins[:, 2:3]
-    height_scale = torch.clamp((nearest_hurdle_z - ground_z) / 0.5, 0.3, 1.5)
-    foot_reward = torch.where(close_mask, clearance, torch.zeros_like(clearance))
-    # 按每只脚的栏杆高度加权后再取平均，避免维度不匹配
-    return (foot_reward * height_scale).mean(dim=1) * (terrain_types < 2)
+
+    # Broadcast hurdles across feet: feet (N, F, 1), hurdles (N, 1, H)
+    layout_x = layout["x"].unsqueeze(1)
+    layout_y = layout["y"].unsqueeze(1)
+    layout_top_z = layout["top_z"].unsqueeze(1)
+    layout_mask = layout["valid_mask"].unsqueeze(1)
+
+    dx = feet_pos[:, :, 0].unsqueeze(-1) - layout_x
+    dy = feet_pos[:, :, 1].unsqueeze(-1) - layout_y
+    dz = feet_pos[:, :, 2].unsqueeze(-1) - layout_top_z
+
+    near_x = torch.abs(dx) < check_margin_x
+    near_y = torch.abs(dy) < check_margin_y
+    mask = layout_mask & near_x & near_y
+    if not torch.any(mask):
+        return torch.zeros(env.num_envs, device=env.device)
+
+    closeness = torch.clamp(1.0 - torch.abs(dx) / (check_margin_x + 1e-6), 0.0, 1.0)
+    violation_depth = torch.clamp(safety_margin - dz, min=0.0)
+    penalty = torch.sum(
+        torch.square(violation_depth) * mask.float() * closeness, dim=(1, 2)
+    )
+    return penalty
+
+
+def reward_successful_traversal(
+    env: ParkourManagerBasedRLEnv,
+    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+    lane_half_width: float = GUIDANCE_LANE_HALF_WIDTH,
+    back_sense: float = GUIDANCE_BACK_SENSE,
+    traversal_window: float = TRAVERSAL_BACK_WINDOW,
+    lateral_threshold: float = TRAVERSAL_LAT_THRESHOLD,
+) -> torch.Tensor:
+    """刚越过障碍时对齐奖励，鼓励正向通过而非绕开。"""
+    asset: Articulation = env.scene[asset_cfg.name]
+    cache = _get_hurdle_cache(
+        env,
+        asset,
+        lane_half_width=lane_half_width,
+        back_extend=back_sense,
+    )
+    if cache is None or cache.get("layout") is None:
+        return torch.zeros(env.num_envs, device=env.device)
+
+    just_passed = (
+        cache["valid_mask"]
+        & (cache["forward_distance"] < 0.0)
+        & (cache["forward_distance"] > -traversal_window)
+    )
+    if not torch.any(just_passed):
+        return torch.zeros(env.num_envs, device=env.device)
+
+    best_forward = torch.where(
+        just_passed,
+        cache["forward_distance"],
+        torch.full_like(cache["forward_distance"], -1.0e3),
+    )
+    idx = torch.argmax(best_forward, dim=1)
+    env_ids = torch.arange(env.num_envs, device=env.device)
+    lateral_offset = cache["lateral_distance"][env_ids, idx]
+    passed_mask = torch.any(just_passed, dim=1)
+    lateral_term = torch.clamp(
+        1.0 - torch.abs(lateral_offset) / (lateral_threshold + 1e-6), 0.0, 1.0
+    )
+    forward_speed = torch.clamp(asset.data.root_vel_w[:, 0], min=0.0)
+    speed_term = torch.clamp(forward_speed / 0.4, 0.0, 1.0)
+    reward = lateral_term * speed_term
+    return torch.where(passed_mask, reward, torch.zeros_like(reward))
 
 def reward_tracking_yaw(     
     env: ParkourManagerBasedRLEnv, 
