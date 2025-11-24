@@ -211,6 +211,13 @@ git push
 - 报错：`CUDA error: an illegal memory access was encountered` 出现在第一次 NCCL 广播阶段，多数与服务器 IOMMU 开启或 PCIe 链路不平衡（x8 带宽）导致 P2P 受限有关。
 - 表现：NCCL 构建通信环卡死/崩溃；P2P 带宽/延迟测试很低；单卡正常，多卡失败。
 
+```bash
+# 检查一下进程 
+nvidia-smi
+# 杀死进程
+pkill -9 -u user_liuzheng python
+```
+
 ### 现有的“安全模式”环境变量（已验证可让 4 卡跑通）
 ```bash
 export NCCL_P2P_DISABLE=1          # 禁用 GPU 间 P2P，绕过 IOMMU/PCIe 受限导致的非法访存
@@ -230,9 +237,26 @@ export TORCH_DISTRIBUTED_DEBUG=INFO  # 控制 NCCL/分布式日志量，过大�
 # 导出上述变量后运行
 CUDA_VISIBLE_DEVICES=0,1,2,3 torchrun --nproc_per_node=4 scripts/rsl_rl/train.py \
   --task Isaac-Galileo-Parkour-Teacher-v0 \
-  --distributed --num_envs 2048 --max_iterations 50000 \
-  --run_name debug-4g-safe --device cuda:0
+  --distributed --num_envs 3500 --max_iterations 50000 \
+  --run_name parkour-teacher --device cuda:0 --seed 1234
 ```
+
+### 推荐启动示例（8 卡）
+```bash
+# 导出上述变量后运行
+CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 torchrun --nproc_per_node=8 scripts/rsl_rl/train.py \
+  --task Isaac-Galileo-Parkour-Teacher-v0 \
+  --distributed --num_envs 3500 --max_iterations 50000 \
+  --run_name parkour-teacher --device cuda:0
+```
+
+--num_envs 2048：这是每个进程/每张参与的 GPU 的环境数。4 张卡跑时，总环境数 ≈ 2048 × 4 = 8192（脚本默认每 rank 创建 num_envs 个 env）。
+训练方式：用 DDP/分布式数据并行。每张卡各自维护同一份模型副本，独立采样自己这 2048 个环境、算各自的 loss/grad。
+通信内容与时机：
+启动时：rank0 广播初始参数/缓冲到所有 rank。
+每次 backward 后：所有参数梯度 All-Reduce 求平均，确保各卡参数保持一致；然后各卡各自更新本地模型副本。
+可能还有少量标量/指标的 All-Reduce（如 loss/奖励统计），但原始观测、动作、优势等 rollout 数据不跨卡传。
+每张卡的“分工”：采样与前向/后向在本卡完成；跨卡只同步模型参数（和少量指标），没有跨卡传观测/状态数据。
 
 ### 如果仍报错的排查顺序
 1) 进一步减小 `--num_envs`（例如 1024），或先用 2 卡/3 卡避开带宽差的槽位。  

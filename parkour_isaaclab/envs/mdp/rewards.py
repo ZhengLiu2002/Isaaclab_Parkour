@@ -16,33 +16,33 @@ if TYPE_CHECKING:
 import cv2
 import numpy as np 
 
-# --- Galileo hurdle geometry (matched to galileo_parkour assets) ---
-HURDLE_BAR_LENGTH = 1.6
-HURDLE_BAR_THICKNESS = 0.07
-HURDLE_BASE_THICKNESS = 0.04
+# --- Galileo 跨栏几何尺寸 (与 galileo_parkour 资源匹配) ---
+HURDLE_BAR_LENGTH = 1.6  # 跨栏杆的长度 (米)
+HURDLE_BAR_THICKNESS = 0.07  # 跨栏杆的厚度/直径 (米)
+HURDLE_BASE_THICKNESS = 0.04  # 跨栏底座的厚度 (米)
 
-# --- Guidance defaults tuned for Galileo body dimensions ---
-GUIDANCE_LANE_HALF_WIDTH = 0.45
-GUIDANCE_BACK_SENSE = 0.65
-GUIDANCE_DETECTION_RANGE = 1.8
-OBSTACLE_HEIGHT_THRESHOLD = 0.42
-HEIGHT_TARGET_FLAT = 0.43
-HEIGHT_TARGET_CRAWL_MIN = 0.25
-HEIGHT_TARGET_CRAWL_MAX = 0.34
-HEIGHT_TOLERANCE = 0.04
-GUIDANCE_SPEED_GATE = 0.18
-JUMP_WINDOW_FRONT = 0.55
-JUMP_WINDOW_BACK = -0.2
-JUMP_SAFETY_MARGIN = 0.08
-FEET_CLEARANCE_MARGIN = 0.05
-FEET_CLEARANCE_X = 0.28
-FEET_CLEARANCE_Y = HURDLE_BAR_LENGTH * 0.53
-TRAVERSAL_LAT_THRESHOLD = 0.35
-TRAVERSAL_BACK_WINDOW = 0.55
+# --- 为 Galileo 身体尺寸调整的默认引导参数 ---
+GUIDANCE_LANE_HALF_WIDTH = 0.4  # 引导车道的一半宽度 (米)
+GUIDANCE_BACK_SENSE = 0.65  # 向后感知/检测的距离 (米)
+GUIDANCE_DETECTION_RANGE = 1.2  # 障碍物检测范围 (米)
+OBSTACLE_HEIGHT_THRESHOLD = 0.35  # 确定为障碍物的最小高度阈值 (米)
+HEIGHT_TARGET_FLAT = 0.4  # 平地模式下的目标高度 (米)
+HEIGHT_TARGET_CRAWL_MIN = 0.25  # 爬行模式下的最小目标高度 (米)
+HEIGHT_TARGET_CRAWL_MAX = 0.34  # 爬行模式下的最大目标高度 (米)
+HEIGHT_TOLERANCE = 0.04  # 高度容差/允许的误差 (米)
+GUIDANCE_SPEED_GATE = 0.18  # 引导速度阈值/门限 (米/秒)
+JUMP_WINDOW_FRONT = 0.55  # 跳跃窗口的前沿距离 (在障碍物前) (米)
+JUMP_WINDOW_BACK = -0.2  # 跳跃窗口的后沿距离 (在障碍物后) (米)
+JUMP_SAFETY_MARGIN = 0.08  # 跳跃安全裕度 (米)
+FEET_CLEARANCE_MARGIN = 0.05  # 脚部间隙裕度 (米)
+FEET_CLEARANCE_X = 0.28  # 脚部在 X 轴上的清除/间隙距离 (米)
+FEET_CLEARANCE_Y = HURDLE_BAR_LENGTH * 0.53  # 脚部在 Y 轴上的清除/间隙距离 (基于栏杆长度) (米)
+TRAVERSAL_LAT_THRESHOLD = 0.35  # 穿越时的横向阈值 (米)
+TRAVERSAL_BACK_WINDOW = 0.55  # 穿越时的后退/向后窗口距离 (米)
 
-MODE_FLAT = 0
-MODE_JUMP = 1
-MODE_CRAWL = 2
+MODE_FLAT = 0  # 模式: 平地/正常行走
+MODE_JUMP = 1  # 模式: 跳跃跨越
+MODE_CRAWL = 2  # 模式: 爬行通过
 
 
 def _get_yaw(quat: torch.Tensor) -> torch.Tensor:
