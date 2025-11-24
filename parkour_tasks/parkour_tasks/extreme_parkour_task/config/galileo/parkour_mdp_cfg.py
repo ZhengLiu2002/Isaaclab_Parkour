@@ -119,8 +119,8 @@ class StudentRewardsCfg:
             "asset_cfg": SceneEntityCfg("robot"),
             "lane_half_width": 0.45,
             "back_sense": 0.65,
-            "detection_range": 1.8,
-            "target_height": 0.43,
+            "detection_range": 1.2,
+            "target_height": 0.4,
         },
     )
     reward_jump_clearance = RewTerm(
@@ -189,8 +189,8 @@ class TeacherRewardsCfg:
             "asset_cfg": SceneEntityCfg("robot"),
             "lane_half_width": 0.45,
             "back_sense": 0.65,
-            "detection_range": 1.8,
-            "target_height": 0.43,
+            "detection_range": 1.2,
+            "target_height": 0.4,
             "speed_gate": 0.18,
         },
     )
@@ -212,7 +212,7 @@ class TeacherRewardsCfg:
             "asset_cfg": SceneEntityCfg("robot"),
             "lane_half_width": 0.45,
             "back_sense": 0.65,
-            "detection_range": 1.8,
+            "detection_range": 1.2,
         },
     )
     reward_feet_clearance = RewTerm(
