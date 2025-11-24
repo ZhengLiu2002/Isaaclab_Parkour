@@ -168,7 +168,21 @@ cd /home/lz/Project/IsaacLab/Isaaclab_Parkour
 tensorboard --logdir logs --port 6006
 ```
 
+# git Using
 
+```bash
+# 1. 撤销最近一次 commit (把大文件退回到暂存区)
+git reset --soft HEAD~1
+
+# 2. 运行清理脚本 (把大文件从 git 追踪中移除)
+./clean_git.sh
+
+# 3. 重新提交 (这次就不包含大文件了)
+git commit -m "chore: remove large files and retry"
+
+# 4. 推送
+git push
+```
 
 可视化窗口移动/锁视角说明（Isaac Sim 常用操作）：
 
