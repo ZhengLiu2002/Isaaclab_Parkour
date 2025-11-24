@@ -113,6 +113,9 @@ def place_galileo_hurdles(
         else:
             layout_mode = "jump_train"
 
+    # 统一的栏杆高度增量（米），供各布局模式复用
+    increments = torch.tensor([0.00, 0.05, 0.10, 0.15], device=env.device)
+
     # 固定比赛布局：直接使用 20/30/40/50cm 四根栏杆（有序递增）
     if layout_mode == "competition":
         num_visible = torch.full_like(terrain_levels, 4)
@@ -157,7 +160,6 @@ def place_galileo_hurdles(
     base_heights[jump_mask] = 0.05 + 0.30 * difficulty[jump_mask]  # 5cm -> 35cm
     base_heights[crawl_mask] = 0.60 - 0.25 * difficulty[crawl_mask]  # 60cm -> 35cm
 
-    increments = torch.tensor([0.00, 0.05, 0.10, 0.15], device=env.device)
     target_x = env_origins[:, 0].unsqueeze(1) + start + spacing * torch.arange(4, device=env.device)
     target_y = env_origins[:, 1].unsqueeze(1)
     # 目标高度矩阵 shape (num_envs, 4)（仅用于选择最接近的资产）

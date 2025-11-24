@@ -32,19 +32,19 @@ pip install --no-build-isolation -e .         # 避免网络获取；toml 文件
 ```bash
 cd /home/lz/Project/IsaacLab/Isaaclab_Parkour
 LOG_RUN_NAME=galileo_auto_teacher python scripts/rsl_rl/train.py \
-  --task parkour_tasks/extreme_parkour_task/config/galileo/parkour_teacher_cfg.py \
-  --num_envs 4096 --max_iterations 50000 --run_name auto
+  --task Isaac-Galileo-Parkour-Teacher-v0 \
+  --num_envs 4096 --max_iterations 50000 --run_name auto --headless
 
 LOG_RUN_NAME=galileo_auto_student python scripts/rsl_rl/train.py \
-  --task parkour_tasks/extreme_parkour_task/config/galileo/parkour_student_cfg.py \
-  --num_envs 2048 --max_iterations 50000 --run_name auto
+  --task Isaac-Galileo-Parkour-Student-v0 \
+  --num_envs 2048 --max_iterations 50000 --run_name auto --headless
 ```
 
 **多卡分布式（4 卡示例）**
 ```bash
 cd /home/lz/Project/IsaacLab/Isaaclab_Parkour
 torchrun --nproc_per_node=4 scripts/rsl_rl/train.py \
-  --task parkour_tasks/extreme_parkour_task/config/galileo/parkour_teacher_cfg.py \
+  --task Isaac-Galileo-Parkour-Teacher-v0 \
   --distributed --num_envs 4096 --max_iterations 50000 \
   --run_name auto --device cuda:0
 ```
@@ -54,11 +54,12 @@ torchrun --nproc_per_node=4 scripts/rsl_rl/train.py \
 **Play 可视化**
 ```bash
 python scripts/rsl_rl/play.py \
-  --task parkour_tasks/extreme_parkour_task/config/galileo/parkour_teacher_cfg.py \
+  --task Isaac-Galileo-Parkour-Teacher-Play-v0 \
   --checkpoint logs/rsl_rl/<exp>/<run>/checkpoints/ckpt_<iter>.pt \
   --num_envs 16 --video_length 500
 ```
 - Play 默认 `layout="competition"` 展示 20/30/40/50 固定栏杆；可在 cfg 中切换为 `fixed`（5/10/20/30/40/50 档）或 `auto` 复现训练逻辑。
+- `--task` 参数需要使用已注册的 Gym 环境名（例如 `Isaac-Galileo-Parkour-Teacher-v0`），不要传入 cfg 文件路径；可运行 `python list_envs.py` 查看当前可用的环境 ID。
 
 ## 运行策略的方法
 

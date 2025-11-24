@@ -243,7 +243,8 @@ def reward_jump_clearance(env: ParkourManagerBasedRLEnv, asset_cfg: SceneEntityC
     ground_z = env.scene.env_origins[:, 2:3]
     height_scale = torch.clamp((nearest_hurdle_z - ground_z) / 0.5, 0.3, 1.5)
     foot_reward = torch.where(close_mask, clearance, torch.zeros_like(clearance))
-    return (foot_reward.mean(dim=1) * height_scale.squeeze(1)) * (terrain_types < 2)
+    # 按每只脚的栏杆高度加权后再取平均，避免维度不匹配
+    return (foot_reward * height_scale).mean(dim=1) * (terrain_types < 2)
 
 def reward_tracking_yaw(     
     env: ParkourManagerBasedRLEnv, 
