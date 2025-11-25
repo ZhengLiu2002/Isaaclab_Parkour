@@ -613,6 +613,34 @@ def reward_successful_traversal(
     reward = lateral_term * speed_term
     return torch.where(passed_mask, reward, torch.zeros_like(reward))
 
+
+def reward_foot_symmetry(
+    env: ParkourManagerBasedRLEnv,
+    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+    height_scale: float = 0.12,
+) -> torch.Tensor:
+    """鼓励左右成对脚的高度一致，抑制单腿高抬/蹦跳步态。"""
+    asset: Articulation = env.scene[asset_cfg.name]
+    foot_pos = asset.data.body_state_w[:, asset.find_bodies(".*_foot")[0], 2]
+
+    # 尝试按命名获取配对顺序，否则按索引配对 (0-1 前腿, 2-3 后腿)
+    def _safe_id(regex: str, default: int) -> int:
+        try:
+            return asset.find_bodies(regex)[0][0]
+        except Exception:
+            return default
+
+    idx_fl = _safe_id("FL_foot", 0)
+    idx_fr = _safe_id("FR_foot", 1 if foot_pos.shape[1] > 1 else 0)
+    idx_rl = _safe_id("RL_foot", 2 if foot_pos.shape[1] > 2 else 0)
+    idx_rr = _safe_id("RR_foot", 3 if foot_pos.shape[1] > 3 else 0)
+
+    front_diff = torch.abs(foot_pos[:, idx_fl] - foot_pos[:, idx_fr])
+    rear_diff = torch.abs(foot_pos[:, idx_rl] - foot_pos[:, idx_rr])
+    # 指数衰减，差越大奖励越小
+    reward = torch.exp(-(front_diff + rear_diff) / (height_scale + 1e-6))
+    return reward
+
 def reward_tracking_yaw(     
     env: ParkourManagerBasedRLEnv, 
     parkour_name : str, 
