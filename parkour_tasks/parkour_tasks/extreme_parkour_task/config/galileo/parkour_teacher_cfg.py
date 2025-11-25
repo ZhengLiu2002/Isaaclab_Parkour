@@ -353,7 +353,7 @@ class GalileoTeacherParkourEnvCfg(ParkourManagerBasedRLEnvCfg):
     def __post_init__(self):
         super().__post_init__()
         self.decimation = 4
-        self.episode_length_s = 20.0
+        self.episode_length_s = 120.0
         self.sim.dt = 0.005
         self.sim.render_interval = self.decimation
         self.sim.physics_material = self.scene.terrain.physics_material
