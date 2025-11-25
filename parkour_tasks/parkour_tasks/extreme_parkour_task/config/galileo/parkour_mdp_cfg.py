@@ -36,7 +36,14 @@ class CommandsCfg:
 
 @configclass
 class ParkourEventsCfg:
-    base_parkour = parkours.ParkourEventsCfg(asset_name="robot")
+    base_parkour = parkours.ParkourEventsCfg(
+        asset_name="robot",
+        promotion_goal_threshold=0.75,
+        demotion_goal_threshold=0.25,
+        promotion_distance_ratio=0.7,
+        demotion_distance_ratio=0.3,
+        distance_progress_cap=18.0,
+    )
 
 
 @configclass

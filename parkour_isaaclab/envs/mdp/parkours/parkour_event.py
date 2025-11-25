@@ -34,6 +34,11 @@ class ParkourEvent(ParkourTerm):
         self.arrow_num = cfg.arrow_num
         self.env = env 
         self.debug_vis = cfg.debug_vis
+        self.promotion_goal_threshold = cfg.promotion_goal_threshold
+        self.demotion_goal_threshold = cfg.demotion_goal_threshold
+        self.promotion_distance_ratio = cfg.promotion_distance_ratio
+        self.demotion_distance_ratio = cfg.demotion_distance_ratio
+        self.distance_progress_cap = cfg.distance_progress_cap
                
         self.robot: Articulation = env.scene[cfg.asset_name]
         # -- metrics
@@ -144,8 +149,16 @@ class ParkourEvent(ParkourTerm):
 
         self.dis_to_start_pos = torch.norm(start_pos - self.robot.data.root_pos_w[env_ids, :2], dim=1)
         threshold = self.env.command_manager.get_command("base_velocity")[env_ids, 0] * self.episode_length_s
-        move_up = self.dis_to_start_pos > 0.7 * threshold
-        move_down = self.dis_to_start_pos < 0.3 * threshold
+        if self.distance_progress_cap is not None:
+            threshold = torch.clamp(threshold, max=self.distance_progress_cap)
+        goal_span = max(self.num_goals - 1, 1)
+        goal_completion = torch.clamp(self.cur_goal_idx[env_ids].float() / goal_span, 0.0, 1.0)
+        move_up_goal = goal_completion >= self.promotion_goal_threshold
+        move_down_goal = goal_completion <= self.demotion_goal_threshold
+        move_up_dist = self.dis_to_start_pos > self.promotion_distance_ratio * threshold
+        move_down_dist = self.dis_to_start_pos < self.demotion_distance_ratio * threshold
+        move_up = move_up_goal | move_up_dist
+        move_down = (~move_up_goal) & (move_down_goal | move_down_dist)
 
         robot_root_pos_w = self.robot.data.root_pos_w[:, :2] - self.env_origins[:, :2]
         self.terrain.terrain_levels[env_ids] += 1 * move_up - 1 * move_down

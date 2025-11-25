@@ -38,6 +38,11 @@ class ParkourEventsCfg:
     """Command specifications for the MDP."""
     base_parkour = parkours.ParkourEventsCfg(
         asset_name = 'robot',
+        promotion_goal_threshold=0.8,
+        demotion_goal_threshold=0.2,
+        promotion_distance_ratio=0.8,
+        demotion_distance_ratio=0.4,
+        distance_progress_cap=None,
         )
 
 @configclass

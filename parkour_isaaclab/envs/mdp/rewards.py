@@ -43,6 +43,9 @@ TRAVERSAL_BACK_WINDOW = 0.55  # 穿越时的后退/向后窗口距离 (米)
 MODE_FLAT = 0  # 模式: 平地/正常行走
 MODE_JUMP = 1  # 模式: 跳跃跨越
 MODE_CRAWL = 2  # 模式: 爬行通过
+HURDLE_LAYOUT_NONE = -1
+HURDLE_LAYOUT_JUMP = 0
+HURDLE_LAYOUT_CRAWL = 1
 
 
 def _get_yaw(quat: torch.Tensor) -> torch.Tensor:
@@ -77,6 +80,7 @@ def _get_hurdle_layout(
     valid_mask = heights >= 0.0
     if not torch.any(valid_mask):
         return None
+    modes = getattr(env.scene, "hurdle_modes", None)
 
     start, spacing = _default_hurdle_spacing(env)
     idxs = torch.arange(
@@ -92,13 +96,16 @@ def _get_hurdle_layout(
     ground_z = env.scene.env_origins[:, 2:3]
     # bar_top_z includes base and bar thickness to reflect actual collision height
     bar_top_z = ground_z + base_thickness + torch.clamp(heights, min=0.0) + bar_thickness
-    return {
+    layout = {
         "x": x_positions,
         "y": y_positions,
         "top_z": bar_top_z,
         "heights": heights,
         "valid_mask": valid_mask,
     }
+    if modes is not None:
+        layout["modes"] = modes
+    return layout
 
 
 def _get_hurdle_cache(
@@ -170,6 +177,10 @@ def _get_hurdle_cache(
         "lane_half_width": lane_half_width,
         "back_extend": back_extend,
     }
+    modes = layout.get("modes") if isinstance(layout, dict) else None
+    if modes is not None:
+        nearest_mode = modes.gather(1, idx_expand).squeeze(-1)
+        cache["nearest_mode"] = nearest_mode
     env._hurdle_cache = cache
     return cache
 
@@ -201,9 +212,20 @@ def _get_locomotion_mode(
         return mode
 
     is_near = has_any_mask & (cache["min_abs_dist"] < detection_range)
-    is_high = cache["nearest_raw_height"] >= height_threshold
-    mode[is_near & is_high] = MODE_CRAWL
-    mode[is_near & (~is_high)] = MODE_JUMP
+    override = cache.get("nearest_mode", None)
+    handled_override = torch.zeros_like(is_near, dtype=torch.bool)
+    if override is not None:
+        valid_override = override != HURDLE_LAYOUT_NONE
+        crawl_override = valid_override & (override == HURDLE_LAYOUT_CRAWL)
+        jump_override = valid_override & (override == HURDLE_LAYOUT_JUMP)
+        mode[is_near & crawl_override] = MODE_CRAWL
+        mode[is_near & jump_override] = MODE_JUMP
+        handled_override = valid_override
+    remaining = is_near & (~handled_override)
+    if torch.any(remaining):
+        is_high = cache["nearest_raw_height"] >= height_threshold
+        mode[remaining & is_high] = MODE_CRAWL
+        mode[remaining & (~is_high)] = MODE_JUMP
     return mode
 
 

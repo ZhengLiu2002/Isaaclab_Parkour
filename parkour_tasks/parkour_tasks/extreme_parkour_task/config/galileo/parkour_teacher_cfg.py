@@ -36,6 +36,9 @@ HURDLE_BASE_THICKNESS = 0.04
 HURDLE_BASE_DEPTH = 0.18
 HURDLE_POST_RADIUS = 0.05
 HURDLE_POST_Y_OFFSET = HURDLE_BAR_LENGTH * 0.5 - HURDLE_POST_RADIUS
+HURDLE_MODE_NONE = -1
+HURDLE_MODE_JUMP = 0
+HURDLE_MODE_CRAWL = 1
 
 
 def _hurdle_asset_name(height_cm: int, component: str) -> str:
@@ -88,6 +91,7 @@ def place_galileo_hurdles(
     layout: str = "auto",
     jump_to_mix_level: int = 6,
     mix_refresh_prob: float = 0.1,
+    warmup_levels: int = 1,
 ):
     """Mixed curriculum: col 0-1 侧为“跳跃”，col 2-3 侧为“钻爬”。
 
@@ -135,8 +139,11 @@ def place_galileo_hurdles(
         seq_idx = torch.remainder(terrain_levels, fixed_sequences.shape[0])
         target_h = fixed_sequences[seq_idx]
     elif layout_mode == "jump_train":
+        base_visible = torch.clamp(terrain_levels // 2 + 1, min=0, max=4)
+        warmup_mask = terrain_levels <= warmup_levels
+        base_visible = torch.where(warmup_mask, torch.zeros_like(base_visible), base_visible)
         # 只在 jump 列练习跳跃，crawl 列隐藏
-        num_visible = torch.clamp(terrain_levels // 2 + 1, min=1, max=4)
+        num_visible = base_visible
         difficulty = torch.clamp(terrain_levels.float() / 8.0, 0.0, 1.0)
         target_h = torch.clamp(
             (0.05 + 0.30 * difficulty).unsqueeze(1) + increments, 0.05, 0.50
@@ -144,7 +151,9 @@ def place_galileo_hurdles(
         # 隐藏 crawl 列
         num_visible = torch.where(terrain_types < 2, num_visible, torch.zeros_like(num_visible))
     elif curriculum_on:
-        num_visible = torch.clamp(terrain_levels // 2 + 1, min=1, max=4)
+        base_visible = torch.clamp(terrain_levels // 2 + 1, min=0, max=4)
+        warmup_mask = terrain_levels <= warmup_levels
+        num_visible = torch.where(warmup_mask, torch.zeros_like(base_visible), base_visible)
         difficulty = torch.clamp(terrain_levels.float() / 8.0, 0.0, 1.0)
         target_h = None  # lazy compute
     else:
@@ -170,7 +179,10 @@ def place_galileo_hurdles(
     # 缓存每个 env 的实际栏杆高度，供特权观测/奖励使用
     if not hasattr(env.scene, "hurdle_heights"):
         env.scene.hurdle_heights = torch.full((env.num_envs, 4), -1.0, device=env.device)
+    if not hasattr(env.scene, "hurdle_modes"):
+        env.scene.hurdle_modes = torch.full((env.num_envs, 4), HURDLE_MODE_NONE, device=env.device, dtype=torch.long)
     env.scene.hurdle_heights[env_ids] = -1.0  # 默认无栏杆
+    env.scene.hurdle_modes[env_ids] = HURDLE_MODE_NONE
 
     # 先隐藏全部组件
     for height_cm in HURDLE_HEIGHTS_CM:
@@ -203,6 +215,12 @@ def place_galileo_hurdles(
                 continue
 
             env.scene.hurdle_heights[active_ids, idx] = asset_h
+            lane_modes = torch.where(
+                terrain_types[env_sel] >= 2,
+                torch.full_like(active_ids, HURDLE_MODE_CRAWL, dtype=torch.long),
+                torch.full_like(active_ids, HURDLE_MODE_JUMP, dtype=torch.long),
+            )
+            env.scene.hurdle_modes[active_ids, idx] = lane_modes
             _place_static_hurdle(
                 env=env,
                 height_cm=height_cm,

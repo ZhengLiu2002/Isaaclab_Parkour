@@ -58,6 +58,11 @@ class ParkourEventsCfg(ParkourTermCfg):
 
     reach_goal_delay: float = 0.1
     next_goal_threshold: float = 0.2
+    promotion_goal_threshold: float = 0.8
+    demotion_goal_threshold: float = 0.2
+    promotion_distance_ratio: float = 0.8
+    demotion_distance_ratio: float = 0.4
+    distance_progress_cap: float | None = None
 
     future_goal_poses_visualizer_cfg: VisualizationMarkersCfg \
         = FUTURE_GOAL_MARKER_CFG.replace(prim_path="/Visuals/Command/future_goal_poses")
