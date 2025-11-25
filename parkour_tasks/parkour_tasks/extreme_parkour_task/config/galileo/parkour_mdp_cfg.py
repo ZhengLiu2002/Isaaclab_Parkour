@@ -168,6 +168,26 @@ class StudentRewardsCfg:
             "lateral_threshold": 0.35,
         },
     )
+    reward_torques = RewTerm(
+        func=rewards.reward_torques,
+        weight=-5.0e-6,
+        params={"asset_cfg": SceneEntityCfg("robot")},
+    )
+    reward_action_rate = RewTerm(
+        func=rewards.reward_action_rate,
+        weight=-0.06,
+        params={"asset_cfg": SceneEntityCfg("robot")},
+    )
+    reward_ang_vel_xy = RewTerm(
+        func=rewards.reward_ang_vel_xy,
+        weight=-0.06,
+        params={"asset_cfg": SceneEntityCfg("robot")},
+    )
+    reward_lin_vel_z = RewTerm(
+        func=rewards.reward_lin_vel_z,
+        weight=-0.15,
+        params={"asset_cfg": SceneEntityCfg("robot"), "parkour_name": "base_parkour"},
+    )
 
 
 @configclass

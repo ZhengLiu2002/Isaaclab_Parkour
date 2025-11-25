@@ -42,7 +42,7 @@ class GalileoStudentParkourEnvCfg(ParkourManagerBasedRLEnvCfg):
     def __post_init__(self):
         super().__post_init__()
         self.decimation = 4
-        self.episode_length_s = 20.0
+        self.episode_length_s = 120.0
         self.sim.dt = 0.005
         self.sim.render_interval = self.decimation
         self.sim.physics_material = self.scene.terrain.physics_material
@@ -103,7 +103,7 @@ class GalileoStudentParkourEnvCfg_PLAY(GalileoStudentParkourEnvCfg_EVAL):
     def __post_init__(self):
         super().__post_init__()
         self.scene.num_envs = 16
-        self.episode_length_s = 60.0
+        self.episode_length_s = 120.0
         self.scene.terrain.terrain_generator.difficulty_range = (0.7, 1.0)
         self.scene.terrain.terrain_generator.curriculum = False
         self.events.place_hurdles.params["layout"] = "competition"  # type: ignore[attr-defined]
