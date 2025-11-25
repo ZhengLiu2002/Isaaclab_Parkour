@@ -43,6 +43,7 @@ LOG_RUN_NAME=galileo_student python scripts/rsl_rl/train.py \
 ```bash
 
 cd IsaacLab/Isaaclab_Parkour/
+
 conda activate isaaclab
 
 # 可选：清理残留
