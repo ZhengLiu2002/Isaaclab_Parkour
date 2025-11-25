@@ -52,6 +52,8 @@ class GalileoStudentParkourEnvCfg(ParkourManagerBasedRLEnvCfg):
         self.scene.height_scanner.update_period = self.sim.dt * self.decimation
         self.scene.contact_forces.update_period = self.sim.dt * self.decimation
         self.scene.terrain.terrain_generator.curriculum = True
+        self.scene.terrain.terrain_generator.random_difficulty = False
+        self.scene.terrain.terrain_generator.difficulty_range = (0.0, 0.2)
         self.actions.joint_pos.use_delay = True
         self.actions.joint_pos.history_length = 8
         # place hurdles on reset

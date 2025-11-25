@@ -265,6 +265,9 @@ class GalileoParkourSceneCfg(ParkourDefaultSceneCfg):
         self.terrain.terrain_generator.num_rows = 10
         self.terrain.terrain_generator.num_cols = 4  # 0-1 列 jump，2-3 列 crawl
         self.terrain.terrain_generator.horizontal_scale = 0.1
+        self.terrain.terrain_generator.curriculum = True
+        self.terrain.terrain_generator.random_difficulty = False
+        self.terrain.terrain_generator.difficulty_range = (0.0, 0.2)
         for name, sub in self.terrain.terrain_generator.sub_terrains.items():
             sub.use_simplified = True
             sub.proportion = 1.0 if name == "parkour_flat" else 0.0
