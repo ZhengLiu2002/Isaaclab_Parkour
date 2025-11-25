@@ -41,6 +41,10 @@ LOG_RUN_NAME=galileo_student python scripts/rsl_rl/train.py \
 
 ### 多卡分布式（4 卡示例）
 ```bash
+
+cd IsaacLab/Isaaclab_Parkour/
+conda activate isaaclab
+
 # 可选：清理残留
 pkill -f isaaclab.python.kit || true
 pkill -f torchrun || true
@@ -60,6 +64,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 torchrun --nproc_per_node=4 scripts/rsl_rl/train.py
   --task Isaac-Galileo-Parkour-Teacher-v0 \
   --distributed --num_envs 3500 --max_iterations 50000 \
   --run_name galileo-teacher --device cuda:0
+
 ```
 - `LOG_RUN_NAME` 决定日志目录名：`logs/rsl_rl/<exp>/<LOG_RUN_NAME>_<run_name>`。
 - `--num_envs` 为每卡环境数，按显存调整。

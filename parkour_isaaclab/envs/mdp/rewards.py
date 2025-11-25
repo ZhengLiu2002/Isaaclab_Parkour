@@ -621,24 +621,25 @@ def reward_foot_symmetry(
 ) -> torch.Tensor:
     """鼓励左右成对脚的高度一致，抑制单腿高抬/蹦跳步态。"""
     asset: Articulation = env.scene[asset_cfg.name]
-    foot_pos = asset.data.body_state_w[:, asset.find_bodies(".*_foot")[0], 2]
+    foot_ids = asset.find_bodies(".*_foot")[0]
+    if len(foot_ids) < 2:
+        return torch.ones(env.num_envs, device=env.device)
 
-    # 尝试按命名获取配对顺序，否则按索引配对 (0-1 前腿, 2-3 后腿)
-    def _safe_id(regex: str, default: int) -> int:
-        try:
-            return asset.find_bodies(regex)[0][0]
-        except Exception:
-            return default
+    foot_pos = asset.data.body_state_w[:, foot_ids, 2]
+    # 若少于4只脚，只对现有前两只计算；否则按顺序前(0,1)、后(2,3)配对
+    if foot_pos.shape[1] >= 4:
+        pairs = [(0, 1), (2, 3)]
+    else:
+        pairs = [(0, 1)]
 
-    idx_fl = _safe_id("FL_foot", 0)
-    idx_fr = _safe_id("FR_foot", 1 if foot_pos.shape[1] > 1 else 0)
-    idx_rl = _safe_id("RL_foot", 2 if foot_pos.shape[1] > 2 else 0)
-    idx_rr = _safe_id("RR_foot", 3 if foot_pos.shape[1] > 3 else 0)
+    diffs = []
+    for a, b in pairs:
+        a = min(a, foot_pos.shape[1] - 1)
+        b = min(b, foot_pos.shape[1] - 1)
+        diffs.append(torch.abs(foot_pos[:, a] - foot_pos[:, b]))
 
-    front_diff = torch.abs(foot_pos[:, idx_fl] - foot_pos[:, idx_fr])
-    rear_diff = torch.abs(foot_pos[:, idx_rl] - foot_pos[:, idx_rr])
-    # 指数衰减，差越大奖励越小
-    reward = torch.exp(-(front_diff + rear_diff) / (height_scale + 1e-6))
+    total_diff = torch.stack(diffs, dim=1).sum(dim=1)
+    reward = torch.exp(-total_diff / (height_scale + 1e-6))
     return reward
 
 def reward_tracking_yaw(     
