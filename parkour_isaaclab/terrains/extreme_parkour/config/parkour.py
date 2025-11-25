@@ -6,6 +6,7 @@ EXTREME_PARKOUR_TERRAINS_CFG = ParkourTerrainGeneratorCfg(
     border_width=20.0,
     num_rows=10,
     num_cols=40,
+    num_goals=12,
     horizontal_scale=0.08, ## original scale is 0.05, But Computing issue in IsaacLab see this issue in https://github.com/isaac-sim/IsaacLab/issues/2187
     vertical_scale=0.005,
     slope_threshold=1.5,

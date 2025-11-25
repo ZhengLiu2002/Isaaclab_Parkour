@@ -71,10 +71,64 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 torchrun --nproc_per_node=4 scripts/rsl_rl/train.py
 - `--num_envs` 为每卡环境数，按显存调整。
 - 查看可用环境：`python list_envs.py`。
 
-### 常用可视化 / 评估 / 部署
-- Play（可视化）：`python scripts/rsl_rl/play.py --task <EnvID> --num_envs 16 [--checkpoint ckpt_x.pt] [--enable_cameras]`
-- 评估：`python scripts/rsl_rl/evaluation.py --task <EnvID> --num_envs 16`
-- 部署 demo：`python scripts/rsl_rl/demo.py --task <EnvID> --num_envs 8 [--enable_cameras]`
+### 可视化 / 评估 / 部署命令
+
+**Play（可视化回放）**
+
+使用 `--checkpoint` 参数指定要加载的模型文件（`*.pt`），支持相对路径或绝对路径。
+
+```bash
+# Galileo 教师模型
+python scripts/rsl_rl/play.py \
+  --task Isaac-Galileo-Parkour-Teacher-Play-v0 \
+  --num_envs 16 \
+  --checkpoint logs/rsl_rl/unitree_go2_parkour/galileo_teacher_auto/model_4400.pt
+  --enable_cameras
+
+# Galileo 学生模型
+python scripts/rsl_rl/play.py \
+  --task Isaac-Galileo-Parkour-Student-Play-v0 \
+  --num_envs 16 \
+  --checkpoint logs/rsl_rl/unitree_go2_parkour/galileo_teacher_auto/model_4400.pt
+  --enable_cameras
+
+```
+
+**参数说明：**
+- `--checkpoint`：指定要加载的模型文件路径（`*.pt`），必须包含完整的文件名（如 `ckpt_50000.pt`）
+- `--task`：任务环境名称，**必须使用对应的 Play 版本**（以 `-Play-v0` 结尾）
+  - 训练时使用：`Isaac-Galileo-Parkour-Teacher-v0`
+  - Play 时使用：`Isaac-Galileo-Parkour-Teacher-Play-v0`
+  - **注意**：虽然 task 名称不同，但只要训练和 Play 版本使用相同的 RL 配置（如 `UnitreeGo2ParkourTeacherPPORunnerCfg`），模型就可以兼容加载。Play 版本主要调整了环境配置（可视化、固定地形布局等），但模型结构相同。
+- `--num_envs`：并行环境数量，建议设置为 16 或更少以提升性能
+- `--enable_cameras`：启用相机传感器（可选，用于可视化）
+- 不指定 `--checkpoint` 则使用未训练的随机权重
+
+**环境重置条件说明：**
+机器人会在以下情况下被重置（定义在 `parkour_isaaclab/envs/mdp/terminations.py`）：
+1. **正常完成**：到达所有目标点（默认 8 个目标点）
+2. **时间超时**：超过最大 episode 长度（Play 版本为 60 秒）
+3. **摔倒**：机器人翻滚角度过大（roll 或 pitch > 1.5 弧度，约 86 度）
+4. **掉落**：机器人高度 < -0.25 米
+
+如果某些机器人提前重置，通常是摔倒或掉落导致的。可以通过调整终止条件阈值来修改这些行为。
+
+**评估**
+```bash
+python scripts/rsl_rl/evaluation.py \
+  --task Isaac-Galileo-Parkour-Teacher-Play-v0 \
+  --num_envs 16 \
+  --checkpoint logs/rsl_rl/<exp>/<run>/checkpoints/ckpt_50000.pt
+```
+
+**部署 demo**
+```bash
+python scripts/rsl_rl/demo.py \
+  --task Isaac-Galileo-Parkour-Teacher-Play-v0 \
+  --num_envs 8 \
+  --checkpoint logs/rsl_rl/<exp>/<run>/checkpoints/ckpt_50000.pt \
+  --enable_cameras
+```
 
 常见环境 ID：  
 - 教师：`Isaac-Galileo-Parkour-Teacher-v0` / `...-Teacher-Play-v0`  

@@ -112,6 +112,10 @@ class ParkourEvent(ParkourTerm):
         reached_goal_idx = self.reached_goal_ids.nonzero(as_tuple=False).squeeze(-1)
         if reached_goal_idx.numel() > 0:
             self.reach_goal_timer[reached_goal_idx] += 1
+        # force completion when the last goal is reached once so higher-level logic can terminate
+        last_goal_mask = (self.cur_goal_idx == (self.num_goals - 1)) & self.reached_goal_ids
+        if last_goal_mask.any():
+            self.cur_goal_idx[last_goal_mask] = self.num_goals
 
         self.target_pos_rel = self.cur_goals[:, :2] - robot_root_pos_w
         self.next_target_pos_rel = self.next_goals[:, :2] - robot_root_pos_w
@@ -140,8 +144,8 @@ class ParkourEvent(ParkourTerm):
 
         self.dis_to_start_pos = torch.norm(start_pos - self.robot.data.root_pos_w[env_ids, :2], dim=1)
         threshold = self.env.command_manager.get_command("base_velocity")[env_ids, 0] * self.episode_length_s
-        move_up = self.dis_to_start_pos > 0.8*threshold
-        move_down = self.dis_to_start_pos < 0.4*threshold
+        move_up = self.dis_to_start_pos > 0.7 * threshold
+        move_down = self.dis_to_start_pos < 0.3 * threshold
 
         robot_root_pos_w = self.robot.data.root_pos_w[:, :2] - self.env_origins[:, :2]
         self.terrain.terrain_levels[env_ids] += 1 * move_up - 1 * move_down

@@ -46,7 +46,7 @@ class UnitreeGo2TeacherParkourEnvCfg(ParkourManagerBasedRLEnvCfg):
         """Post initialization."""
         # general settings
         self.decimation = 4
-        self.episode_length_s = 20.0
+        self.episode_length_s = 120.0
         # simulation settings
         self.sim.dt = 0.005
         self.sim.render_interval = self.decimation
@@ -93,7 +93,7 @@ class UnitreeGo2TeacherParkourEnvCfg_PLAY(UnitreeGo2TeacherParkourEnvCfg_EVAL):
     def __post_init__(self):
         # post init of parent
         super().__post_init__()
-        self.episode_length_s = 60.
+        self.episode_length_s = 120.
         self.scene.num_envs = 16
         self.parkours.base_parkour.debug_vis = True
         self.commands.base_velocity.debug_vis = True
@@ -106,5 +106,3 @@ class UnitreeGo2TeacherParkourEnvCfg_PLAY(UnitreeGo2TeacherParkourEnvCfg_EVAL):
             else:
                 sub_terrain.proportion = 0.2
                 sub_terrain.noise_range = (0.02, 0.02)
-
-
