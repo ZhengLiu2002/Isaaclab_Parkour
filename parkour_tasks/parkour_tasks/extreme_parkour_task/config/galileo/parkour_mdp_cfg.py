@@ -285,7 +285,7 @@ class TeacherRewardsCfg:
     )
     reward_foot_symmetry = RewTerm(
         func=rewards.reward_foot_symmetry,
-        weight=0.6,
+        weight=1.5,
         params={"asset_cfg": SceneEntityCfg("robot"), "height_scale": 0.12},
     )
     reward_successful_traversal = RewTerm(
