@@ -50,6 +50,20 @@ class ParkourEvent(ParkourTerm):
         self.terrain: ParkourTerrainImporter = self.env.scene.terrain
         terrain_generator: ParkourTerrainGenerator = self.terrain.terrain_generator_class
         parkour_terrain_cfg :ParkourTerrainGeneratorCfg = self.terrain.cfg.terrain_generator
+        # stage-based curriculum state (P0~P4)
+        self.stage = torch.zeros(self.num_envs, device=self.device, dtype=torch.long)
+        self.stage_success = torch.zeros(self.num_envs, device=self.device, dtype=torch.long)
+        self.stage_attempts = torch.zeros(self.num_envs, device=self.device, dtype=torch.long)
+        self.stage_cooldown = torch.zeros(self.num_envs, device=self.device, dtype=torch.long)
+        self.stage_eval_window = 8
+        self.stage_min_stay = 6
+        self.max_stage = 4
+        self.recall_prob = 0.15
+        self.stage_to_level = torch.tensor([0, 2, 4, 6, 8], device=self.device, dtype=torch.long)
+        self.reached_goal_ids = torch.zeros(self.num_envs, device=self.device, dtype=torch.bool)
+        # expose stage for other components (e.g., hurdle placement)
+        self.env.curriculum_stage = torch.zeros(self.num_envs, device=self.device, dtype=torch.long)
+
         self.num_goals = parkour_terrain_cfg.num_goals
         self.env_class = torch.zeros(self.num_envs, device=self.device)
         self.env_origins = self.terrain.env_origins
@@ -140,35 +154,28 @@ class ParkourEvent(ParkourTerm):
         self.dis_to_start_pos = torch.norm(start_pos - self.robot.data.root_pos_w[:, :2], dim=1)
 
     def _resample_command(self, env_ids: Sequence[int]):
-        ## we are use reset_root_state events for initalize robot position in a subterrain
-        ## original robot root init position is (0,0) in the subterrain axis, so we subtracted off from current robot position 
+        if len(env_ids) == 0:
+            return
 
-        start_pos = self.env_origins[env_ids,:2] - \
-                    torch.tensor((self.terrain.cfg.terrain_generator.size[1] + \
-                                  self._reset_offset, 0)).to(self.device)
+        # record outcome of last episode for these envs
+        success_mask = self._get_last_outcome(env_ids)
+        self._update_stage(env_ids, success_mask)
 
-        self.dis_to_start_pos = torch.norm(start_pos - self.robot.data.root_pos_w[env_ids, :2], dim=1)
-        threshold = self.env.command_manager.get_command("base_velocity")[env_ids, 0] * self.episode_length_s
-        if self.distance_progress_cap is not None:
-            threshold = torch.clamp(threshold, max=self.distance_progress_cap)
-        goal_span = max(self.num_goals - 1, 1)
-        goal_completion = torch.clamp(self.cur_goal_idx[env_ids].float() / goal_span, 0.0, 1.0)
-        move_up_goal = goal_completion >= self.promotion_goal_threshold
-        move_down_goal = goal_completion <= self.demotion_goal_threshold
-        move_up_dist = self.dis_to_start_pos > self.promotion_distance_ratio * threshold
-        move_down_dist = self.dis_to_start_pos < self.demotion_distance_ratio * threshold
-        move_up = move_up_goal | move_up_dist
-        move_down = (~move_up_goal) & (move_down_goal | move_down_dist)
+        # curriculum recall: small prob to revisit previous stage for retention
+        stage_now = self.stage.clone()
+        stage_used = stage_now[env_ids]
+        recall_mask = (stage_used > 0) & (torch.rand_like(stage_used.float()) < self.recall_prob)
+        stage_used = torch.where(recall_mask, stage_used - 1, stage_used)
+        self.env.curriculum_stage[env_ids] = stage_used
 
-        robot_root_pos_w = self.robot.data.root_pos_w[:, :2] - self.env_origins[:, :2]
-        self.terrain.terrain_levels[env_ids] += 1 * move_up - 1 * move_down
-        # # Robots that solve the last level are sent to a random one
-        self.terrain.terrain_levels[env_ids] = torch.where(self.terrain.terrain_levels[env_ids]>=self.terrain.max_terrain_level,
-                                                   torch.randint_like(self.terrain.terrain_levels[env_ids], self.terrain.max_terrain_level),
-                                                   torch.clip(self.terrain.terrain_levels[env_ids], 0)) # (the minumum level is zero)
+        # map stage to terrain level row; clamp by available rows
+        max_rows = self.terrain.terrain_origins.shape[0]
+        level_values = self.stage_to_level[torch.clamp(stage_used, max=self.stage_to_level.shape[0] - 1)]
+        level_values = torch.clamp(level_values, max=max_rows - 1)
+        self.terrain.terrain_levels[env_ids] = level_values
         self.env_origins[env_ids] = self.terrain.terrain_origins[self.terrain.terrain_levels[env_ids], self.terrain.terrain_types[env_ids]]
         self.env_class[env_ids] = self.terrain_class[self.terrain.terrain_levels[env_ids], self.terrain.terrain_types[env_ids]]
-        
+
         temp = self.terrain_goals[self.terrain.terrain_levels, self.terrain.terrain_types]
         last_col = temp[:, -1].unsqueeze(1)
         self.env_goals[:] = torch.cat((temp, last_col.repeat(1, self.cfg.num_future_goal_obs, 1)), dim=1)[:]
@@ -177,6 +184,7 @@ class ParkourEvent(ParkourTerm):
         self.cur_goals = self._gather_cur_goals()
         self.next_goals = self._gather_cur_goals(future=1)
 
+        robot_root_pos_w = self.robot.data.root_pos_w[:, :2] - self.env_origins[:, :2]
         self.target_pos_rel = self.cur_goals[:, :2] - robot_root_pos_w
         self.next_target_pos_rel = self.next_goals[:, :2] - robot_root_pos_w
         norm = torch.norm(self.target_pos_rel, dim=-1, keepdim=True)
@@ -205,11 +213,49 @@ class ParkourEvent(ParkourTerm):
         self.metrics["terrain_levels"] = levels.to(device='cpu')
         self.metrics["terrain_level_mean"] = torch.mean(levels).to(device='cpu')
         self.metrics["terrain_level_max"] = torch.max(levels).to(device='cpu')
+        self.metrics["curriculum_stage"] = self.stage.to(device="cpu", dtype=torch.float)
         robot_root_pos_w = self.robot.data.root_pos_w[:, :2] - self.env_origins[:, :2]
         self.metrics["far_from_current_goal"] = (torch.norm(self.cur_goals[:, :2] - robot_root_pos_w,dim =-1) - self.next_goal_threshold).to(device = 'cpu')
         self.metrics["current_goal_idx"] = self.cur_goal_idx.to(device='cpu', dtype=float)
         self.metrics["how_far_from_start_point"] = self.dis_to_start_pos.to(device = 'cpu')
-        
+
+    def _get_last_outcome(self, env_ids: Sequence[int]) -> torch.Tensor:
+        """Determine episode success per env: reaching goals/timeout counts as success."""
+        try:
+            timeout_mask = self.env.reset_time_outs[env_ids].to(torch.bool)
+        except Exception:
+            timeout_mask = torch.zeros(len(env_ids), device=self.device, dtype=torch.bool)
+        reached_goal = self.reached_goal_ids[env_ids] if hasattr(self, "reached_goal_ids") else torch.zeros(len(env_ids), device=self.device, dtype=torch.bool)
+        return timeout_mask | reached_goal
+
+    def _update_stage(self, env_ids: Sequence[int], success_mask: torch.Tensor):
+        """Stage state machine: accumulate windowed success rate; promote/demote after cooldown."""
+        if len(env_ids) == 0:
+            return
+        # update counters
+        self.stage_attempts[env_ids] += 1
+        self.stage_success[env_ids] += success_mask.to(torch.long)
+        self.stage_cooldown[env_ids] += 1
+
+        # evaluate when enough attempts and cooldown satisfied
+        eval_mask = (self.stage_attempts >= self.stage_eval_window) & (self.stage_cooldown >= self.stage_min_stay)
+        success_rate = torch.where(self.stage_attempts > 0, self.stage_success.float() / self.stage_attempts.float(), torch.zeros_like(self.stage_success, dtype=torch.float))
+
+        promote = eval_mask & (success_rate >= 0.7) & (self.stage < self.max_stage)
+        demote = eval_mask & (success_rate <= 0.3) & (self.stage > 0)
+
+        self.stage = torch.clamp(self.stage + promote.to(torch.long) - demote.to(torch.long), 0, self.max_stage)
+
+        # reset counters for envs that changed or were evaluated
+        reset_mask = promote | demote
+        self.stage_success[reset_mask] = 0
+        self.stage_attempts[reset_mask] = 0
+        self.stage_cooldown[reset_mask] = 0
+
+        # avoid counter explosion; keep attempts bounded
+        self.stage_attempts = torch.clamp(self.stage_attempts, max=self.stage_eval_window * 2)
+        self.stage_success = torch.clamp(self.stage_success, max=self.stage_eval_window * 2)
+
     def _set_debug_vis_impl(self, debug_vis: bool):
         # create markers if necessary for the first tome
         if debug_vis:
