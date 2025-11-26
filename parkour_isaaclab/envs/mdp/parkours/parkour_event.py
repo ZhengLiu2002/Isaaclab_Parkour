@@ -156,10 +156,14 @@ class ParkourEvent(ParkourTerm):
     def _resample_command(self, env_ids: Sequence[int]):
         if len(env_ids) == 0:
             return
+        # 如果关闭课程（如 Play），跳过阶段机，保持原 terrain level/origin
+        curriculum_on = getattr(self.terrain.cfg.terrain_generator, "curriculum", True)
+        if not curriculum_on:
+            return
 
         # record outcome of last episode for these envs
-        success_mask = self._get_last_outcome(env_ids)
-        self._update_stage(env_ids, success_mask)
+        success_mask, has_outcome = self._get_last_outcome(env_ids)
+        self._update_stage(env_ids, success_mask, has_outcome)
 
         # curriculum recall: small prob to revisit previous stage for retention
         stage_now = self.stage.clone()
@@ -219,22 +223,34 @@ class ParkourEvent(ParkourTerm):
         self.metrics["current_goal_idx"] = self.cur_goal_idx.to(device='cpu', dtype=float)
         self.metrics["how_far_from_start_point"] = self.dis_to_start_pos.to(device = 'cpu')
 
-    def _get_last_outcome(self, env_ids: Sequence[int]) -> torch.Tensor:
-        """Determine episode success per env: reaching goals/timeout counts as success."""
+    def _get_last_outcome(self, env_ids: Sequence[int]) -> tuple[torch.Tensor, torch.Tensor]:
+        """Determine episode success per env with a conservative definition."""
+        if not hasattr(self.env, "reset_time_outs") or self.env.reset_time_outs.numel() == 0:
+            return torch.zeros(len(env_ids), device=self.device, dtype=torch.bool), torch.zeros(len(env_ids), device=self.device, dtype=torch.bool)
         try:
             timeout_mask = self.env.reset_time_outs[env_ids].to(torch.bool)
         except Exception:
-            timeout_mask = torch.zeros(len(env_ids), device=self.device, dtype=torch.bool)
+            return torch.zeros(len(env_ids), device=self.device, dtype=torch.bool), torch.zeros(len(env_ids), device=self.device, dtype=torch.bool)
         reached_goal = self.reached_goal_ids[env_ids] if hasattr(self, "reached_goal_ids") else torch.zeros(len(env_ids), device=self.device, dtype=torch.bool)
-        return timeout_mask | reached_goal
+        # 额外距离判定：跑过半程也记为成功
+        start_pos = self.env_origins[env_ids, :2] - torch.tensor((self.terrain.cfg.terrain_generator.size[1] + self._reset_offset, 0)).to(self.device)
+        dist = torch.norm(start_pos - self.robot.data.root_pos_w[env_ids, :2], dim=1)
+        dist_thresh = 0.5 * (self.terrain.cfg.terrain_generator.size[1])
+        dist_success = dist > dist_thresh
+        success = reached_goal | dist_success
+        # 超时不再视为成功，避免“站桩升级”
+        return success, torch.ones(len(env_ids), device=self.device, dtype=torch.bool)
 
-    def _update_stage(self, env_ids: Sequence[int], success_mask: torch.Tensor):
+    def _update_stage(self, env_ids: Sequence[int], success_mask: torch.Tensor, valid_mask: torch.Tensor):
         """Stage state machine: accumulate windowed success rate; promote/demote after cooldown."""
         if len(env_ids) == 0:
             return
+        # 对无效的样本跳过计数
+        if not torch.any(valid_mask):
+            return
         # update counters
-        self.stage_attempts[env_ids] += 1
-        self.stage_success[env_ids] += success_mask.to(torch.long)
+        self.stage_attempts[env_ids] += valid_mask.to(torch.long)
+        self.stage_success[env_ids] += (success_mask & valid_mask).to(torch.long)
         self.stage_cooldown[env_ids] += 1
 
         # evaluate when enough attempts and cooldown satisfied

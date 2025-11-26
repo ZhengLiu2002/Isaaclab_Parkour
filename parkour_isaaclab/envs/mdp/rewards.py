@@ -644,6 +644,54 @@ def reward_successful_traversal(
     return torch.where(passed_mask, reward, torch.zeros_like(reward))
 
 
+def reward_mode_mismatch(
+    env: ParkourManagerBasedRLEnv,
+    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+    lane_half_width: float = GUIDANCE_LANE_HALF_WIDTH,
+    back_sense: float = GUIDANCE_BACK_SENSE,
+    detection_range: float = GUIDANCE_DETECTION_RANGE,
+    jump_margin: float = JUMP_SAFETY_MARGIN,
+    crawl_margin: float = 0.05,
+) -> torch.Tensor:
+    """轻惩罚错误模式：jump 模式抬脚不足，crawl 模式身体过高。"""
+    asset: Articulation = env.scene[asset_cfg.name]
+    cache = _get_hurdle_cache(
+        env,
+        asset,
+        lane_half_width=lane_half_width,
+        back_extend=back_sense,
+    )
+    if cache is None or cache.get("layout") is None:
+        return torch.zeros(env.num_envs, device=env.device)
+
+    mode = _get_locomotion_mode(
+        env,
+        cache,
+        height_threshold=OBSTACLE_HEIGHT_THRESHOLD,
+        detection_range=detection_range,
+    )
+    # jump: 惩罚脚离杆顶过低
+    foot_ids = asset.find_bodies(".*_foot")[0]
+    feet_pos = asset.data.body_state_w[:, foot_ids, 2]
+    max_foot_height = feet_pos.max(dim=1).values
+    desired_jump = cache["nearest_top_z"] + jump_margin
+    jump_deficit = torch.clamp(desired_jump - max_foot_height, min=0.0)
+    jump_pen = torch.sigmoid(jump_deficit * 15.0)
+
+    # crawl: 惩罚身体最高点过高
+    body_max_z = asset.data.body_state_w[:, :, 2].max(dim=1).values
+    crawl_target = cache["nearest_top_z"] - crawl_margin
+    crawl_over = torch.clamp(body_max_z - crawl_target, min=0.0)
+    crawl_pen = torch.sigmoid(crawl_over * 20.0)
+
+    jump_mask = mode == MODE_JUMP
+    crawl_mask = mode == MODE_CRAWL
+    pen = torch.zeros(env.num_envs, device=env.device)
+    pen = torch.where(jump_mask, jump_pen, pen)
+    pen = torch.where(crawl_mask, crawl_pen, pen)
+    return pen
+
+
 def reward_foot_symmetry(
     env: ParkourManagerBasedRLEnv,
     asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),

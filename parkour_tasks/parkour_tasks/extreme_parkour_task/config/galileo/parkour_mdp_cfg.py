@@ -154,6 +154,18 @@ class StudentRewardsCfg:
             "detection_range": 1.4,
         },
     )
+    reward_mode_mismatch = RewTerm(
+        func=rewards.reward_mode_mismatch,
+        weight=-0.6,
+        params={
+            "asset_cfg": SceneEntityCfg("robot"),
+            "lane_half_width": 0.45,
+            "back_sense": 0.65,
+            "detection_range": 1.4,
+            "jump_margin": 0.08,
+            "crawl_margin": 0.05,
+        },
+    )
     reward_feet_clearance = RewTerm(
         func=rewards.reward_feet_clearance,
         weight=-1.2,
@@ -247,6 +259,18 @@ class TeacherRewardsCfg:
             "lane_half_width": 0.45,
             "back_sense": 0.65,
             "detection_range": 1.4,
+        },
+    )
+    reward_mode_mismatch = RewTerm(
+        func=rewards.reward_mode_mismatch,
+        weight=-1.0,
+        params={
+            "asset_cfg": SceneEntityCfg("robot"),
+            "lane_half_width": 0.45,
+            "back_sense": 0.65,
+            "detection_range": 1.4,
+            "jump_margin": 0.08,
+            "crawl_margin": 0.05,
         },
     )
     reward_feet_clearance = RewTerm(
