@@ -35,5 +35,4 @@ class ParkourRewardManager(RewardManager):
             self._episode_sums[name] += value
             # Update current reward for this step.
             self._step_reward[:, term_idx] = value / dt
-        self._reward_buf[:] = torch.clip(self._reward_buf[:], min=0.)
         return self._reward_buf

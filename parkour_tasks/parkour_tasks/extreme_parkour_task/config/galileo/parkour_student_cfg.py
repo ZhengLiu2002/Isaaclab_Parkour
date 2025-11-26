@@ -53,7 +53,7 @@ class GalileoStudentParkourEnvCfg(ParkourManagerBasedRLEnvCfg):
         self.scene.contact_forces.update_period = self.sim.dt * self.decimation
         self.scene.terrain.terrain_generator.curriculum = True
         self.scene.terrain.terrain_generator.random_difficulty = False
-        self.scene.terrain.terrain_generator.difficulty_range = (0.0, 0.2)
+        self.scene.terrain.terrain_generator.difficulty_range = (0.0, 0.15)
         self.actions.joint_pos.use_delay = True
         self.actions.joint_pos.history_length = 8
         # place hurdles on reset
@@ -68,13 +68,16 @@ class GalileoStudentParkourEnvCfg(ParkourManagerBasedRLEnvCfg):
                     "spacing": 2.0,
                     "start": 2.0,
                     "layout": "auto",
-                    "jump_to_mix_level": 6,
+                    "jump_to_mix_level": 8,
                     "mix_refresh_prob": 0.1,
+                    "warmup_levels": 2,
                 },
             )
         self.events.place_hurdles.params["spacing"] = 2.0  # type: ignore[attr-defined]
         self.events.place_hurdles.params["start"] = 2.0  # type: ignore[attr-defined]
         self.events.place_hurdles.params["layout"] = "auto"  # type: ignore[attr-defined]
+        self.events.place_hurdles.params["jump_to_mix_level"] = 8  # type: ignore[attr-defined]
+        self.events.place_hurdles.params["warmup_levels"] = 2  # type: ignore[attr-defined]
         # ensure mass/com events target base_link
         self.events.randomize_rigid_body_mass.params["asset_cfg"].body_names = "base_link"
         self.events.randomize_rigid_body_com.params["asset_cfg"].body_names = "base_link"

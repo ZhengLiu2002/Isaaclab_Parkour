@@ -48,6 +48,14 @@ HURDLE_LAYOUT_JUMP = 0
 HURDLE_LAYOUT_CRAWL = 1
 
 
+def reward_alive(
+    env: ParkourManagerBasedRLEnv,
+    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+) -> torch.Tensor:
+    """Small survival bonus to keep agents exploring instead of instant resets."""
+    return torch.ones(env.num_envs, device=env.device)
+
+
 def _get_yaw(quat: torch.Tensor) -> torch.Tensor:
     """Return body yaw from quaternion."""
     _, _, yaw = euler_xyz_from_quat(quat)
@@ -448,7 +456,7 @@ def reward_height_guidance(
     reward = torch.exp(-torch.square(error / (height_tolerance + 1e-6)))
 
     planar_speed = torch.norm(asset.data.root_vel_w[:, :2], dim=1)
-    vel_gate = torch.clamp(planar_speed / (speed_gate + 1e-6), 0.0, 1.0)
+    vel_gate = torch.clamp(planar_speed / (speed_gate + 1e-6), 0.2, 1.0)
     return reward * active.float() * vel_gate
 
 

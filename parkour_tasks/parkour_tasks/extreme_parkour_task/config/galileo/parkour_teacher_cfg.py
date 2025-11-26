@@ -285,7 +285,10 @@ class GalileoParkourSceneCfg(ParkourDefaultSceneCfg):
         self.terrain.terrain_generator.horizontal_scale = 0.1
         self.terrain.terrain_generator.curriculum = True
         self.terrain.terrain_generator.random_difficulty = False
-        self.terrain.terrain_generator.difficulty_range = (0.0, 0.2)
+        self.terrain.terrain_generator.difficulty_range = (0.0, 0.15)
+        # 放缓课程：更低的初始等级与上限，避免早期直接进高杆
+        self.terrain.max_init_terrain_level = 1
+        self.terrain.max_terrain_level = 4
         for name, sub in self.terrain.terrain_generator.sub_terrains.items():
             sub.use_simplified = True
             sub.proportion = 1.0 if name == "parkour_flat" else 0.0
@@ -393,8 +396,9 @@ class GalileoTeacherParkourEnvCfg(ParkourManagerBasedRLEnvCfg):
                 "spacing": 2.0,
                 "start": 2.0,
                 "layout": "auto",
-                "jump_to_mix_level": 6,
+                "jump_to_mix_level": 8,
                 "mix_refresh_prob": 0.1,
+                "warmup_levels": 2,
             },
         )
         # sensor update periods
