@@ -300,7 +300,7 @@ class TeacherRewardsCfg:
     )
     reward_torques = RewTerm(
         func=rewards.reward_torques,
-        weight=-1.0e-5,
+        weight=-1.0e-6,
         params={"asset_cfg": SceneEntityCfg("robot")},
     )
     reward_dof_error = RewTerm(
@@ -315,22 +315,22 @@ class TeacherRewardsCfg:
     )
     reward_ang_vel_xy = RewTerm(
         func=rewards.reward_ang_vel_xy,
-        weight=-0.08,
+        weight=-0.1,
         params={"asset_cfg": SceneEntityCfg("robot")},
     )
     reward_action_rate = RewTerm(
         func=rewards.reward_action_rate,
-        weight=-0.08,
+        weight=-0.05,
         params={"asset_cfg": SceneEntityCfg("robot")},
     )
     reward_dof_acc = RewTerm(
         func=rewards.reward_dof_acc,
-        weight=-1.0e-6,
+        weight=-1.0e-7,
         params={"asset_cfg": SceneEntityCfg("robot")},
     )
     reward_lin_vel_z = RewTerm(
         func=rewards.reward_lin_vel_z,
-        weight=-0.15,
+        weight=-0.2,
         params={"asset_cfg": SceneEntityCfg("robot"), "parkour_name": "base_parkour"},
     )
     reward_orientation = RewTerm(
@@ -345,7 +345,7 @@ class TeacherRewardsCfg:
     )
     reward_tracking_goal_vel = RewTerm(
         func=rewards.reward_tracking_goal_vel,
-        weight = 5.0,
+        weight = 4.0,
         params={"asset_cfg": SceneEntityCfg("robot"), "parkour_name": "base_parkour"},
     )
     reward_tracking_yaw = RewTerm(
@@ -355,7 +355,7 @@ class TeacherRewardsCfg:
     )
     reward_delta_torques = RewTerm(
         func=rewards.reward_delta_torques,
-        weight=-1.0e-6,
+        weight=-5.0e-7,
         params={"asset_cfg": SceneEntityCfg("robot")},
     )
 
