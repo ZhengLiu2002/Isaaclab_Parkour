@@ -110,7 +110,8 @@ class ParkourEvent(ParkourTerm):
         self.next_goals = self._gather_cur_goals(future=1)
 
     def _gather_cur_goals(self, future=0):
-        return self.env_goals.gather(1, (self.cur_goal_idx[:, None, None]+future).expand(-1, -1, self.env_goals.shape[-1])).squeeze(1)
+        idx = torch.clamp(self.cur_goal_idx + future, max=self.env_goals.shape[1] - 1)
+        return self.env_goals.gather(1, idx[:, None, None].expand(-1, -1, self.env_goals.shape[-1])).squeeze(1)
 
     def __str__(self) -> str:
         msg = "ParkourCommand:\n"
@@ -120,6 +121,8 @@ class ParkourEvent(ParkourTerm):
     def _update_command(self):
         """Re-target the current goal position to the current root state."""
         next_flag = self.reach_goal_timer > self.reach_goal_delay / self.simulation_time
+        # 避免索引越界，仅对未完成的索引做自增
+        next_flag = next_flag & (self.cur_goal_idx < self.num_goals)
         if self.debug_vis:
             tmp_mask = torch.nonzero(self.cur_goal_idx>0).squeeze(-1)
             if tmp_mask.numel() > 0:
