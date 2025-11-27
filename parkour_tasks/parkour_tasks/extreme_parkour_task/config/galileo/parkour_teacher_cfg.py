@@ -112,18 +112,20 @@ def place_galileo_hurdles(
     else:
         stage_tensor = getattr(env, "curriculum_stage", None)
         if stage_tensor is not None:
-            stage_used = torch.clamp(stage_tensor[env_ids], 0, 4)
+            stage_used = torch.clamp(stage_tensor[env_ids], 0, 50)
         else:
-            stage_used = torch.clamp((terrain_levels // 2), 0, 4)
+            stage_used = torch.clamp((terrain_levels // 2), 0, 50)
         # 统一的栏杆高度增量（米）
         increments = torch.tensor([0.00, 0.05, 0.10, 0.15], device=env.device)
         # 阶段可见数量（逐渐递增）
         num_visible_table = torch.tensor([1, 2, 3, 4, 4], device=env.device)
-        stage_used = torch.clamp(stage_used, 0, 4)
+        # for stages beyond table, clamp to max visible 4
+        num_visible = torch.where(stage_used < len(num_visible_table), num_visible_table[stage_used], torch.full_like(stage_used, 4))
 
-        # 极端高度（低/高）更容易，中间高度最难：随阶段增加中间高度概率
+        # 极端高度（低/高）更容易，中间高度最难：随阶段增加中间高度概率，并在高阶段提高整体高度
         prob_mid_table = torch.tensor([0.10, 0.25, 0.50, 0.70, 0.85], device=env.device)
-        prob_mid = prob_mid_table[stage_used]
+        prob_mid = torch.where(stage_used < len(prob_mid_table), prob_mid_table[stage_used], torch.full_like(stage_used, 0.9, dtype=torch.float))
+        height_scale = torch.clamp(1.0 + 0.03 * torch.clamp(stage_used - 4, min=0).float(), max=1.5)
 
         # Jump 列高度采样
         jump_low = (0.05, 0.12)
@@ -138,7 +140,7 @@ def place_galileo_hurdles(
             jump_low[0] + (jump_low[1] - jump_low[0]) * torch.rand_like(prob_mid),
         )
         jump_mid_sample = jump_mid[0] + (jump_mid[1] - jump_mid[0]) * torch.rand_like(prob_mid)
-        jump_base = torch.where(use_mid, jump_mid_sample, jump_ext)
+        jump_base = torch.where(use_mid, jump_mid_sample, jump_ext) * height_scale
 
         # Crawl 列高度采样（高/低极端更易，中间更难）
         crawl_low = (0.35, 0.40)
@@ -153,13 +155,12 @@ def place_galileo_hurdles(
             crawl_low[0] + (crawl_low[1] - crawl_low[0]) * torch.rand_like(prob_mid),
         )
         crawl_mid_sample = crawl_mid[0] + (crawl_mid[1] - crawl_mid[0]) * torch.rand_like(prob_mid)
-        crawl_base = torch.where(use_mid_crawl, crawl_mid_sample, crawl_ext)
+        crawl_base = torch.where(use_mid_crawl, crawl_mid_sample, crawl_ext) * height_scale
 
         # 默认 4 槽位递增/递减序列
         jump_heights = torch.clamp(jump_base.unsqueeze(1) + increments, 0.05, 0.55)
         crawl_heights = torch.clamp(crawl_base.unsqueeze(1) - 0.4 * increments, 0.30, 0.65)
         target_h = torch.where(terrain_types.unsqueeze(1) < 2, jump_heights, crawl_heights)
-        num_visible = num_visible_table[stage_used]
 
     target_x = env_origins[:, 0].unsqueeze(1) + start + spacing * torch.arange(4, device=env.device)
     target_y = env_origins[:, 1].unsqueeze(1)

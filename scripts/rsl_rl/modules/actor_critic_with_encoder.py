@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import Optional
+from typing import Optional, Callable, Dict
 import torch
 import torch.nn as nn
 from torch.distributions import Normal
@@ -8,6 +8,18 @@ from torch.distributions import Normal
 from .feature_extractors.state_encoder import *
 from rsl_rl.utils import resolve_nn_activation
 
+# Simple registry to avoid eval-based class lookup.
+ACTOR_REGISTRY: Dict[str, Callable] = {}
+
+
+def register_actor(name: str):
+    def decorator(cls):
+        ACTOR_REGISTRY[name] = cls
+        return cls
+    return decorator
+
+
+@register_actor("Actor")
 class Actor(nn.Module):
     def __init__(self, 
                  num_actions, 
@@ -122,6 +134,133 @@ class Actor(nn.Module):
         scan = obs[:, self.num_prop:self.num_prop + self.num_scan]
         return self.scan_encoder(scan)
 
+
+@register_actor("GatedDualHeadActor")
+class GatedDualHeadActor(nn.Module):
+    """Two expert heads (jump / crawl) mixed by a gating MLP using hurdle features."""
+    def __init__(
+        self,
+        num_actions,
+        scan_encoder_dims,
+        actor_hidden_dims,
+        priv_encoder_dims,
+        activation,
+        tanh_encoder_output=False,
+        gating_hidden_dims=None,
+        gating_temperature: float = 1.0,
+        gating_input_indices=None,
+        **kwargs,
+    ) -> None:
+        super().__init__()
+        self.num_prop = num_prop = kwargs.pop("num_prop")
+        self.num_scan = num_scan = kwargs.pop("num_scan")
+        self.num_hist = num_hist = kwargs.pop("num_hist")
+        self.num_actions = num_actions
+        self.num_priv_latent = num_priv_latent = kwargs.pop("num_priv_latent")
+        self.num_priv_explicit = num_priv_explicit = kwargs.pop("num_priv_explicit")
+        self.if_scan_encode = scan_encoder_dims is not None and num_scan > 0
+        self.in_features = num_prop + num_scan + num_priv_latent + num_priv_explicit + num_prop * num_hist
+
+        if len(priv_encoder_dims) > 0:
+            priv_encoder_layers = [nn.Linear(num_priv_latent, priv_encoder_dims[0]), activation]
+            for l in range(len(priv_encoder_dims) - 1):
+                priv_encoder_layers.append(nn.Linear(priv_encoder_dims[l], priv_encoder_dims[l + 1]))
+                priv_encoder_layers.append(activation)
+            self.priv_encoder = nn.Sequential(*priv_encoder_layers)
+            priv_encoder_output_dim = priv_encoder_dims[-1]
+        else:
+            self.priv_encoder = nn.Identity()
+            priv_encoder_output_dim = num_priv_latent
+
+        state_history_encoder_cfg = kwargs.pop("state_history_encoder")
+        state_histroy_encoder_class = eval(state_history_encoder_cfg.pop("class_name"))
+        self.history_encoder: StateHistoryEncoder = state_histroy_encoder_class(
+            activation,
+            num_prop,
+            num_hist,
+            priv_encoder_output_dim,
+            state_history_encoder_cfg.pop("channel_size"),
+        )
+        if self.if_scan_encode:
+            scan_encoder = [nn.Linear(num_scan, scan_encoder_dims[0]), activation]
+            for l in range(len(scan_encoder_dims) - 1):
+                if l == len(scan_encoder_dims) - 2:
+                    scan_encoder.append(nn.Linear(scan_encoder_dims[l], scan_encoder_dims[l + 1]))
+                    scan_encoder.append(nn.Tanh())
+                else:
+                    scan_encoder.append(nn.Linear(scan_encoder_dims[l], scan_encoder_dims[l + 1]))
+                    scan_encoder.append(activation)
+            self.scan_encoder = nn.Sequential(*scan_encoder)
+            self.scan_encoder_output_dim = scan_encoder_dims[-1]
+        else:
+            self.scan_encoder = nn.Identity()
+            self.scan_encoder_output_dim = num_scan
+
+        backbone_in_dim = (
+            num_prop + self.scan_encoder_output_dim + num_priv_explicit + priv_encoder_output_dim
+        )
+        def build_head():
+            layers = [nn.Linear(backbone_in_dim, actor_hidden_dims[0]), activation]
+            for l in range(len(actor_hidden_dims)):
+                if l == len(actor_hidden_dims) - 1:
+                    layers.append(nn.Linear(actor_hidden_dims[l], num_actions))
+                else:
+                    layers.append(nn.Linear(actor_hidden_dims[l], actor_hidden_dims[l + 1]))
+                    layers.append(activation)
+            if tanh_encoder_output:
+                layers.append(nn.Tanh())
+            return nn.Sequential(*layers)
+
+        self.jump_head = build_head()
+        self.crawl_head = build_head()
+
+        gating_hidden_dims = gating_hidden_dims or [64, 64]
+        gate_layers = []
+        self.gating_input_indices = gating_input_indices or list(range(min(8, num_priv_explicit)))
+        gate_in = len(self.gating_input_indices)
+        gate_layers.append(nn.Linear(gate_in, gating_hidden_dims[0]))
+        gate_layers.append(activation)
+        for l in range(len(gating_hidden_dims) - 1):
+            gate_layers.append(nn.Linear(gating_hidden_dims[l], gating_hidden_dims[l + 1]))
+            gate_layers.append(activation)
+        gate_layers.append(nn.Linear(gating_hidden_dims[-1], 2))
+        self.gating_mlp = nn.Sequential(*gate_layers)
+        self.gating_temperature = gating_temperature
+
+    def _split_inputs(self, obs, scandots_latent=None):
+        if self.if_scan_encode:
+            obs_scan = obs[:, self.num_prop : self.num_prop + self.num_scan]
+            scan_latent = self.scan_encoder(obs_scan) if scandots_latent is None else scandots_latent
+            obs_prop_scan = torch.cat([obs[:, : self.num_prop], scan_latent], dim=1)
+        else:
+            obs_prop_scan = obs[:, : self.num_prop + self.num_scan]
+        obs_priv_explicit = obs[:, self.num_prop + self.num_scan : self.num_prop + self.num_scan + self.num_priv_explicit]
+        return obs_prop_scan, obs_priv_explicit
+
+    def _latent(self, obs, hist_encoding):
+        if hist_encoding:
+            hist = obs[:, -self.num_hist * self.num_prop :]
+            return self.history_encoder(hist.view(-1, self.num_hist, self.num_prop))
+        priv = obs[:, self.num_prop + self.num_scan + self.num_priv_explicit : self.num_prop + self.num_scan + self.num_priv_explicit + self.num_priv_latent]
+        return self.priv_encoder(priv)
+
+    def forward(self, obs, hist_encoding: bool, scandots_latent: Optional[torch.Tensor] = None):
+        obs_prop_scan, obs_priv_explicit = self._split_inputs(obs, scandots_latent)
+        latent = self._latent(obs, hist_encoding)
+        backbone_input = torch.cat([obs_prop_scan, obs_priv_explicit, latent], dim=1)
+
+        a_jump = self.jump_head(backbone_input)
+        a_crawl = self.crawl_head(backbone_input)
+
+        gate_feat = obs_priv_explicit[:, self.gating_input_indices]
+        gate_logits = self.gating_mlp(gate_feat) / max(self.gating_temperature, 1e-3)
+        gate = torch.softmax(gate_logits, dim=-1)
+        # expose gate statistics for logging
+        self.gate_last = gate.detach()
+        self.gate_entropy = (-(gate * torch.log(gate + 1e-8)).sum(dim=-1)).detach()
+        mixed = gate[:, 0:1] * a_jump + gate[:, 1:2] * a_crawl
+        return mixed
+
 class ActorCriticRMA(nn.Module):
     is_recurrent = False
 
@@ -143,7 +282,10 @@ class ActorCriticRMA(nn.Module):
         scan_encoder_dims = kwargs['scan_encoder_dims']
         activation = resolve_nn_activation(activation)
         actor_cfg = kwargs.pop('actor')
-        actor_class = eval(actor_cfg.pop('class_name'))
+        actor_class_name = actor_cfg.pop('class_name')
+        if actor_class_name not in ACTOR_REGISTRY:
+            raise KeyError(f"Actor class '{actor_class_name}' not registered.")
+        actor_class = ACTOR_REGISTRY[actor_class_name]
         self.actor: Actor = actor_class(
                                 num_actions, 
                                 scan_encoder_dims,

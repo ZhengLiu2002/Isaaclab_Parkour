@@ -57,9 +57,10 @@ class ParkourEvent(ParkourTerm):
         self.stage_cooldown = torch.zeros(self.num_envs, device=self.device, dtype=torch.long)
         self.stage_eval_window = 8
         self.stage_min_stay = 6
-        self.max_stage = 4
+        self.max_stage = 100  # allow unbounded progression
         self.recall_prob = 0.15
-        self.stage_to_level = torch.tensor([0, 2, 4, 6, 8], device=self.device, dtype=torch.long)
+        # linear mapping stage->terrain row (spacing 2), will be clamped by available rows
+        self.stage_to_level = torch.arange(0, 200, 2, device=self.device, dtype=torch.long)
         self.reached_goal_ids = torch.zeros(self.num_envs, device=self.device, dtype=torch.bool)
         # expose stage for other components (e.g., hurdle placement)
         self.env.curriculum_stage = torch.zeros(self.num_envs, device=self.device, dtype=torch.long)
@@ -188,6 +189,27 @@ class ParkourEvent(ParkourTerm):
         self.env_goals[:] = torch.cat((temp, last_col.repeat(1, self.cfg.num_future_goal_obs, 1)), dim=1)[:]
         # 将航向点置于跑道中心（y=0），避免偏移
         self.env_goals[:, :, 1] = 0.0
+        # 将航点从栏杆处偏移开，避免目标落在栏杆上
+        try:
+            place_cfg = self.env.event_manager.get_term_cfg("place_hurdles")
+            spacing = place_cfg.params.get("spacing", 2.0)
+            start = place_cfg.params.get("start", 2.0)
+        except Exception:
+            spacing, start = 2.0, 2.0
+        hurdle_slots = start + spacing * torch.arange(4, device=self.device).view(1, -1)
+        goal_x = self.env_goals[:, :, 0]
+        env_hurdle_x = self.env_origins[:, 0:1] + hurdle_slots  # (N,4)
+        # 找到与任意栏杆距离过近的航点并向前推开 margin
+        margin = 0.5
+        dist = goal_x.unsqueeze(-1) - env_hurdle_x.unsqueeze(1)  # (N,G,4)
+        nearest = torch.abs(dist).min(dim=-1).values  # (N,G)
+        near_mask = nearest < margin
+        # 对过近的目标，推到最近栏杆前方 margin
+        # 取最近栏杆坐标
+        nearest_idx = torch.abs(dist).argmin(dim=-1)
+        nearest_hurdle_x = env_hurdle_x.gather(1, nearest_idx)
+        adjusted_x = torch.where(goal_x < nearest_hurdle_x, nearest_hurdle_x + margin, goal_x)
+        self.env_goals[:, :, 0] = torch.where(near_mask, adjusted_x, goal_x)
         self.cur_goals = self._gather_cur_goals()
         self.next_goals = self._gather_cur_goals(future=1)
 

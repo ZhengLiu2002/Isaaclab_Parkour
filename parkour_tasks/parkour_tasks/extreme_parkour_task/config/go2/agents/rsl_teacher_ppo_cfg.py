@@ -23,11 +23,15 @@ class UnitreeGo2ParkourTeacherPPORunnerCfg(ParkourRslRlOnPolicyRunnerCfg):
         priv_encoder_dims = [64, 20],
         activation="elu",
         actor = ParkourRslRlActorCfg(
-            class_name = "Actor",
+            class_name = "GatedDualHeadActor",
             state_history_encoder = ParkourRslRlStateHistEncoderCfg(
                 class_name = "StateHistoryEncoder" 
             )
-        )
+        ),
+        # gating extras
+        gating_hidden_dims=[64, 64],
+        gating_temperature=1.0,
+        gating_input_indices=[0,1,2,3,4,5,6,7],  # hurdle heights/modes slice
     )
     estimator = ParkourRslRlEstimatorCfg(
             hidden_dims = [128, 64]

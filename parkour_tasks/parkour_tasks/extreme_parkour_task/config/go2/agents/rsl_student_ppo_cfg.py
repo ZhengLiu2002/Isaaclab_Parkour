@@ -18,17 +18,20 @@ class UnitreeGo2ParkourStudentPPORunnerCfg(ParkourRslRlOnPolicyRunnerCfg):
     empirical_normalization = False
     policy = ParkourRslRlPpoActorCriticCfg(
         init_noise_std=1.0,
-        actor_hidden_dims=[512, 256, 128],
-        critic_hidden_dims=[512, 256, 128],
+        actor_hidden_dims=[512, 512, 256, 128],
+        critic_hidden_dims=[512, 512, 256, 128],
         scan_encoder_dims = [128, 64, 32],
         priv_encoder_dims = [64, 20],
         activation="elu",
         actor = ParkourRslRlActorCfg(
-            class_name = "Actor",
+            class_name = "GatedDualHeadActor",
             state_history_encoder = ParkourRslRlStateHistEncoderCfg(
                 class_name = "StateHistoryEncoder" 
             )
-        )
+        ),
+        gating_hidden_dims=[64, 64],
+        gating_temperature=1.0,
+        gating_input_indices=[0,1,2,3,4,5,6,7],
     )
     estimator = ParkourRslRlEstimatorCfg(
             hidden_dims = [128, 64]
