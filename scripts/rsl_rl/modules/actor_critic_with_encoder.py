@@ -261,6 +261,21 @@ class GatedDualHeadActor(nn.Module):
         mixed = gate[:, 0:1] * a_jump + gate[:, 1:2] * a_crawl
         return mixed
 
+    # keep parity with base Actor for downstream calls
+    def infer_priv_latent(self, obs):
+        priv = obs[:, self.num_prop + self.num_scan + self.num_priv_explicit : self.num_prop + self.num_scan + self.num_priv_explicit + self.num_priv_latent]
+        return self.priv_encoder(priv)
+
+    def infer_hist_latent(self, obs):
+        hist = obs[:, -self.num_hist * self.num_prop :]
+        return self.history_encoder(hist.view(-1, self.num_hist, self.num_prop))
+
+    def infer_scandots_latent(self, obs):
+        if not self.if_scan_encode:
+            return None
+        scan = obs[:, self.num_prop : self.num_prop + self.num_scan]
+        return self.scan_encoder(scan)
+
 class ActorCriticRMA(nn.Module):
     is_recurrent = False
 
