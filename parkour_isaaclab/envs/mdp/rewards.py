@@ -692,6 +692,79 @@ def reward_mode_mismatch(
     return pen
 
 
+def reward_low_crawl_penalty(
+    env: ParkourManagerBasedRLEnv,
+    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+    lane_half_width: float = GUIDANCE_LANE_HALF_WIDTH,
+    back_sense: float = GUIDANCE_BACK_SENSE,
+    detection_range: float = GUIDANCE_DETECTION_RANGE,
+    low_threshold: float = 0.25,
+) -> torch.Tensor:
+    """惩罚在低杆（应跳）场景下使用爬行模式。"""
+    asset: Articulation = env.scene[asset_cfg.name]
+    cache = _get_hurdle_cache(
+        env,
+        asset,
+        lane_half_width=lane_half_width,
+        back_extend=back_sense,
+    )
+    if cache is None or cache.get("layout") is None:
+        return torch.zeros(env.num_envs, device=env.device)
+
+    mode = _get_locomotion_mode(
+        env,
+        cache,
+        height_threshold=OBSTACLE_HEIGHT_THRESHOLD,
+        detection_range=detection_range,
+    )
+    low_mask = cache["nearest_raw_height"] <= low_threshold
+    crawl_mask = mode == MODE_CRAWL
+    pen_mask = low_mask & crawl_mask & cache["has_any"]
+    if not torch.any(pen_mask):
+        return torch.zeros(env.num_envs, device=env.device)
+    # penalty magnitude increases as height goes lower
+    depth = torch.clamp(low_threshold - cache["nearest_raw_height"], min=0.0)
+    pen = torch.sigmoid(depth * 40.0)
+    return torch.where(pen_mask, pen, torch.zeros_like(pen))
+
+
+def reward_jump_success_bonus(
+    env: ParkourManagerBasedRLEnv,
+    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+    lane_half_width: float = GUIDANCE_LANE_HALF_WIDTH,
+    back_sense: float = GUIDANCE_BACK_SENSE,
+    traversal_window: float = TRAVERSAL_BACK_WINDOW,
+) -> torch.Tensor:
+    """在跳跃模式成功越过栏杆时给一次性 bonus。"""
+    asset: Articulation = env.scene[asset_cfg.name]
+    cache = _get_hurdle_cache(
+        env,
+        asset,
+        lane_half_width=lane_half_width,
+        back_extend=back_sense,
+    )
+    if cache is None or cache.get("layout") is None:
+        return torch.zeros(env.num_envs, device=env.device)
+    mode = _get_locomotion_mode(env, cache, height_threshold=OBSTACLE_HEIGHT_THRESHOLD, detection_range=GUIDANCE_DETECTION_RANGE)
+    just_passed = (
+        cache["valid_mask"]
+        & (cache["forward_distance"] < 0.0)
+        & (cache["forward_distance"] > -traversal_window)
+    )
+    if not torch.any(just_passed):
+        return torch.zeros(env.num_envs, device=env.device)
+    passed_mask = torch.any(just_passed, dim=1) & (mode == MODE_JUMP)
+    if not torch.any(passed_mask):
+        return torch.zeros(env.num_envs, device=env.device)
+    # bonus scaled by foot clearance after passing
+    foot_ids = asset.find_bodies(".*_foot")[0]
+    feet_pos = asset.data.body_state_w[:, foot_ids, 2]
+    max_foot_height = feet_pos.max(dim=1).values
+    clearance = max_foot_height - cache["nearest_top_z"]
+    bonus = torch.sigmoid(clearance * 20.0)
+    return torch.where(passed_mask, bonus, torch.zeros_like(bonus))
+
+
 def reward_foot_symmetry(
     env: ParkourManagerBasedRLEnv,
     asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),

@@ -17,8 +17,8 @@ class UnitreeGo2ParkourTeacherPPORunnerCfg(ParkourRslRlOnPolicyRunnerCfg):
     empirical_normalization = False
     policy = ParkourRslRlPpoActorCriticCfg(
         init_noise_std=1.0,
-        actor_hidden_dims=[512, 256, 128],
-        critic_hidden_dims=[512, 256, 128],
+        actor_hidden_dims=[512, 512, 256, 128],
+        critic_hidden_dims=[512, 512, 256, 128],
         scan_encoder_dims = [128, 64, 32],
         priv_encoder_dims = [64, 20],
         activation="elu",

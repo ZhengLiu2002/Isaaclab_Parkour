@@ -60,7 +60,6 @@ export NCCL_PROTO=Simple
 export NCCL_MIN_NCHANNELS=1
 export TORCH_NCCL_ASYNC_ERROR_HANDLING=1
 export OMP_NUM_THREADS=1
-export DISPLAY=
 
 CUDA_VISIBLE_DEVICES=0,1,2,3 torchrun --nproc_per_node=4 scripts/rsl_rl/train.py \
   --task Isaac-Galileo-Parkour-Teacher-v0 \

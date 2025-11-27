@@ -93,10 +93,12 @@ class ExtremeParkourObservations(ManagerTermBase):
                             ),dim=-1)
         priv_explicit = self._get_priv_explicit()
         priv_latent = self._get_priv_latent()
+        priv_hurdles = self._get_priv_hurdles(env)
         if self._obs_history_buffer is None or self._obs_history_buffer.shape[2] != obs_buf.shape[1]:
             self._obs_history_buffer = torch.zeros(self.num_envs, self.history_length, obs_buf.shape[1], device=self.device)
         observations = torch.cat([obs_buf, #53
                                   self.measured_heights, #132
+                                  priv_hurdles, # 8
                                   priv_explicit, # 9
                                   priv_latent, # 29
                                   self._obs_history_buffer.view(self.num_envs, -1)
@@ -147,6 +149,17 @@ class ExtremeParkourObservations(ManagerTermBase):
             (joint_stiffness/ default_joint_stiffness) - 1, 
             (joint_damping/ default_joint_damping) - 1
         ), dim=-1).to(self.device)
+
+    def _get_priv_hurdles(self, env):
+        """Privileged hurdle heights and modes, normalized to [-1, 1]."""
+        heights = self._get_hurdle_heights(env)  # (N, 4) or -1 when absent
+        heights_norm = torch.clamp(heights / 0.6, -1.0, 1.0)
+        modes = getattr(env.scene, "hurdle_modes", None)
+        if modes is None:
+            modes_norm = torch.full_like(heights_norm, -1.0)
+        else:
+            modes_norm = torch.clamp(modes.to(self.device).float(), -1.0, 1.0)
+        return torch.cat([heights_norm, modes_norm], dim=-1)
     
     def _get_heights(self):
         return torch.clip(self.ray_sensor.data.pos_w[:, 2].unsqueeze(1) - self.ray_sensor.data.ray_hits_w[..., 2] - 0.3, -1, 1).to(self.device)

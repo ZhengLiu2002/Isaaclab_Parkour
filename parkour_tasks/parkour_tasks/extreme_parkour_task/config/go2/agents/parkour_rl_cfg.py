@@ -21,7 +21,7 @@ RslRlPpoAlgorithmCfg,
 
 @configclass
 class ParkourRslRlBaseCfg:
-    num_priv_explicit: int = 3 + 3 + 3 # 9
+    num_priv_explicit: int = 3 + 3 + 3 + 8 # 17 (add hurdle heights/modes)
     num_priv_latent: int = 4 + 1 + 12 +12 # 29
     num_prop: int = 3 + 2 + 3 + 4 + 36 + 5 # 53
     num_scan: int = 132
@@ -78,4 +78,3 @@ class ParkourRslRlOnPolicyRunnerCfg(RslRlOnPolicyRunnerCfg):
     estimator: ParkourRslRlEstimatorCfg = MISSING
     depth_encoder: ParkourRslRlDepthEncoderCfg | None = None
     algorithm: ParkourRslRlPpoAlgorithmCfg | ParkourRslRlDistillationAlgorithmCfg = MISSING
-
