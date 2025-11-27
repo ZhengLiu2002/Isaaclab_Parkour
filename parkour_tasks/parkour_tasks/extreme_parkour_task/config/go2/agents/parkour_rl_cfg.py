@@ -61,6 +61,10 @@ class ParkourRslRlPpoActorCriticCfg(RslRlPpoActorCriticCfg):
     scan_encoder_dims: list[int] = MISSING
     priv_encoder_dims: list[int] = MISSING
     actor: ParkourRslRlActorCfg = MISSING
+    # MoE gating extras
+    gating_hidden_dims: list[int] | None = None
+    gating_temperature: float = 1.0
+    gating_input_indices: list[int] | None = None
 
 @configclass
 class ParkourRslRlPpoAlgorithmCfg(RslRlPpoAlgorithmCfg):
