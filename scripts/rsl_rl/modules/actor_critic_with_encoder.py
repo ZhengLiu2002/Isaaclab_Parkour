@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import Optional, Callable, Dict
+from typing import Optional, Callable, Dict, Tuple
 import torch
 import torch.nn as nn
 from torch.distributions import Normal
@@ -13,6 +13,7 @@ ACTOR_REGISTRY: Dict[str, Callable] = {}
 
 
 def register_actor(name: str):
+    """注册 Actor 子类，避免使用 eval 动态查找。"""
     def decorator(cls):
         ACTOR_REGISTRY[name] = cls
         return cls
@@ -21,6 +22,7 @@ def register_actor(name: str):
 
 @register_actor("Actor")
 class Actor(nn.Module):
+    """基础 Actor：融合本体观测、激光、特权隐变量与历史编码。"""
     def __init__(self, 
                  num_actions, 
                  scan_encoder_dims,
@@ -40,7 +42,8 @@ class Actor(nn.Module):
         self.num_priv_latent = num_priv_latent = kwargs.pop('num_priv_latent')
         self.num_priv_explicit = num_priv_explicit = kwargs.pop('num_priv_explicit')
         self.if_scan_encode = scan_encoder_dims is not None and num_scan > 0
-        self.in_features = num_prop + num_scan + num_priv_latent + num_priv_explicit + num_prop * num_hist ##  +  
+        # actor 输入由：当前本体(num_prop) + 激光(num_scan) + 特权显式 + 特权隐式 + 历史本体 拼接
+        self.in_features = num_prop + num_scan + num_priv_latent + num_priv_explicit + num_prop * num_hist
 
         if len(priv_encoder_dims) > 0:
             priv_encoder_layers = []
@@ -81,6 +84,7 @@ class Actor(nn.Module):
             self.scan_encoder = nn.Identity()
             self.scan_encoder_output_dim = num_scan
         
+        # 主干 MLP：拼接 (prop + scan_latent + priv_explicit + priv_latent)
         actor_layers = []
         actor_layers.append(nn.Linear(num_prop+
                                       self.scan_encoder_output_dim+
@@ -104,6 +108,10 @@ class Actor(nn.Module):
         hist_encoding: bool, 
         scandots_latent: Optional[torch.Tensor] = None
         ):
+        """前向推理：
+        - 可选对激光编码（或复用外部提供的 scandots_latent）
+        - 可选使用历史编码器，否则只编码特权隐式
+        """
         if self.if_scan_encode:
             obs_scan = obs[:, self.num_prop:self.num_prop + self.num_scan]
             if scandots_latent is None:
@@ -123,21 +131,24 @@ class Actor(nn.Module):
         return backbone_output
     
     def infer_priv_latent(self, obs):
+        """仅编码特权隐式变量。"""
         priv = obs[:, self.num_prop + self.num_scan + self.num_priv_explicit: self.num_prop + self.num_scan + self.num_priv_explicit + self.num_priv_latent]
         return self.priv_encoder(priv)
     
     def infer_hist_latent(self, obs):
+        """对历史本体序列做 1D 卷积编码。"""
         hist = obs[:, -self.num_hist*self.num_prop:]
         return self.history_encoder(hist.view(-1, self.num_hist, self.num_prop))
     
     def infer_scandots_latent(self, obs):
+        """仅对激光点做编码。"""
         scan = obs[:, self.num_prop:self.num_prop + self.num_scan]
         return self.scan_encoder(scan)
 
 
 @register_actor("GatedDualHeadActor")
 class GatedDualHeadActor(nn.Module):
-    """Two expert heads (jump / crawl) mixed by a gating MLP using hurdle features."""
+    """双头 Actor：跳跃/钻爬专家头由 gating MLP 按特权特征软选择。"""
     def __init__(
         self,
         num_actions,
@@ -226,8 +237,14 @@ class GatedDualHeadActor(nn.Module):
         gate_layers.append(nn.Linear(gating_hidden_dims[-1], 2))
         self.gating_mlp = nn.Sequential(*gate_layers)
         self.gating_temperature = gating_temperature
+        # TorchScript 需要属性预先定义
+        self.gate_last = torch.zeros(1, 2)
+        self.gate_entropy = torch.zeros(1)
 
-    def _split_inputs(self, obs, scandots_latent=None):
+    def _split_inputs(
+        self, obs: torch.Tensor, scandots_latent: Optional[torch.Tensor] = None
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        """拆分观测为 (prop+scan_latent) 和 priv_explicit。"""
         if self.if_scan_encode:
             obs_scan = obs[:, self.num_prop : self.num_prop + self.num_scan]
             scan_latent = self.scan_encoder(obs_scan) if scandots_latent is None else scandots_latent
@@ -237,14 +254,20 @@ class GatedDualHeadActor(nn.Module):
         obs_priv_explicit = obs[:, self.num_prop + self.num_scan : self.num_prop + self.num_scan + self.num_priv_explicit]
         return obs_prop_scan, obs_priv_explicit
 
-    def _latent(self, obs, hist_encoding):
+    def _latent(self, obs: torch.Tensor, hist_encoding: bool):
+        """根据标志选择历史编码或特权隐式编码。"""
         if hist_encoding:
             hist = obs[:, -self.num_hist * self.num_prop :]
             return self.history_encoder(hist.view(-1, self.num_hist, self.num_prop))
         priv = obs[:, self.num_prop + self.num_scan + self.num_priv_explicit : self.num_prop + self.num_scan + self.num_priv_explicit + self.num_priv_latent]
         return self.priv_encoder(priv)
 
-    def forward(self, obs, hist_encoding: bool, scandots_latent: Optional[torch.Tensor] = None):
+    def forward(self, obs: torch.Tensor, hist_encoding: bool, scandots_latent: Optional[torch.Tensor] = None):
+        """两头混合：
+        1) 编码输入 -> 共享特征
+        2) 分别经过 jump/crawl 头
+        3) 用 gating logits 软组合输出动作均值
+        """
         obs_prop_scan, obs_priv_explicit = self._split_inputs(obs, scandots_latent)
         latent = self._latent(obs, hist_encoding)
         backbone_input = torch.cat([obs_prop_scan, obs_priv_explicit, latent], dim=1)
@@ -311,6 +334,7 @@ class ActorCriticRMA(nn.Module):
                                 **actor_cfg
                                 )
         
+        # Critic：直接接收 num_critic_obs（可能含特权信息）
         mlp_input_dim_c = num_critic_obs
         critic_layers = []
         critic_layers.append(nn.Linear(mlp_input_dim_c, critic_hidden_dims[0]))
@@ -362,6 +386,7 @@ class ActorCriticRMA(nn.Module):
         return self.distribution.entropy().sum(dim=-1)
 
     def update_distribution(self, observations, hist_encoding):
+        """用最新 actor 输出均值并配合可学习方差构造高斯分布。"""
         mean = self.actor(observations, hist_encoding)
         if self.noise_std_type == "scalar":
             std = mean*0. + self.std

@@ -80,7 +80,11 @@ def _get_hurdle_layout(
     base_thickness: float = HURDLE_BASE_THICKNESS,
     bar_thickness: float = HURDLE_BAR_THICKNESS,
 ):
-    """Return per-env hurdle positions/heights in world frame."""
+    """获取每个 env 栏杆的世界系坐标与高度。
+
+    - 依赖重置事件写入的 hurdle_heights/hurdle_modes 缓存，避免在奖励函数内重复推断。
+    - 计算栏杆顶面高度时加上底座和横杆厚度，确保与实际碰撞高度一致。
+    """
     heights = getattr(env.scene, "hurdle_heights", None)
     if heights is None:
         return None
@@ -98,6 +102,7 @@ def _get_hurdle_layout(
     spacing_t = torch.tensor(
         spacing, device=env.device, dtype=env.scene.env_origins.dtype
     )
+    # 栏杆沿 X 轴依次排列，Y 轴对齐 env 原点；地面高度来自 terrain env_origins
     x_positions = env.scene.env_origins[:, 0:1] + start_t + spacing_t * idxs
     x_positions = x_positions.expand_as(heights)
     y_positions = env.scene.env_origins[:, 1:2].expand_as(heights)
@@ -124,7 +129,12 @@ def _get_hurdle_cache(
     base_thickness: float = HURDLE_BASE_THICKNESS,
     bar_thickness: float = HURDLE_BAR_THICKNESS,
 ):
-    """Cache relative hurdle geometry to avoid repeated computation across reward terms."""
+    """缓存栏杆相对几何（前向/横向/高度等），避免多奖励重复计算。
+
+    - 以机器人 base 为参考，将世界系坐标旋转到机体局部坐标，得到前向/横向距离。
+    - 只保留车道宽度内、且在机器人后向 back_extend 范围前的栏杆。
+    - 对每个 env 选取前向距离绝对值最小的栏杆，作为“当前最近栏杆”供后续使用。
+    """
     step = getattr(env, "common_step_counter", None)
     cache = getattr(env, "_hurdle_cache", None)
     if (
@@ -199,7 +209,10 @@ def _get_locomotion_mode(
     height_threshold: float = OBSTACLE_HEIGHT_THRESHOLD,
     detection_range: float = GUIDANCE_DETECTION_RANGE,
 ):
-    """Return per-env mode: flat/jump/crawl based on nearest hurdle height and distance."""
+    """基于最近栏杆的高度/距离判定模式：平地、跳跃或钻爬。
+
+    优先使用重置事件标注的 hurdle_modes（jump/crawl），若无标注则按高度阈值自动判断。
+    """
     mode = torch.full(
         (env.num_envs,), MODE_FLAT, device=env.device, dtype=torch.long
     )
@@ -223,6 +236,7 @@ def _get_locomotion_mode(
     override = cache.get("nearest_mode", None)
     handled_override = torch.zeros_like(is_near, dtype=torch.bool)
     if override is not None:
+        # 赛事/课程可以直接注入模式，避免高度阈值误判
         valid_override = override != HURDLE_LAYOUT_NONE
         crawl_override = valid_override & (override == HURDLE_LAYOUT_CRAWL)
         jump_override = valid_override & (override == HURDLE_LAYOUT_JUMP)
@@ -238,6 +252,7 @@ def _get_locomotion_mode(
 
 
 class reward_feet_edge(ManagerTermBase):
+    """惩罚脚落在地形边缘的接触，防止在跨栏台阶边缘踩空。"""
     def __init__(self, cfg: RewardTermCfg, env: ParkourManagerBasedRLEnv):
         super().__init__(cfg, env)
         self.contact_sensor: ContactSensor = env.scene.sensors[cfg.params["sensor_cfg"].name]
@@ -296,6 +311,7 @@ def reward_torques(
     env: ParkourManagerBasedRLEnv,        
     asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
     ) -> torch.Tensor: 
+    """惩罚关节力矩的绝对值，鼓励节能与顺滑控制。"""
     asset: Articulation = env.scene[asset_cfg.name]
     return torch.sum(torch.square(asset.data.applied_torque), dim=1)
 
@@ -303,6 +319,7 @@ def reward_dof_error(
     env: ParkourManagerBasedRLEnv,        
     asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
     ) -> torch.Tensor: 
+    """惩罚关节位置偏离默认站立位姿的误差。"""
     asset: Articulation = env.scene[asset_cfg.name]
     return torch.sum(torch.square(asset.data.joint_pos - asset.data.default_joint_pos), dim=1)
 
@@ -310,6 +327,7 @@ def reward_hip_pos(
     env: ParkourManagerBasedRLEnv,        
     asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
     ) -> torch.Tensor: 
+    """专门约束髋关节位置，避免过大摆动影响步态对称性。"""
     asset: Articulation = env.scene[asset_cfg.name]
     return torch.sum(torch.square(asset.data.joint_pos[:, asset_cfg.joint_ids] \
                                     - asset.data.default_joint_pos[:, asset_cfg.joint_ids]), dim=1)
@@ -318,10 +336,12 @@ def reward_ang_vel_xy(
     env: ParkourManagerBasedRLEnv,        
     asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
     ) -> torch.Tensor: 
+    """惩罚机体在水平面的角速度，抑制大幅摇摆/滚动。"""
     asset: Articulation = env.scene[asset_cfg.name]
     return torch.sum(torch.square(asset.data.root_ang_vel_b[:,:2]), dim=1)
 
 class reward_action_rate(ManagerTermBase):
+    """惩罚连续两步的动作差异，避免高频抖动。"""
     def __init__(self, cfg: RewardTermCfg, env: ParkourManagerBasedRLEnv):
         super().__init__(cfg, env)
         asset: Articulation = env.scene[cfg.params["asset_cfg"].name]
@@ -336,11 +356,13 @@ class reward_action_rate(ManagerTermBase):
         env: ParkourManagerBasedRLEnv,        
         asset_cfg: SceneEntityCfg,
         ) -> torch.Tensor:
+        # 维护长度为 2 的窗口，计算当前动作与上一步的 L2 差
         self.previous_actions[:, 0, :] = self.previous_actions[:, 1, :]
         self.previous_actions[:, 1, :] = env.action_manager.get_term('joint_pos').raw_actions
         return torch.norm(self.previous_actions[:, 1, :] - self.previous_actions[:,0,:], dim=1)
     
 class reward_dof_acc(ManagerTermBase):
+    """惩罚关节加速度，促使动作变化更平滑。"""
     def __init__(self, cfg: RewardTermCfg, env: ParkourManagerBasedRLEnv):
         super().__init__(cfg, env)
         asset: Articulation = env.scene[cfg.params["asset_cfg"].name]
@@ -366,6 +388,7 @@ def reward_lin_vel_z(
     parkour_name:str, 
     asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
     ) -> torch.Tensor: 
+    """惩罚竖直速度，非平地场景时减半惩罚避免阻碍跳跃/爬行。"""
     parkour_event: ParkourEvent =  env.parkour_manager.get_term(parkour_name)
     terrain_names = parkour_event.env_per_terrain_name
     asset: Articulation = env.scene[asset_cfg.name]
@@ -378,6 +401,7 @@ def reward_orientation(
     parkour_name:str, 
     asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
     ) -> torch.Tensor: 
+    """惩罚姿态偏离水平（pitch/roll），仅在平地时启用，以免干扰越障动作。"""
     parkour_event: ParkourEvent =  env.parkour_manager.get_term(parkour_name)
     terrain_names = parkour_event.env_per_terrain_name
     asset: Articulation = env.scene[asset_cfg.name]
@@ -411,6 +435,7 @@ def reward_tracking_goal_vel(
     parkour_name : str, 
     asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
     ) -> torch.Tensor:
+    """奖励机体速度在目标方向上的投影，与命令速度对齐后奖励达到上限。"""
     asset: Articulation = env.scene[asset_cfg.name]
     parkour_event: ParkourEvent = env.parkour_manager.get_term(parkour_name)
     target_pos_rel = parkour_event.target_pos_rel
@@ -452,9 +477,11 @@ def reward_height_guidance(
         return torch.zeros(env.num_envs, device=env.device)
 
     robot_height = asset.data.root_pos_w[:, 2] - env.scene.env_origins[:, 2]
+    # 误差按高斯衰减，偏差越小奖励越大
     error = torch.abs(robot_height - target_height)
     reward = torch.exp(-torch.square(error / (height_tolerance + 1e-6)))
 
+    # 低速时抑制奖励，鼓励在前进中保持目标高度而非“原地刷分”
     planar_speed = torch.norm(asset.data.root_vel_w[:, :2], dim=1)
     vel_gate = torch.clamp(planar_speed / (speed_gate + 1e-6), 0.2, 1.0)
     return reward * active.float() * vel_gate
@@ -496,6 +523,7 @@ def reward_crawl_clearance(
         min=target_min_height,
         max=target_max_height,
     )
+    # 越靠近障碍，高度容差越小，引导提前压低
     dist_weight = torch.clamp(1.0 - cache["min_abs_dist"] / detection_range, 0.0, 1.0)
     current_tol = height_tolerance * (1.0 + 2.0 * (1.0 - dist_weight))
     posture_reward = torch.exp(
@@ -555,6 +583,7 @@ def reward_jump_clearance(
     desired_clearance = cache["nearest_top_z"] + safety_margin
     height_scale = torch.clamp(cache["nearest_raw_height"] / 0.35, 0.8, 1.4)
     clearance = max_foot_height - desired_clearance
+    # 高杆期望更高抬脚：height_scale 随杆高线性放大
     reward = torch.sigmoid(clearance * 25.0) * height_scale
     return reward * in_window.float()
 
@@ -576,6 +605,7 @@ def reward_feet_clearance(
     feet_pos = asset.data.body_state_w[:, foot_ids, :3]
 
     # Broadcast hurdles across feet: feet (N, F, 1), hurdles (N, 1, H)
+    # 将脚位置与所有栏杆的 x/y/z 对齐，方便一次性计算所有近邻杆的违例
     layout_x = layout["x"].unsqueeze(1)
     layout_y = layout["y"].unsqueeze(1)
     layout_top_z = layout["top_z"].unsqueeze(1)
@@ -591,6 +621,7 @@ def reward_feet_clearance(
     if not torch.any(mask):
         return torch.zeros(env.num_envs, device=env.device)
 
+    # 距离越近权重越高；高度不足（dz < safety_margin）按平方惩罚
     closeness = torch.clamp(1.0 - torch.abs(dx) / (check_margin_x + 1e-6), 0.0, 1.0)
     violation_depth = torch.clamp(safety_margin - dz, min=0.0)
     penalty = torch.sum(
@@ -631,6 +662,7 @@ def reward_successful_traversal(
         cache["forward_distance"],
         torch.full_like(cache["forward_distance"], -1.0e3),
     )
+    # 取刚通过的栏杆中前向距离最大的那一个，代表最近通过的杆
     idx = torch.argmax(best_forward, dim=1)
     env_ids = torch.arange(env.num_envs, device=env.device)
     lateral_offset = cache["lateral_distance"][env_ids, idx]
@@ -761,6 +793,7 @@ def reward_jump_success_bonus(
     feet_pos = asset.data.body_state_w[:, foot_ids, 2]
     max_foot_height = feet_pos.max(dim=1).values
     clearance = max_foot_height - cache["nearest_top_z"]
+    # 越过后抬脚越高，bonus 越大，鼓励完整跳跃而非擦杆
     bonus = torch.sigmoid(clearance * 20.0)
     return torch.where(passed_mask, bonus, torch.zeros_like(bonus))
 
@@ -798,6 +831,7 @@ def reward_tracking_yaw(
     parkour_name : str, 
     asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
     ) -> torch.Tensor:
+    """奖励机体航向与目标航向的接近程度，偏差越小奖励越接近 1。"""
     parkour_event: ParkourEvent =  env.parkour_manager.get_term(parkour_name)
     asset: Articulation = env.scene[asset_cfg.name]
     q = asset.data.root_quat_w
@@ -806,6 +840,7 @@ def reward_tracking_yaw(
     return torch.exp(-torch.abs((parkour_event.target_yaw - yaw)))
 
 class reward_delta_torques(ManagerTermBase):
+    """惩罚连续步的力矩跳变，防止突然的激烈动作导致不稳定。"""
     def __init__(self, cfg: RewardTermCfg, env: ParkourManagerBasedRLEnv):
         super().__init__(cfg, env)
         self.asset: Articulation = env.scene[cfg.params["asset_cfg"].name]

@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
     
 class DepthOnlyFCBackbone58x87(nn.Module):
+    """将 58x87 深度图压缩到与激光特征同维度的 MLP+Conv 编码器。"""
     def __init__(self, scandots_output_dim, output_activation=None, num_frames=1):
         super().__init__()
 
@@ -31,6 +32,7 @@ class DepthOnlyFCBackbone58x87(nn.Module):
     
 
 class RecurrentDepthBackbone(nn.Module):
+    """深度图 + 本体组合的时序编码：Conv 压缩 -> MLP 融合 -> GRU -> 输出特征+航向。"""
     def __init__(self, base_backbone, depth_cfg) -> None:
         super().__init__()
         activation = nn.ELU()

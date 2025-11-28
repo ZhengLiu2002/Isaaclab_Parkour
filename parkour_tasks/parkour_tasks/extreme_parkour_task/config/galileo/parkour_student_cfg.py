@@ -22,7 +22,7 @@ class GalileoStudentSceneCfg(GalileoParkourSceneCfg):
 
     def __post_init__(self):
         super().__post_init__()
-        # 与教师保持列/行一致以复用混合课程逻辑
+        # 与教师环境保持同样的行列布局，复用栏杆混合课程与站位逻辑
         self.terrain.terrain_generator.num_rows = 10
         self.terrain.terrain_generator.num_cols = 4
         self.terrain.terrain_generator.horizontal_scale = 0.1
@@ -56,6 +56,7 @@ class GalileoStudentParkourEnvCfg(ParkourManagerBasedRLEnvCfg):
         self.scene.terrain.terrain_generator.difficulty_range = (0.0, 0.15)
         self.scene.terrain.max_init_terrain_level = 0
         self.scene.terrain.max_terrain_level = 10
+        # 蒸馏/学生策略开启关节延迟与历史，模拟实际执行链路的滞后
         self.actions.joint_pos.use_delay = True
         self.actions.joint_pos.history_length = 8
         # place hurdles on reset
@@ -93,6 +94,7 @@ class GalileoStudentParkourEnvCfg_EVAL(GalileoStudentParkourEnvCfg):
 
     def __post_init__(self):
         super().__post_init__()
+        # 评估/可视化：减少并行环境数量、放宽命令采样，开启调试可视化
         self.scene.num_envs = 128
         self.commands.base_velocity.debug_vis = True
         self.scene.depth_camera.params["debug_vis"] = True  # type: ignore[index]
@@ -109,6 +111,7 @@ class GalileoStudentParkourEnvCfg_EVAL(GalileoStudentParkourEnvCfg):
 class GalileoStudentParkourEnvCfg_PLAY(GalileoStudentParkourEnvCfg_EVAL):
     def __post_init__(self):
         super().__post_init__()
+        # 试玩模式：降低并行数、延长单回合时长，并切换为竞赛固定布局
         self.scene.num_envs = 16
         self.episode_length_s = 60.0
         self.scene.terrain.terrain_generator.difficulty_range = (0.7, 1.0)

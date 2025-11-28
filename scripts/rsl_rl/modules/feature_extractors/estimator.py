@@ -3,6 +3,7 @@ import torch
 from rsl_rl.utils import resolve_nn_activation
 
 class DefaultEstimator(nn.Module):
+    """学习从本体观测恢复特权显式状态（如外界信息）的前馈 MLP。"""
     def __init__(self,  
                  num_prop,
                  num_priv_explicit,

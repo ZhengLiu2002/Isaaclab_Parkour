@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 
 class StateHistoryEncoder(nn.Module):
+    """对历史本体序列做 1D 卷积压缩，用于自监督对齐特权隐式。"""
     def __init__(
         self, 
         activation_fn, 

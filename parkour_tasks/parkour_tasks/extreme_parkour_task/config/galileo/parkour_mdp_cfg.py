@@ -17,7 +17,11 @@ from parkour_isaaclab.envs.mdp import terminations, rewards, parkours, events, o
 
 @configclass
 class CommandsCfg:
-    """前进速度指令（针对直线跑道栏杆）"""
+    """前进速度指令（针对直线跑道栏杆）
+
+    - 仅在 X 方向采样 0.6~1.2 m/s，保持训练聚焦在跨栏核心动作。
+    - heading 控制设置轻微偏移范围，利于生成左右对称的轨迹。
+    """
 
     base_velocity = parkour_commands.ParkourCommandCfg(
         asset_name="robot",
@@ -36,6 +40,7 @@ class CommandsCfg:
 
 @configclass
 class ParkourEventsCfg:
+    # 课程推进/退阶阈值：更高的 promotion_goal_threshold 鼓励稳定越障再升级
     base_parkour = parkours.ParkourEventsCfg(
         asset_name="robot",
         promotion_goal_threshold=0.9,
@@ -108,7 +113,11 @@ class StudentObservationsCfg:
 
 @configclass
 class StudentRewardsCfg:
-    """学生奖励（轻量，避免过拟合特权）"""
+    """学生奖励（轻量，避免过拟合特权）
+
+    - 主要围绕安全越障（高度引导/跨越/钻爬/模式匹配）与平稳性（扭矩、动作变化）。
+    - 部分奖励（reward_alive 等）简化权重，便于蒸馏到摄像头输入的学生策略。
+    """
     reward_alive = RewTerm(
         func=rewards.reward_alive,
         weight=1.0,
@@ -236,7 +245,11 @@ class StudentRewardsCfg:
 
 @configclass
 class TeacherRewardsCfg:
-    """教师奖励：包含更丰富的约束/引导。"""
+    """教师奖励：包含更丰富的约束/引导。
+
+    - 在学生奖励基础上增加 DOF 误差、髋关节约束、姿态/角速度等项，强化机体姿态稳定性。
+    - 更高的权重用于纠正不当接触/跌倒，提升教师策略的示范质量。
+    """
     reward_alive = RewTerm(
         func=rewards.reward_alive,
         weight=1.5,
@@ -424,6 +437,7 @@ class EventCfg:
         params={"position_range": (0.95, 1.05), "velocity_range": (0.0, 0.0)},
         mode="reset",
     )
+    # 物理随机化：摩擦、质量、质心偏移，提升策略鲁棒性
     physics_material = EventTerm(
         func=events.randomize_rigid_body_material,
         mode="startup",
@@ -455,6 +469,7 @@ class EventCfg:
         mode="startup",
         params={"sensor_cfg": SceneEntityCfg("depth_camera"), "rot_noise_range": {"pitch": (-5, 5)}, "convention": "ros"},
     )
+    # 场景扰动：周期性横向推力，防止策略在静态环境中过拟合
     push_by_setting_velocity = EventTerm(
         func=events.push_by_setting_velocity,
         params={"velocity_range": {"x": (-0.5, 0.5), "y": (-0.5, 0.5)}},
@@ -475,7 +490,11 @@ class EventCfg:
 
 @configclass
 class ActionsCfg:
-    """动作配置（延迟的关节位置控制）。"""
+    """动作配置（延迟的关节位置控制）。
+
+    - action_delay_steps: 两帧管线延迟模拟通讯/执行滞后。
+    - history_length: 叠加历史动作，帮助策略理解真实控制通道。
+    """
     joint_pos = DelayedJointPositionActionCfg(
         asset_name="robot",
         joint_names=[".*"],

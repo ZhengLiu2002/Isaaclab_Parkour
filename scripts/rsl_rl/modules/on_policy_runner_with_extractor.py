@@ -56,6 +56,7 @@ from copy import copy
 import warnings 
 
 class OnPolicyRunnerWithExtractor(OnPolicyRunner):
+    """带状态估计/深度编码器的训练 Runner，兼容 PPO 与蒸馏两种流程。"""
     def __init__(self, env: VecEnv, train_cfg: dict, log_dir: str | None = None, device="cpu"):
         self.cfg = train_cfg
         self.alg_cfg = train_cfg["algorithm"]
@@ -79,12 +80,12 @@ class OnPolicyRunnerWithExtractor(OnPolicyRunner):
         
         if self.training_type == "rl":
             if "critic" in extras["observations"]:
-                self.privileged_obs_type = "critic"  # actor-critic reinforcement learnig, e.g., PPO
+                self.privileged_obs_type = "critic"  # actor-critic 强化学习模式（例如 PPO）
             else:
                 self.privileged_obs_type = None
         if self.training_type == "distillation":
             if "teacher" in extras["observations"]:
-                self.privileged_obs_type = "teacher"  # policy distillation
+                self.privileged_obs_type = "teacher"  # 策略蒸馏：教师观测
             else:
                 self.privileged_obs_type = None
 
@@ -120,6 +121,7 @@ class OnPolicyRunnerWithExtractor(OnPolicyRunner):
 
         self.learn = self.learn_rl if self.depth_encoder_cfg is None else self.learn_vision
         if self.depth_encoder_cfg is not None:
+            # 视觉蒸馏：教师 policy + 深度编码器 + 学生 actor
             alg_class = eval(self.alg_cfg.pop("class_name"))
             self.alg: DistillationWithExtractor = alg_class(
                                                     policy = policy, 
@@ -131,8 +133,9 @@ class OnPolicyRunnerWithExtractor(OnPolicyRunner):
                                                     max_grad_norm = self.alg_cfg['max_grad_norm'],
                                                     device=self.device, 
                                                     multi_gpu_cfg=self.multi_gpu_cfg
-                                                    )
+            )
         else:
+            # 纯 RL：带状态估计器的 PPO 训练
             self.dagger_update_freq = self.alg_cfg.pop("dagger_update_freq")
             alg_class = eval(self.alg_cfg.pop("class_name"))
             self.alg: PPOWithExtractor = alg_class(
@@ -177,6 +180,7 @@ class OnPolicyRunnerWithExtractor(OnPolicyRunner):
         self.git_status_repos = [rsl_rl.__file__]
 
     def learn_rl(self, num_learning_iterations: int, init_at_random_ep_len: bool = False):  # noqa: C901
+        """标准 RL 训练循环：收集 rollout -> 更新 PPO -> 记录日志。"""
         # initialize writer
         self.alg: PPOWithExtractor
         if self.log_dir is not None and self.writer is None and not self.disable_logs:
@@ -335,6 +339,7 @@ class OnPolicyRunnerWithExtractor(OnPolicyRunner):
             self.save(os.path.join(self.log_dir, f"model_{self.current_learning_iteration}.pt"))
 
     def learn_vision(self, num_learning_iterations, init_at_random_ep_len=False):
+        """深度蒸馏训练循环：用教师动作监督学生 actor，同时微调航向。"""
         if not isinstance(self.alg, DistillationWithExtractor):
             raise TypeError('A algorithm must be DistillationWithExtractor, not a ', self.alg)
         else:
@@ -390,6 +395,7 @@ class OnPolicyRunnerWithExtractor(OnPolicyRunner):
             yaws_buffer = []
             for _ in range(self.depth_encoder_cfg['num_steps_per_env']):
                 if self.env.unwrapped.common_step_counter %5 == 0:
+                    # 每 5 步刷新一次深度编码器输出，避免重复前向
                     obs_prop_depth = obs[:, :self.depth_encoder_cfg['num_prop']].clone()
                     obs_prop_depth[:, 6:8] = 0
                     depth_latent_and_yaw = self.alg.depth_encoder(additional_obs["depth_camera"].clone(), obs_prop_depth)  # clone is crucial to avoid in-place operation
@@ -615,6 +621,7 @@ class OnPolicyRunnerWithExtractor(OnPolicyRunner):
         return loaded_dict["infos"]
 
     def get_estimator_inference_policy(self, device=None):
+        """返回状态估计器的推理接口（冻结 dropout/BN）。"""
         self.alg: PPOWithExtractor
         self.alg.estimator.eval() # switch to evaluation mode (dropout for example)
         if device is not None:
@@ -622,12 +629,14 @@ class OnPolicyRunnerWithExtractor(OnPolicyRunner):
         return self.alg.estimator
     
     def get_depth_encoder_inference_policy(self, device=None):
+        """返回深度编码器（含 RNN 状态）的推理接口。"""
         self.alg.depth_encoder.eval()
         if device is not None:
             self.alg.depth_encoder.to(device)
         return self.alg.depth_encoder
 
     def get_inference_policy(self, device=None):
+        """返回 actor 推理函数，若开启归一化则自动预处理输入。"""
         self.eval_mode()  # switch to evaluation mode (dropout for example)
         if device is not None:
             self.alg.policy.to(device)
@@ -639,6 +648,7 @@ class OnPolicyRunnerWithExtractor(OnPolicyRunner):
         return policy
 
     def get_inference_depth_policy(self, device=None):
+        """返回学生 actor 推理函数（用于深度驱动）。"""
         self.eval_mode()  # switch to evaluation mode (dropout for example)
         if device is not None:
             self.alg.depth_actor.to(device)

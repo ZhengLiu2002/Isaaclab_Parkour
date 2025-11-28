@@ -9,6 +9,7 @@ from .actor_critic_with_encoder import ActorCriticRMA
 from copy import deepcopy  
 
 class DistillationWithExtractor():
+    """视觉蒸馏算法包装：用深度编码器+学生 actor 拟合教师动作。"""
     policy: ActorCriticRMA
     def __init__(
         self,
@@ -31,6 +32,7 @@ class DistillationWithExtractor():
         else:
             self.gpu_global_rank = 0
             self.gpu_world_size = 1
+        # teacher policy + 结构化状态估计器
         self.estimator: nn.Module = estimator
         self.priv_states_dim = estimator_paras["num_priv_explicit"]
         self.num_prop = estimator_paras["num_prop"]
@@ -56,7 +58,7 @@ class DistillationWithExtractor():
         self.depth_actor_optimizer = optim.Adam([*self.depth_actor.parameters(), *self.depth_encoder.parameters()], lr=depth_encoder_cfg["learning_rate"])
 
     def broadcast_parameters(self):
-        """Synchronize all trainable modules across GPUs."""
+        """同步教师/估计器/深度编码器/学生 actor 参数到所有 GPU。"""
         if not self.is_multi_gpu:
             return
         state_to_sync = {
@@ -74,7 +76,7 @@ class DistillationWithExtractor():
         self.depth_actor.load_state_dict(synced_state["depth_actor"])
 
     def reduce_parameters(self):
-        """Average gradients for all modules across GPUs."""
+        """跨 GPU 求平均梯度，确保分布式更新一致。"""
         if not self.is_multi_gpu:
             return
         modules = [self.policy, self.estimator, self.depth_encoder, self.depth_actor]
@@ -85,6 +87,7 @@ class DistillationWithExtractor():
                     param.grad /= self.gpu_world_size
 
     def update_depth_actor(self, actions_buffer, yaws_buffer):
+        """学生 actor 损失：逼近教师动作 + 航向校正。"""
         depth_actor_loss = (actions_buffer).norm(p=2, dim=1).mean()
         yaw_loss = (yaws_buffer).norm(p=2, dim=1).mean()
 
@@ -104,6 +107,7 @@ class DistillationWithExtractor():
         return loss_dict
 
     def broadcast_parameters(self):
+        """仅同步 policy 参数的简化版本（覆盖上方函数，保留兼容性）。"""
         # obtain the model parameters on current GPU
         model_params = [self.policy.state_dict()]
         # broadcast the model parameters
@@ -112,6 +116,7 @@ class DistillationWithExtractor():
         self.policy.load_state_dict(model_params[0])
 
     def reduce_parameters(self):
+        """仅对 policy 梯度做平均（覆盖上方函数，历史遗留接口）。"""
         # Create a tensor to store the gradients
         grads = [param.grad.view(-1) for param in self.policy.parameters() if param.grad is not None]
         all_grads = torch.cat(grads)

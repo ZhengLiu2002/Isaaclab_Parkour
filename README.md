@@ -47,8 +47,7 @@ cd IsaacLab/Isaaclab_Parkour/
 conda activate isaaclab
 
 # 可选：清理残留
-pkill -f isaaclab.python.kit || true
-pkill -f torchrun || true
+fuser -k -9 /dev/nvidia0 /dev/nvidia1 /dev/nvidia2 /dev/nvidia3
 
 # 安全模式变量（适配 IOMMU/带宽受限机型）
 export NCCL_P2P_DISABLE=1

@@ -10,6 +10,7 @@ from .actor_critic_with_encoder import ActorCriticRMA
 from rsl_rl.algorithms import PPO
 
 class PPOWithExtractor(PPO):
+    """带特权状态估计器与历史对齐正则的 PPO。"""
     policy: ActorCriticRMA
 
     def __init__(
@@ -96,6 +97,7 @@ class PPOWithExtractor(PPO):
         super().init_storage(training_type, num_envs, num_transitions_per_env, obs_td, actions_shape)
 
     def act(self, obs, critic_obs, hist_encoding=False):
+        """采样动作并缓存过渡，用估计器可选替换特权显式段。"""
         if self.policy.is_recurrent:
             self.transition.hidden_states = self.policy.get_hidden_states()
         obs_td = TensorDict({"obs": obs}, batch_size=[obs.shape[0]], device=self.device)
@@ -121,6 +123,7 @@ class PPOWithExtractor(PPO):
         return self.transition.actions
 
     def process_env_step(self, obs, rewards, dones, extras):
+        """收集环境一步数据，计算 RND、处理超时。"""
         obs_td = TensorDict({"obs": obs}, batch_size=[obs.shape[0]], device=self.device)
         # Update the normalizers
         if hasattr(self.policy, "update_normalization"):
@@ -158,7 +161,7 @@ class PPOWithExtractor(PPO):
         )
 
     def broadcast_parameters(self):
-        """Synchronize trainable modules across GPUs."""
+        """同步 policy/估计器/RND 参数到所有 GPU。"""
         if not self.is_multi_gpu:
             return
         state_to_sync = {
@@ -176,7 +179,7 @@ class PPOWithExtractor(PPO):
             self.rnd.load_state_dict(synced_state["rnd"])
 
     def reduce_parameters(self):
-        """Average gradients of all trainable modules across GPUs."""
+        """跨 GPU 平均梯度。"""
         if not self.is_multi_gpu:
             return
 
@@ -192,6 +195,7 @@ class PPOWithExtractor(PPO):
     
 
     def update(self):  # noqa: C901
+        """PPO 主更新：含特权正则、状态估计、可选对称/RND。"""
         mean_value_loss = 0
         mean_surrogate_loss = 0
         mean_priv_reg_loss = 0
@@ -309,7 +313,7 @@ class PPOWithExtractor(PPO):
             priv_reg_coef = priv_reg_stage * (self.priv_reg_coef_schedual[1] - self.priv_reg_coef_schedual[0]) + self.priv_reg_coef_schedual[0]
 
             # Estimator
-            priv_states_predicted = self.estimator(obs_batch[:, :self.num_prop])  # obs in batch is with true priv_states
+            priv_states_predicted = self.estimator(obs_batch[:, :self.num_prop])  # batch 中原始 priv_states 仍保留
             estimator_loss = (priv_states_predicted - obs_batch[:, self.num_prop+self.num_scan:self.num_prop+self.num_scan+self.priv_states_dim]).pow(2).mean()
             # KL
             if self.desired_kl is not None and self.schedule == "adaptive":
@@ -484,6 +488,7 @@ class PPOWithExtractor(PPO):
         self.counter += 1
 
     def update_dagger(self):
+        """DAgger 式自蒸馏：强制历史编码对齐特权隐式编码。"""
         mean_hist_latent_loss = 0
         if self.policy.is_recurrent:
             generator = self.storage.recurrent_mini_batch_generator(self.num_mini_batches, self.num_learning_epochs)
