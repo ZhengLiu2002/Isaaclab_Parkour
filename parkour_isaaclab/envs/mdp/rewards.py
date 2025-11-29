@@ -734,8 +734,9 @@ def reward_low_crawl_penalty(
     back_sense: float = GUIDANCE_BACK_SENSE,
     detection_range: float = GUIDANCE_DETECTION_RANGE,
     low_threshold: float = 0.25,
+    posture_margin: float = 0.10,
 ) -> torch.Tensor:
-    """惩罚在低杆（应跳）场景下使用爬行模式。"""
+    """惩罚在低杆（应跳）场景下采取“低身通过”的姿态（无论模式判定如何）。"""
     asset: Articulation = env.scene[asset_cfg.name]
     cache = _get_hurdle_cache(
         env,
@@ -746,21 +747,16 @@ def reward_low_crawl_penalty(
     if cache is None or cache.get("layout") is None:
         return torch.zeros(env.num_envs, device=env.device)
 
-    mode = _get_locomotion_mode(
-        env,
-        cache,
-        height_threshold=OBSTACLE_HEIGHT_THRESHOLD,
-        detection_range=detection_range,
-    )
     low_mask = cache["nearest_raw_height"] <= low_threshold
-    crawl_mask = mode == MODE_CRAWL
-    pen_mask = low_mask & crawl_mask & cache["has_any"]
-    if not torch.any(pen_mask):
+    near_mask = cache["has_any"] & low_mask & (cache["min_abs_dist"] < detection_range)
+    if not torch.any(near_mask):
         return torch.zeros(env.num_envs, device=env.device)
-    # penalty magnitude increases as height goes lower
-    depth = torch.clamp(low_threshold - cache["nearest_raw_height"], min=0.0)
-    pen = torch.sigmoid(depth * 40.0)
-    return torch.where(pen_mask, pen, torch.zeros_like(pen))
+    # 若试图低身通过低杆：身体最高点低于杆顶+margin → 施加惩罚
+    body_max_z = asset.data.body_state_w[:, :, 2].max(dim=1).values
+    desired = cache["nearest_top_z"] + posture_margin
+    crouch_depth = torch.clamp(desired - body_max_z, min=0.0)
+    pen = torch.sigmoid(crouch_depth * 25.0)
+    return torch.where(near_mask, pen, torch.zeros_like(pen))
 
 
 def reward_jump_success_bonus(
