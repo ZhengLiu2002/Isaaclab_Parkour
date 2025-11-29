@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from isaaclab.managers import ManagerTermBase, SceneEntityCfg
 from isaaclab.sensors import ContactSensor
 from isaaclab.assets import Articulation
-from isaaclab.utils.math import euler_xyz_from_quat
+from isaaclab.utils.math import euler_xyz_from_quat, wrap_to_pi
 from parkour_isaaclab.envs.mdp.parkours import ParkourEvent 
 from collections.abc import Sequence
 
@@ -348,8 +348,9 @@ class reward_action_rate(ManagerTermBase):
         self.previous_actions = torch.zeros(env.num_envs, 2,  asset.num_joints, dtype= torch.float ,device=self.device)
         
     def reset(self, env_ids: Sequence[int] | None = None) -> None:
-        self.previous_actions[env_ids, 0,:] = 0.
-        self.previous_actions[env_ids, 1,:] = 0.
+        idx = slice(None) if env_ids is None else env_ids
+        self.previous_actions[idx, 0,:] = 0.
+        self.previous_actions[idx, 1,:] = 0.
 
     def __call__(
         self,
@@ -370,8 +371,9 @@ class reward_dof_acc(ManagerTermBase):
         self.dt = env.cfg.decimation * env.cfg.sim.dt
 
     def reset(self, env_ids: Sequence[int] | None = None) -> None:
-        self.previous_joint_vel[env_ids, 0,:] = 0.
-        self.previous_joint_vel[env_ids, 1,:] = 0.
+        idx = slice(None) if env_ids is None else env_ids
+        self.previous_joint_vel[idx, 0,:] = 0.
+        self.previous_joint_vel[idx, 1,:] = 0.
 
     def __call__(
         self,
@@ -388,11 +390,12 @@ def reward_lin_vel_z(
     parkour_name:str, 
     asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
     ) -> torch.Tensor: 
-    """惩罚竖直速度，非平地场景时减半惩罚避免阻碍跳跃/爬行。"""
+    """惩罚竖直速度（世界系），非平地场景时减半惩罚避免阻碍跳跃/爬行。"""
     parkour_event: ParkourEvent =  env.parkour_manager.get_term(parkour_name)
     terrain_names = parkour_event.env_per_terrain_name
     asset: Articulation = env.scene[asset_cfg.name]
-    rew = torch.square(asset.data.root_lin_vel_b[:, 2])
+    # Use world-frame vertical speed; body-frame z would penalize tilting as if it were lift.
+    rew = torch.square(asset.data.root_vel_w[:, 2])
     rew[(terrain_names !='parkour_flat')[:,-1]] *= 0.5
     return rew
 
@@ -788,11 +791,22 @@ def reward_jump_success_bonus(
     passed_mask = torch.any(just_passed, dim=1) & (mode == MODE_JUMP)
     if not torch.any(passed_mask):
         return torch.zeros(env.num_envs, device=env.device)
+
+    # Identify which hurdle was just passed to evaluate clearance against that bar.
+    best_forward = torch.where(
+        just_passed,
+        cache["forward_distance"],
+        torch.full_like(cache["forward_distance"], -1.0e3),
+    )
+    idx = torch.argmax(best_forward, dim=1)
+    env_ids = torch.arange(env.num_envs, device=env.device)
+    passed_top_z = cache["layout"]["top_z"][env_ids, idx]
+
     # bonus scaled by foot clearance after passing
     foot_ids = asset.find_bodies(".*_foot")[0]
     feet_pos = asset.data.body_state_w[:, foot_ids, 2]
     max_foot_height = feet_pos.max(dim=1).values
-    clearance = max_foot_height - cache["nearest_top_z"]
+    clearance = max_foot_height - passed_top_z
     # 越过后抬脚越高，bonus 越大，鼓励完整跳跃而非擦杆
     bonus = torch.sigmoid(clearance * 20.0)
     return torch.where(passed_mask, bonus, torch.zeros_like(bonus))
@@ -831,13 +845,13 @@ def reward_tracking_yaw(
     parkour_name : str, 
     asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
     ) -> torch.Tensor:
-    """奖励机体航向与目标航向的接近程度，偏差越小奖励越接近 1。"""
+    """奖励机体航向与目标航向的接近程度，偏差越小奖励越接近 1（使用周期误差）。"""
     parkour_event: ParkourEvent =  env.parkour_manager.get_term(parkour_name)
     asset: Articulation = env.scene[asset_cfg.name]
-    q = asset.data.root_quat_w
-    yaw = torch.atan2(2*(q[:,0]*q[:,3] + q[:,1]*q[:,2]),
-                    1 - 2*(q[:,2]**2 + q[:,3]**2))
-    return torch.exp(-torch.abs((parkour_event.target_yaw - yaw)))
+    # root_quat_w is xyzw; reuse the math helper to avoid component-order mistakes.
+    yaw = _get_yaw(asset.data.root_quat_w)
+    yaw_error = wrap_to_pi(parkour_event.target_yaw - yaw)
+    return torch.exp(-torch.abs(yaw_error))
 
 class reward_delta_torques(ManagerTermBase):
     """惩罚连续步的力矩跳变，防止突然的激烈动作导致不稳定。"""
@@ -847,8 +861,9 @@ class reward_delta_torques(ManagerTermBase):
         self.previous_torque = torch.zeros(env.num_envs, 2,  self.asset.num_joints, dtype= torch.float ,device=self.device)
 
     def reset(self, env_ids: Sequence[int] | None = None) -> None:
-        self.previous_torque[env_ids, 0,:] = 0.
-        self.previous_torque[env_ids, 1,:] = 0.
+        idx = slice(None) if env_ids is None else env_ids
+        self.previous_torque[idx, 0,:] = 0.
+        self.previous_torque[idx, 1,:] = 0.
 
     def __call__(
         self,

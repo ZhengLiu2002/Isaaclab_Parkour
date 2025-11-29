@@ -1,5 +1,8 @@
 import torch
 
+import os
+from pathlib import Path
+
 from isaaclab.assets import ArticulationCfg, RigidObjectCfg
 from isaaclab.sensors import ContactSensorCfg, RayCasterCfg, patterns
 from isaaclab.utils import configclass
@@ -25,7 +28,9 @@ except ImportError:
     # 当外部 galileo_parkour 扩展未安装时，回落到本地 USD，方便单机调试
     GALILEO_CFG = None
 
-GALILEO_USD_PATH = "/home/lz/Project/IsaacLab/source/extensions/galileo_parkour/galileo_parkour/assets/usd/robot/galileo_v2d3.usd"
+# USD 路径：优先环境变量 GALILEO_USD_PATH，其次仓库相对默认值
+_DEFAULT_GALILEO_USD = Path(__file__).resolve().parents[5] / "source/extensions/galileo_parkour/galileo_parkour/assets/usd/robot/galileo_v2d3.usd"
+GALILEO_USD_PATH = os.environ.get("GALILEO_USD_PATH", str(_DEFAULT_GALILEO_USD))
 # 可用固定栏杆高度（厘米）与颜色，用于训练/竞赛布局
 # 栏杆高度档位（米），全局统一供课程、固定赛道等模式复用
 HURDLE_HEIGHTS_CM = (5, 10, 20, 30, 40, 50)
@@ -122,12 +127,19 @@ def place_galileo_hurdles(
         increments = torch.tensor([0.00, 0.05, 0.10, 0.15], device=env.device)
         # 阶段可见数量（逐渐递增，>table 后保持 4 根）
         num_visible_table = torch.tensor([1, 2, 3, 4, 4], device=env.device)
-        # for stages beyond table, clamp to max visible 4
-        num_visible = torch.where(stage_used < len(num_visible_table), num_visible_table[stage_used], torch.full_like(stage_used, 4))
+        table_len = num_visible_table.numel()
+        safe_idx = torch.clamp(stage_used, max=table_len - 1)
+        num_visible = torch.full_like(stage_used, 4)
+        within_table = stage_used < table_len
+        num_visible[within_table] = num_visible_table[safe_idx[within_table]]
 
         # 极端高度（低/高）更容易，中间高度最难：阶段越高，中间高度概率越大，同时整体高度小幅上移
         prob_mid_table = torch.tensor([0.10, 0.25, 0.50, 0.70, 0.85], device=env.device)
-        prob_mid = torch.where(stage_used < len(prob_mid_table), prob_mid_table[stage_used], torch.full_like(stage_used, 0.9, dtype=torch.float))
+        prob_table_len = prob_mid_table.numel()
+        safe_idx_prob = torch.clamp(stage_used, max=prob_table_len - 1)
+        prob_mid = torch.full(stage_used.shape, 0.9, device=env.device, dtype=torch.float)
+        within_prob_table = stage_used < prob_table_len
+        prob_mid[within_prob_table] = prob_mid_table[safe_idx_prob[within_prob_table]]
         height_scale = torch.clamp(1.0 + 0.03 * torch.clamp(stage_used - 4, min=0).float(), max=1.5)
 
         # Jump 列高度采样
