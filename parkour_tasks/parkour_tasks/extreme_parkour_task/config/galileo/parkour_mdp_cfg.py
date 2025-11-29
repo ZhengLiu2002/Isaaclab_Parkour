@@ -266,7 +266,7 @@ class TeacherRewardsCfg:
     )
     reward_height_guidance = RewTerm(
         func=rewards.reward_height_guidance,
-        weight=2.0,
+        weight=5.0,
         params={
             "asset_cfg": SceneEntityCfg("robot"),
             "lane_half_width": 0.45,
@@ -291,7 +291,7 @@ class TeacherRewardsCfg:
     )
     reward_crawl_clearance = RewTerm(
         func=rewards.reward_crawl_clearance,
-        weight=2.0,
+        weight=5.0,
         params={
             "asset_cfg": SceneEntityCfg("robot"),
             "lane_half_width": 0.45,
@@ -326,7 +326,7 @@ class TeacherRewardsCfg:
     )
     reward_torques = RewTerm(
         func=rewards.reward_torques,
-        weight=-1.0e-6,
+        weight=-1.0e-7,
         params={"asset_cfg": SceneEntityCfg("robot")},
     )
     reward_dof_error = RewTerm(
@@ -346,7 +346,7 @@ class TeacherRewardsCfg:
     )
     reward_action_rate = RewTerm(
         func=rewards.reward_action_rate,
-        weight=-0.05,
+        weight=-0.02,
         params={"asset_cfg": SceneEntityCfg("robot")},
     )
     reward_dof_acc = RewTerm(
@@ -356,7 +356,7 @@ class TeacherRewardsCfg:
     )
     reward_lin_vel_z = RewTerm(
         func=rewards.reward_lin_vel_z,
-        weight=-0.2,
+        weight=-0.1,
         params={"asset_cfg": SceneEntityCfg("robot"), "parkour_name": "base_parkour"},
     )
     reward_orientation = RewTerm(
@@ -376,18 +376,18 @@ class TeacherRewardsCfg:
     )
     reward_tracking_yaw = RewTerm(
         func=rewards.reward_tracking_yaw,
-        weight=2.0,
+        weight=4.0,
         params={"asset_cfg": SceneEntityCfg("robot"), "parkour_name": "base_parkour"},
     )
     reward_delta_torques = RewTerm(
         func=rewards.reward_delta_torques,
-        weight=-5.0e-7,
+        weight=-1.0e-7,
         params={"asset_cfg": SceneEntityCfg("robot")},
     )
     # 诊断用：模式判定偏差与低杆爬行惩罚（小权重，仅供日志观察）
     reward_mode_mismatch = RewTerm(
         func=rewards.reward_mode_mismatch,
-        weight=-1.,
+        weight=-2.,
         params={"asset_cfg": SceneEntityCfg("robot")},
     )
     reward_low_crawl_penalty = RewTerm(
