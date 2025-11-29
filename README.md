@@ -39,9 +39,24 @@ LOG_RUN_NAME=galileo_student python scripts/rsl_rl/train.py \
   --num_envs 4096 --max_iterations 50000 --run_name auto --headless
 ```
 
-### 多卡分布式（4 卡示例）
 ```bash
 
+# 可选通信自检（几十秒）：打印 Allreduce sum: 6 world: 4 即正常
+python - <<'PY'
+import torch, torch.distributed as dist
+dist.init_process_group("nccl")
+r = dist.get_rank(); w = dist.get_world_size()
+x = torch.tensor([r], device=f"cuda:{r}")
+dist.all_reduce(x)
+if r == 0: print("Allreduce sum:", x.item(), "world:", w)
+dist.destroy_process_group()
+PY
+
+```
+
+### 多卡分布式（4 卡示例）
+```bash
+# 环境
 cd IsaacLab/Isaaclab_Parkour/
 
 conda activate isaaclab
@@ -64,6 +79,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 torchrun --nproc_per_node=4 scripts/rsl_rl/train.py
   --task Isaac-Galileo-Parkour-Teacher-v0 \
   --distributed --num_envs 3500 --max_iterations 50000 \
   --run_name galileo-teacher --device cuda:0
+
 
 ```
 - `LOG_RUN_NAME` 决定日志目录名：`logs/rsl_rl/<exp>/<LOG_RUN_NAME>_<run_name>`。
