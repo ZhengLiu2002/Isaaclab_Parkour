@@ -1,5 +1,116 @@
 # IsaacLab Parkour
 
+```mermaid
+graph LR
+    %% ==========================================
+    %% 样式定义
+    %% ==========================================
+    classDef inputs fill:#E1F5FE,stroke:#01579B,stroke-width:2px,rx:5,ry:5;
+    classDef encoders fill:#FFF3E0,stroke:#E65100,stroke-width:2px,rx:5,ry:5;
+    classDef latent fill:#F3E5F5,stroke:#4A148C,stroke-width:1px,stroke-dasharray: 5 5;
+    classDef actor fill:#E8F5E9,stroke:#1B5E20,stroke-width:2px,rx:5,ry:5;
+    classDef loss fill:#FFEBEE,stroke:#B71C1C,stroke-width:2px,stroke-dasharray: 5 5;
+    classDef output fill:#FFF,stroke:#333,stroke-width:2px;
+
+    %% ==========================================
+    %% 输入层 (垂直堆叠)
+    %% ==========================================
+    subgraph Inputs ["Observation Space"]
+        OBS_P("Proprioception<br/>53-dim"):::inputs
+        OBS_S("Height Scan<br/>132-dim"):::inputs
+        OBS_Priv("Privileged Info<br/>Exp:9 / Imp:29 / H:8"):::inputs
+        OBS_Hist("History Buffer<br/>10x53 = 530-dim"):::inputs
+        OBS_Depth("Depth Images<br/>2 x 58 x 87"):::inputs
+        
+        %% 使用隐式连接强制垂直排列 (适配旧版本)
+        OBS_P ~~~ OBS_S ~~~ OBS_Priv ~~~ OBS_Hist ~~~ OBS_Depth
+    end
+
+    %% ==========================================
+    %% 编码层 (垂直堆叠)
+    %% ==========================================
+    subgraph Encoders ["Encoders & Backbones"]
+        ENC_Scan("Scan Encoder<br/>MLP: 132->32"):::encoders
+        ENC_Priv("Privileged Encoder<br/>MLP: 29->20"):::encoders
+        ENC_Hist("History Encoder<br/>1D Conv"):::encoders
+        ENC_Est("Estimator<br/>Reconstruct Priv"):::encoders
+        ENC_Depth("Depth Backbone<br/>CNN + GRU"):::encoders
+
+        %% 使用隐式连接强制垂直排列
+        ENC_Scan ~~~ ENC_Priv ~~~ ENC_Hist ~~~ ENC_Est ~~~ ENC_Depth
+    end
+
+    %% ==========================================
+    %% 策略网络
+    %% ==========================================
+    subgraph Policy ["Gated Dual-Head Actor"]
+        Input_Concat(("Concat")):::latent
+        Gate("Gating Network<br/>Input: Hurdles"):::actor
+        Head_Jump("Head 1: Jump"):::actor
+        Head_Crawl("Head 2: Crawl"):::actor
+        Mixer(("Soft Select")):::output
+        Action_Out("Joint Targets<br/>12-dim"):::output
+        
+        %% 布局辅助
+        Input_Concat ~~~ Gate
+    end
+
+    %% ==========================================
+    %% 连接关系 - 教师流
+    %% ==========================================
+    OBS_S --> ENC_Scan
+    OBS_Priv --> ENC_Priv
+    OBS_Hist --> ENC_Hist
+    OBS_P --> ENC_Est
+    
+    ENC_Scan --> Input_Concat
+    ENC_Priv --"Train: Priv Latent"--> Input_Concat
+    ENC_Hist --"Eval: Hist Latent"--> Input_Concat
+    OBS_P --> Input_Concat
+    
+    %% Actor 内部流
+    Input_Concat --> Head_Jump
+    Input_Concat --> Head_Crawl
+    OBS_Priv --"Hurdle Info"--> Gate
+    Gate --> Mixer
+    Head_Jump --> Mixer
+    Head_Crawl --> Mixer
+    Mixer --> Action_Out
+
+    %% ==========================================
+    %% 连接关系 - 学生流
+    %% ==========================================
+    OBS_Depth --> ENC_Depth
+    OBS_P --> ENC_Depth
+    
+    ENC_Depth --"Student Latent"--> Input_Concat
+    ENC_Depth --"Yaw Residual"--> OBS_P
+    
+    %% ==========================================
+    %% 损失函数
+    %% ==========================================
+    subgraph Training ["Loss Functions"]
+        LOSS_PPO("Teacher PPO Loss"):::loss
+        LOSS_DAgger("DAgger Loss"):::loss
+        LOSS_Est("Estimator Loss"):::loss
+        LOSS_Distill("Distillation Loss"):::loss
+        
+        LOSS_PPO ~~~ LOSS_DAgger ~~~ LOSS_Est ~~~ LOSS_Distill
+    end
+
+    %% Loss 连接
+    Action_Out -.-> LOSS_PPO
+    ENC_Priv -.-> LOSS_DAgger
+    ENC_Hist -.-> LOSS_DAgger
+    ENC_Est -.-> LOSS_Est
+    
+    %% 学生蒸馏连接
+    Action_Out --"Teacher Labels"--> LOSS_Distill
+    ENC_Depth -.-> LOSS_Distill
+```
+
+
+
 基于 Isaac Lab 的栏杆跑酷强化学习项目，覆盖 Galileo/Go2 等机器人在跳跃、钻爬和混合课程下的训练、评估与部署。
 
 ## 安装
@@ -39,21 +150,6 @@ LOG_RUN_NAME=galileo_student python scripts/rsl_rl/train.py \
   --num_envs 4096 --max_iterations 50000 --run_name auto --headless
 ```
 
-```bash
-
-# 可选通信自检（几十秒）：打印 Allreduce sum: 6 world: 4 即正常
-python - <<'PY'
-import torch, torch.distributed as dist
-dist.init_process_group("nccl")
-r = dist.get_rank(); w = dist.get_world_size()
-x = torch.tensor([r], device=f"cuda:{r}")
-dist.all_reduce(x)
-if r == 0: print("Allreduce sum:", x.item(), "world:", w)
-dist.destroy_process_group()
-PY
-
-```
-
 ### 多卡分布式（4 卡示例）
 ```bash
 # 环境
@@ -79,7 +175,6 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 torchrun --nproc_per_node=4 scripts/rsl_rl/train.py
   --task Isaac-Galileo-Parkour-Teacher-v0 \
   --distributed --num_envs 3500 --max_iterations 50000 \
   --run_name galileo-teacher --device cuda:0
-
 
 ```
 - `LOG_RUN_NAME` 决定日志目录名：`logs/rsl_rl/<exp>/<LOG_RUN_NAME>_<run_name>`。

@@ -163,39 +163,6 @@ class StudentRewardsCfg:
             "detection_range": 1.4,
         },
     )
-    reward_mode_mismatch = RewTerm(
-        func=rewards.reward_mode_mismatch,
-        weight=-0.8,
-        params={
-            "asset_cfg": SceneEntityCfg("robot"),
-            "lane_half_width": 0.45,
-            "back_sense": 0.65,
-            "detection_range": 1.4,
-            "jump_margin": 0.08,
-            "crawl_margin": 0.05,
-        },
-    )
-    reward_low_crawl_penalty = RewTerm(
-        func=rewards.reward_low_crawl_penalty,
-        weight=-0.8,
-        params={
-            "asset_cfg": SceneEntityCfg("robot"),
-            "lane_half_width": 0.45,
-            "back_sense": 0.65,
-            "detection_range": 1.4,
-            "low_threshold": 0.25,
-        },
-    )
-    reward_jump_success_bonus = RewTerm(
-        func=rewards.reward_jump_success_bonus,
-        weight=1.5,
-        params={
-            "asset_cfg": SceneEntityCfg("robot"),
-            "lane_half_width": 0.45,
-            "back_sense": 0.65,
-            "traversal_window": 0.55,
-        },
-    )
     reward_feet_clearance = RewTerm(
         func=rewards.reward_feet_clearance,
         weight=-1.2,
@@ -240,6 +207,32 @@ class StudentRewardsCfg:
         func=rewards.reward_lin_vel_z,
         weight=-0.15,
         params={"asset_cfg": SceneEntityCfg("robot"), "parkour_name": "base_parkour"},
+    )
+    # 适度增加姿态/跟踪/接触约束，保持学生网络轻量化但不遗漏关键安全项
+    reward_orientation = RewTerm(
+        func=rewards.reward_orientation,
+        weight=-0.3,
+        params={"asset_cfg": SceneEntityCfg("robot"), "parkour_name": "base_parkour"},
+    )
+    reward_feet_stumble = RewTerm(
+        func=rewards.reward_feet_stumble,
+        weight=-0.8,
+        params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*_foot")},
+    )
+    reward_tracking_goal_vel = RewTerm(
+        func=rewards.reward_tracking_goal_vel,
+        weight=3.0,
+        params={"asset_cfg": SceneEntityCfg("robot"), "parkour_name": "base_parkour"},
+    )
+    reward_tracking_yaw = RewTerm(
+        func=rewards.reward_tracking_yaw,
+        weight=1.5,
+        params={"asset_cfg": SceneEntityCfg("robot"), "parkour_name": "base_parkour"},
+    )
+    reward_delta_torques = RewTerm(
+        func=rewards.reward_delta_torques,
+        weight=-3.0e-7,
+        params={"asset_cfg": SceneEntityCfg("robot")},
     )
 
 
@@ -293,39 +286,6 @@ class TeacherRewardsCfg:
             "lane_half_width": 0.45,
             "back_sense": 0.65,
             "detection_range": 1.4,
-        },
-    )
-    reward_mode_mismatch = RewTerm(
-        func=rewards.reward_mode_mismatch,
-        weight=-1.8,
-        params={
-            "asset_cfg": SceneEntityCfg("robot"),
-            "lane_half_width": 0.45,
-            "back_sense": 0.65,
-            "detection_range": 1.4,
-            "jump_margin": 0.08,
-            "crawl_margin": 0.05,
-        },
-    )
-    reward_low_crawl_penalty = RewTerm(
-        func=rewards.reward_low_crawl_penalty,
-        weight=-1.2,
-        params={
-            "asset_cfg": SceneEntityCfg("robot"),
-            "lane_half_width": 0.45,
-            "back_sense": 0.65,
-            "detection_range": 1.4,
-            "low_threshold": 0.25,
-        },
-    )
-    reward_jump_success_bonus = RewTerm(
-        func=rewards.reward_jump_success_bonus,
-        weight=2.0,
-        params={
-            "asset_cfg": SceneEntityCfg("robot"),
-            "lane_half_width": 0.45,
-            "back_sense": 0.65,
-            "traversal_window": 0.55,
         },
     )
     reward_feet_clearance = RewTerm(
