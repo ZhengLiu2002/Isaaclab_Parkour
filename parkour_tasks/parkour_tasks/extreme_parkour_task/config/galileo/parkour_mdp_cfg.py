@@ -234,6 +234,17 @@ class StudentRewardsCfg:
         weight=-3.0e-7,
         params={"asset_cfg": SceneEntityCfg("robot")},
     )
+    # 诊断用：模式判定偏差与低杆爬行惩罚（小权重，仅供日志观察）
+    reward_mode_mismatch = RewTerm(
+        func=rewards.reward_mode_mismatch,
+        weight=-0.05,
+        params={"asset_cfg": SceneEntityCfg("robot")},
+    )
+    reward_low_crawl_penalty = RewTerm(
+        func=rewards.reward_low_crawl_penalty,
+        weight=-0.05,
+        params={"asset_cfg": SceneEntityCfg("robot")},
+    )
 
 
 @configclass
@@ -371,6 +382,17 @@ class TeacherRewardsCfg:
     reward_delta_torques = RewTerm(
         func=rewards.reward_delta_torques,
         weight=-5.0e-7,
+        params={"asset_cfg": SceneEntityCfg("robot")},
+    )
+    # 诊断用：模式判定偏差与低杆爬行惩罚（小权重，仅供日志观察）
+    reward_mode_mismatch = RewTerm(
+        func=rewards.reward_mode_mismatch,
+        weight=-0.05,
+        params={"asset_cfg": SceneEntityCfg("robot")},
+    )
+    reward_low_crawl_penalty = RewTerm(
+        func=rewards.reward_low_crawl_penalty,
+        weight=-0.05,
         params={"asset_cfg": SceneEntityCfg("robot")},
     )
 
