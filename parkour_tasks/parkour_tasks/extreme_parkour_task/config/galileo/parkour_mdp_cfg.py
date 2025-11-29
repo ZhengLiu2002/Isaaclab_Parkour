@@ -150,7 +150,7 @@ class StudentRewardsCfg:
             "detection_range": 1.4,
             "jump_window_front": 0.65,
             "jump_window_back": -0.25,
-            "safety_margin": 0.08,
+            "safety_margin": 0.12,
         },
     )
     reward_crawl_clearance = RewTerm(
@@ -291,7 +291,7 @@ class TeacherRewardsCfg:
     )
     reward_crawl_clearance = RewTerm(
         func=rewards.reward_crawl_clearance,
-        weight=5.0,
+        weight=2.0,
         params={
             "asset_cfg": SceneEntityCfg("robot"),
             "lane_half_width": 0.45,
@@ -361,7 +361,7 @@ class TeacherRewardsCfg:
     )
     reward_orientation = RewTerm(
         func=rewards.reward_orientation,
-        weight=-0.5,
+        weight=-1.0,
         params={"asset_cfg": SceneEntityCfg("robot"), "parkour_name": "base_parkour"},
     )
     reward_feet_stumble = RewTerm(
@@ -371,7 +371,7 @@ class TeacherRewardsCfg:
     )
     reward_tracking_goal_vel = RewTerm(
         func=rewards.reward_tracking_goal_vel,
-        weight = 4.0,
+        weight = 5.0,
         params={"asset_cfg": SceneEntityCfg("robot"), "parkour_name": "base_parkour"},
     )
     reward_tracking_yaw = RewTerm(
@@ -387,12 +387,12 @@ class TeacherRewardsCfg:
     # 诊断用：模式判定偏差与低杆爬行惩罚（小权重，仅供日志观察）
     reward_mode_mismatch = RewTerm(
         func=rewards.reward_mode_mismatch,
-        weight=-0.05,
+        weight=-0.2,
         params={"asset_cfg": SceneEntityCfg("robot")},
     )
     reward_low_crawl_penalty = RewTerm(
         func=rewards.reward_low_crawl_penalty,
-        weight=-0.05,
+        weight=-0.1,
         params={"asset_cfg": SceneEntityCfg("robot")},
     )
 

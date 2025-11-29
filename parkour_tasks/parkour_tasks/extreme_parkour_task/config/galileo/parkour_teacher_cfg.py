@@ -173,8 +173,9 @@ def place_galileo_hurdles(
         crawl_base = torch.where(use_mid_crawl, crawl_mid_sample, crawl_ext) * height_scale
 
         # 默认 4 槽位递增/递减序列
-        jump_heights = torch.clamp(jump_base.unsqueeze(1) + increments, 0.05, 0.55)
-        crawl_heights = torch.clamp(crawl_base.unsqueeze(1) - 0.4 * increments, 0.30, 0.65)
+        # 保持跳栏高度低于约 0.35，爬栏高度高于约 0.40，避免模式冲突
+        jump_heights = torch.clamp(jump_base.unsqueeze(1) + increments, 0.05, 0.35)
+        crawl_heights = torch.clamp(crawl_base.unsqueeze(1) - 0.4 * increments, 0.40, 0.65)
         target_h = torch.where(terrain_types.unsqueeze(1) < 2, jump_heights, crawl_heights)
 
     target_x = env_origins[:, 0].unsqueeze(1) + start + spacing * torch.arange(4, device=env.device)
