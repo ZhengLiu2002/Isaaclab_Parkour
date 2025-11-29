@@ -195,7 +195,7 @@ class StudentRewardsCfg:
     )
     reward_action_rate = RewTerm(
         func=rewards.reward_action_rate,
-        weight=-0.08,
+        weight=-0.05,
         params={"asset_cfg": SceneEntityCfg("robot")},
     )
     reward_ang_vel_xy = RewTerm(
@@ -335,12 +335,12 @@ class TeacherRewardsCfg:
     )
     reward_action_rate = RewTerm(
         func=rewards.reward_action_rate,
-        weight=-0.08,
+        weight=-0.05,
         params={"asset_cfg": SceneEntityCfg("robot")},
     )
     reward_dof_acc = RewTerm(
         func=rewards.reward_dof_acc,
-        weight=-1.0e-6,
+        weight=-1.0e-7,
         params={"asset_cfg": SceneEntityCfg("robot")},
     )
     reward_lin_vel_z = RewTerm(
