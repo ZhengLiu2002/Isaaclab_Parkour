@@ -242,7 +242,8 @@ class GatedMoEActor(nn.Module):
         gate_layers.append(nn.Linear(gating_hidden_dims[-1], self.num_experts))
         self.gating_mlp = nn.Sequential(*gate_layers)
         self.gating_temperature = gating_temperature
-        self.gating_top_k = gating_top_k
+        # TorchScript 友好：用 -1 表示未启用 top-k
+        self.gating_top_k = int(gating_top_k) if gating_top_k is not None else -1
         # TorchScript 需要属性预先定义
         self.gate_last = torch.zeros(1, self.num_experts)
         self.gate_entropy = torch.zeros(1)
@@ -273,8 +274,9 @@ class GatedMoEActor(nn.Module):
         """计算 gating 权重，可选 top-k 裁剪后做 softmax。"""
         logits = self.gating_mlp(gate_feat)
         self.gate_logits_last = logits.detach()
-        if self.gating_top_k is not None and self.gating_top_k < self.num_experts:
-            topk_vals, topk_idx = torch.topk(logits, self.gating_top_k, dim=-1)
+        top_k = self.gating_top_k
+        if top_k >= 0 and top_k < self.num_experts:
+            topk_vals, topk_idx = torch.topk(logits, top_k, dim=-1)
             mask = torch.full_like(logits, float("-inf"))
             mask.scatter_(1, topk_idx, topk_vals)
             logits = mask

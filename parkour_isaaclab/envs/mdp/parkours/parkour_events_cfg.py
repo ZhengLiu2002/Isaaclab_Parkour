@@ -57,7 +57,7 @@ class ParkourEventsCfg(ParkourTermCfg):
     arrow_num: int = 8  
 
     reach_goal_delay: float = 0.1
-    next_goal_threshold: float = 0.2
+    next_goal_threshold: float = 0.2  # 目标点到达判定阈值（米），放宽以更容易触发
     promotion_goal_threshold: float = 0.8
     demotion_goal_threshold: float = 0.2
     promotion_distance_ratio: float = 0.8

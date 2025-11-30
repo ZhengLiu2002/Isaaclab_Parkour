@@ -819,6 +819,65 @@ def reward_jump_success_bonus(
     return torch.where(passed_mask, bonus, torch.zeros_like(bonus))
 
 
+def reward_lateral_deviation_penalty(
+    env: ParkourManagerBasedRLEnv,
+    asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
+    lane_half_width: float = GUIDANCE_LANE_HALF_WIDTH,
+    back_sense: float = GUIDANCE_BACK_SENSE,
+    detection_range: float = GUIDANCE_DETECTION_RANGE,
+    lateral_threshold: float = 0.3,  # 横向偏移阈值，超过此值开始惩罚
+    penalty_scale: float = 2.0,  # 惩罚强度
+) -> torch.Tensor:
+    """惩罚机器人从栏杆边缘绕过：当机器人接近栏杆时，如果横向偏移过大，给予惩罚。
+    
+    这个奖励函数旨在防止机器人"作弊"从栏杆边缘绕过，鼓励机器人从赛道中心通过栏杆。
+    
+    Args:
+        env: 环境实例
+        asset_cfg: 机器人资产配置
+        lane_half_width: 车道半宽
+        back_sense: 向后感知距离
+        detection_range: 检测范围
+        lateral_threshold: 横向偏移阈值，超过此值开始惩罚（米）
+        penalty_scale: 惩罚强度系数
+    
+    Returns:
+        惩罚值（负数），横向偏移越大，惩罚越大
+    """
+    asset: Articulation = env.scene[asset_cfg.name]
+    cache = _get_hurdle_cache(
+        env,
+        asset,
+        lane_half_width=lane_half_width,
+        back_extend=back_sense,
+    )
+    
+    if cache is None or not cache.get("has_any", False):
+        return torch.zeros(env.num_envs, device=env.device)
+    
+    # 获取最近的栏杆信息
+    nearest_forward = cache["nearest_forward"]
+    nearest_lateral = cache["nearest_lateral"]
+    
+    # 只对在栏杆前方一定范围内的机器人进行惩罚（接近栏杆时）
+    # 范围：从栏杆前 detection_range 到栏杆后 back_sense
+    near_hurdle_mask = (nearest_forward > -back_sense) & (nearest_forward < detection_range)
+    
+    if not torch.any(near_hurdle_mask):
+        return torch.zeros(env.num_envs, device=env.device)
+    
+    # 计算横向偏移的绝对值
+    lateral_abs = torch.abs(nearest_lateral)
+    
+    # 如果横向偏移超过阈值，给予惩罚
+    # 惩罚强度随偏移距离增加而增加
+    excess_lateral = torch.clamp(lateral_abs - lateral_threshold, min=0.0)
+    penalty = -penalty_scale * torch.square(excess_lateral / (lane_half_width + 1e-6))
+    
+    # 只对接近栏杆的机器人应用惩罚
+    return torch.where(near_hurdle_mask, penalty, torch.zeros_like(penalty))
+
+
 def reward_foot_symmetry(
     env: ParkourManagerBasedRLEnv,
     asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),

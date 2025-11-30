@@ -33,6 +33,8 @@ def terminate_episode(
     pitch_cutoff = torch.abs(wrap_to_pi(pitch)) > 1.5
     time_out_buf = env.episode_length_buf >= env.max_episode_length
     parkour_event: ParkourEvent =  env.parkour_manager.get_term('base_parkour')    
+    # 检查是否到达所有目标：cur_goal_idx >= num_goals 表示已完成所有目标
+    # 注意：cur_goal_idx 在到达最后一个目标并满足驻留时间后会被设置为 num_goals
     reach_goal_cutoff = parkour_event.cur_goal_idx >= env.scene.terrain.cfg.terrain_generator.num_goals
     height_cutoff = asset.data.root_state_w[:, 2] < -0.25
     time_out_buf |= reach_goal_cutoff

@@ -126,6 +126,17 @@ def main():
 
     # create isaac environment
     env = gym.make(args_cli.task, cfg=env_cfg, render_mode="rgb_array" if args_cli.video else None)
+    # Play 模式尽量避免超时重置，只在到达最后目标或摔倒时重置（训练不受影响）
+    try:
+        base_env = env.unwrapped
+        if hasattr(base_env, "max_episode_length"):
+            new_len = int(base_env.max_episode_length * 100)  # effectively disable time-out for play
+            base_env.max_episode_length = new_len
+            if hasattr(base_env, "cfg") and hasattr(base_env.cfg, "episode_length_s"):
+                base_env.cfg.episode_length_s = base_env.cfg.episode_length_s * 100.0
+            print(f"[INFO] Play mode: time-out relaxed to {new_len} steps (goal/fall still terminate).")
+    except Exception as exc:  # pragma: no cover - defensive
+        print(f"[WARN] Failed to relax play time-out: {exc}")
 
     # convert to single-agent instance if required by the RL algorithm
     if isinstance(env.unwrapped, DirectMARLEnv):

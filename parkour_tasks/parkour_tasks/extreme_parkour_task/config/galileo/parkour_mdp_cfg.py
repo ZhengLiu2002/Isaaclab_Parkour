@@ -179,6 +179,18 @@ class StudentRewardsCfg:
         weight=0.6,
         params={"asset_cfg": SceneEntityCfg("robot"), "height_scale": 0.12},
     )
+    reward_lateral_deviation_penalty = RewTerm(
+        func=rewards.reward_lateral_deviation_penalty,
+        weight=-3.0,  # 负权重表示惩罚
+        params={
+            "asset_cfg": SceneEntityCfg("robot"),
+            "lane_half_width": 0.45,
+            "back_sense": 0.65,
+            "detection_range": 1.4,
+            "lateral_threshold": 0.3,  # 横向偏移超过0.3米开始惩罚
+            "penalty_scale": 2.0,  # 惩罚强度
+        },
+    )
     reward_successful_traversal = RewTerm(
         func=rewards.reward_successful_traversal,
         weight=2.5,
@@ -292,7 +304,7 @@ class TeacherRewardsCfg:
     )
     reward_crawl_clearance = RewTerm(
         func=rewards.reward_crawl_clearance,
-        weight=2.0,
+        weight=5.0,
         params={
             "asset_cfg": SceneEntityCfg("robot"),
             "lane_half_width": 0.45,
@@ -312,8 +324,20 @@ class TeacherRewardsCfg:
     )
     reward_foot_symmetry = RewTerm(
         func=rewards.reward_foot_symmetry,
-        weight=1.5,
+        weight=1.7,
         params={"asset_cfg": SceneEntityCfg("robot"), "height_scale": 0.12},
+    )
+    reward_lateral_deviation_penalty = RewTerm(
+        func=rewards.reward_lateral_deviation_penalty,
+        weight=-5.0,  # 负权重表示惩罚，教师模型使用更强的惩罚
+        params={
+            "asset_cfg": SceneEntityCfg("robot"),
+            "lane_half_width": 0.45,
+            "back_sense": 0.65,
+            "detection_range": 1.4,
+            "lateral_threshold": 0.3,  # 横向偏移超过0.3米开始惩罚
+            "penalty_scale": 2.0,  # 惩罚强度
+        },
     )
     reward_successful_traversal = RewTerm(
         func=rewards.reward_successful_traversal,
@@ -327,7 +351,7 @@ class TeacherRewardsCfg:
     )
     reward_torques = RewTerm(
         func=rewards.reward_torques,
-        weight=-1.0e-7,
+        weight=-1.0e-6,
         params={"asset_cfg": SceneEntityCfg("robot")},
     )
     reward_dof_error = RewTerm(
@@ -347,12 +371,12 @@ class TeacherRewardsCfg:
     )
     reward_action_rate = RewTerm(
         func=rewards.reward_action_rate,
-        weight=-0.05,
+        weight=-0.1,
         params={"asset_cfg": SceneEntityCfg("robot")},
     )
     reward_dof_acc = RewTerm(
         func=rewards.reward_dof_acc,
-        weight=-1.0e-7,
+        weight=-1.0e-6,
         params={"asset_cfg": SceneEntityCfg("robot")},
     )
     reward_lin_vel_z = RewTerm(

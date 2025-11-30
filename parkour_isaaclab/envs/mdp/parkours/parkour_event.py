@@ -116,25 +116,42 @@ class ParkourEvent(ParkourTerm):
     
     def _update_command(self):
         """Re-target the current goal position to the current root state."""
-        next_flag = self.reach_goal_timer > self.reach_goal_delay / self.simulation_time
-        # 避免索引越界，仅对未完成的索引做自增
-        next_flag = next_flag & (self.cur_goal_idx < self.num_goals)
-        if self.debug_vis:
-            # guard against completed episodes (cur_goal_idx==num_goals) to avoid OOB writes
-            tmp_mask = torch.nonzero((self.cur_goal_idx > 0) & (self.cur_goal_idx < self.num_goals)).squeeze(-1)
-            if tmp_mask.numel() > 0:
-                self.future_goal_idx[tmp_mask, self.cur_goal_idx[tmp_mask]] = False
-        self.cur_goal_idx[next_flag] += 1
-        self.reach_goal_timer[next_flag] = 0
         robot_root_pos_w = self.robot.data.root_pos_w[:, :2] - self.env_origins[:, :2]
         self.reached_goal_ids = torch.norm(robot_root_pos_w - self.cur_goals[:, :2], dim=1) < self.next_goal_threshold
         reached_goal_idx = self.reached_goal_ids.nonzero(as_tuple=False).squeeze(-1)
         if reached_goal_idx.numel() > 0:
             self.reach_goal_timer[reached_goal_idx] += 1
-        # force completion when the last goal is reached once so higher-level logic can terminate
+        # require连续驻留才能切换目标，离开判定区域即清零计时
+        self.reach_goal_timer[~self.reached_goal_ids] = 0
+        
+        # 更新可视化状态：在机器人到达目标点时立即更新，让目标点立即变绿
+        if self.debug_vis and self.reached_goal_ids.any():
+            # 只更新未完成的目标（避免索引越界）
+            valid_mask = (self.cur_goal_idx >= 0) & (self.cur_goal_idx < self.num_goals) & self.reached_goal_ids
+            if valid_mask.any():
+                # 标记当前目标为已到达（变绿）
+                self.future_goal_idx[valid_mask, self.cur_goal_idx[valid_mask]] = False
+        
+        # 检查是否可以切换到下一个目标：需要满足驻留时间要求且当前目标索引未完成
+        next_flag = self.reach_goal_timer > self.reach_goal_delay / self.simulation_time
+        # 避免索引越界，仅对未完成的索引做自增
+        next_flag = next_flag & (self.cur_goal_idx < self.num_goals - 1)  # 修改：最后一个目标需要特殊处理
+        
+        # 切换到下一个目标
+        self.cur_goal_idx[next_flag] += 1
+        self.reach_goal_timer[next_flag] = 0
+        
+        # 处理最后一个目标：到达最后一个目标后，需要持续驻留才能完成
+        # 只有当到达最后一个目标（索引为 num_goals - 1）且满足驻留时间时，才标记为完成
         last_goal_mask = (self.cur_goal_idx == (self.num_goals - 1)) & self.reached_goal_ids
-        if last_goal_mask.any():
-            self.cur_goal_idx[last_goal_mask] = self.num_goals
+        last_goal_timer_ok = self.reach_goal_timer > self.reach_goal_delay / self.simulation_time
+        last_goal_complete = last_goal_mask & last_goal_timer_ok
+        if last_goal_complete.any():
+            if self.debug_vis:
+                # 标记最后一个目标为已到达
+                self.future_goal_idx[last_goal_complete, self.num_goals - 1] = False
+            # 标记为完成，触发终止条件
+            self.cur_goal_idx[last_goal_complete] = self.num_goals
 
         self.cur_goals = self._gather_cur_goals()
         self.next_goals = self._gather_cur_goals(future=1)
@@ -148,41 +165,48 @@ class ParkourEvent(ParkourTerm):
     def _resample_command(self, env_ids: Sequence[int]):
         if len(env_ids) == 0:
             return
-        # 如果关闭课程（如 Play），跳过阶段机，保持原 terrain level/origin
-        curriculum_on = getattr(self.terrain.cfg.terrain_generator, "curriculum", True)
-        if not curriculum_on:
-            return
+        # 如果关闭课程（如 Play），跳过阶段机，但仍需重置目标/计时器
+        curriculum_on = bool(getattr(self.terrain.cfg.terrain_generator, "curriculum", True))
 
-        # record outcome of last episode for these envs
-        success_mask, has_outcome = self._get_last_outcome(env_ids)
-        self._update_stage(env_ids, success_mask, has_outcome)
+        if curriculum_on:
+            # record outcome of last episode for these envs
+            success_mask, has_outcome = self._get_last_outcome(env_ids)
+            self._update_stage(env_ids, success_mask, has_outcome)
 
-        # curriculum recall: small prob to revisit previous stage for retention
-        stage_now = self.stage.clone()
-        stage_used = stage_now[env_ids]
-        recall_mask = (stage_used > 0) & (torch.rand_like(stage_used.float()) < self.recall_prob)
-        stage_used = torch.where(recall_mask, stage_used - 1, stage_used)
-        self.env.curriculum_stage[env_ids] = stage_used
+            # curriculum recall: small prob to revisit previous stage for retention
+            stage_now = self.stage.clone()
+            stage_used = stage_now[env_ids]
+            recall_mask = (stage_used > 0) & (torch.rand_like(stage_used.float()) < self.recall_prob)
+            stage_used = torch.where(recall_mask, stage_used - 1, stage_used)
+            self.env.curriculum_stage[env_ids] = stage_used
 
-        # map stage to terrain level row; clamp by available rows
-        max_rows = self.terrain.terrain_origins.shape[0]
-        level_values = self.stage_to_level[torch.clamp(stage_used, max=self.stage_to_level.shape[0] - 1)]
-        level_values = torch.clamp(level_values, max=max_rows - 1)
-        self.terrain.terrain_levels[env_ids] = level_values
-        self.env_origins[env_ids] = self.terrain.terrain_origins[self.terrain.terrain_levels[env_ids], self.terrain.terrain_types[env_ids]]
-        self.env_class[env_ids] = self.terrain_class[self.terrain.terrain_levels[env_ids], self.terrain.terrain_types[env_ids]]
+            # map stage to terrain level row; clamp by available rows
+            max_rows = self.terrain.terrain_origins.shape[0]
+            level_values = self.stage_to_level[torch.clamp(stage_used, max=self.stage_to_level.shape[0] - 1)]
+            level_values = torch.clamp(level_values, max=max_rows - 1)
+            self.terrain.terrain_levels[env_ids] = level_values
+            self.env_origins[env_ids] = self.terrain.terrain_origins[self.terrain.terrain_levels[env_ids], self.terrain.terrain_types[env_ids]]
+            self.env_class[env_ids] = self.terrain_class[self.terrain.terrain_levels[env_ids], self.terrain.terrain_types[env_ids]]
 
         self._refresh_env_goals(env_ids)
         self._update_goal_vectors()
 
-        numpy_terrain_levels = self.terrain.terrain_levels.detach().cpu().numpy()
-        numpy_terrain_types = self.terrain.terrain_types.detach().cpu().numpy()
-        self.env_per_terrain_name = self.total_terrain_names[numpy_terrain_levels, numpy_terrain_types]
+        if curriculum_on:
+            numpy_terrain_levels = self.terrain.terrain_levels.detach().cpu().numpy()
+            numpy_terrain_types = self.terrain.terrain_types.detach().cpu().numpy()
+            self.env_per_terrain_name = self.total_terrain_names[numpy_terrain_levels, numpy_terrain_types]
 
+        # 重置目标相关状态：确保完全重置，避免残留状态导致问题
         self.reach_goal_timer[env_ids] = 0
         self.cur_goal_idx[env_ids] = 0
+        self.reached_goal_ids[env_ids] = False
+        
+        # 更新当前目标位置（重置后应该指向第一个目标）
+        self.cur_goals = self._gather_cur_goals()
+        self.next_goals = self._gather_cur_goals(future=1)
 
         if self.debug_vis:
+            # 重置可视化状态：第一个目标标记为当前（已到达），其他标记为未来（未到达）
             self.future_goal_idx[env_ids, 0] = False
             self.future_goal_idx[env_ids, 1:] = True
             self.env_per_heights = self.total_heights[self.terrain.terrain_levels, self.terrain.terrain_types]
@@ -249,7 +273,16 @@ class ParkourEvent(ParkourTerm):
     def _apply_hurdle_layout_goals(
         self, base_goals: torch.Tensor, env_ids: torch.Tensor | None
     ) -> torch.Tensor:
-        """Project waypoints to the Galileo hurdle layout (entry + per-hurdle + final, then padded)."""
+        """Project waypoints to the Galileo hurdle layout (entry + per-hurdle + final, then padded).
+        
+        布局说明：
+        - 目标 0: entry point (起点前)
+        - 目标 1 到 1+visible-1: 每个可见 hurdle 的位置
+        - 目标 num_goals-1: final goal (最后一个 hurdle 之后)
+        
+        注意：num_goals 应该等于 1 + hurdle_count + 1 (entry + hurdles + final)
+        例如：4 个 hurdles 需要 num_goals = 6
+        """
         try:
             place_cfg = self.env.event_manager.get_term_cfg("place_hurdles")
         except Exception:
@@ -408,56 +441,78 @@ class ParkourEvent(ParkourTerm):
     def _debug_vis_callback(self, event):
         if not self.robot.is_initialized:
             return
-        env_per_goals = self.env_goals[:, : self.num_goals]
-        env_per_xy_goals = env_per_goals[:, :, :2] + self.env_origins[:, :2].unsqueeze(1)
-        goal_height = self.env_per_heights.unsqueeze(-1)*self.terrain.cfg.terrain_generator.vertical_scale
-        env_per_goal_pos = torch.concat([env_per_xy_goals, goal_height],dim=-1)
-        env_per_current_goal_pos = env_per_goal_pos[~self.future_goal_idx, :]
-        env_per_future_goal_pos = env_per_goal_pos[self.future_goal_idx, :] .reshape(-1,3)
-        self.current_goal_pose_visualizer.visualize(
-            translations=env_per_current_goal_pos,
-        )
-        if len(env_per_future_goal_pos) > 0:
-            self.future_goal_poses_visualizer.visualize(
-                translations=env_per_future_goal_pos ,
+        # 只显示第一个环境（env_id=0）的可视化，避免多环境共享赛道时的视觉混乱
+        env_id = 0
+        
+        # 获取第一个环境的目标点数据
+        env_0_goals = self.env_goals[env_id:env_id+1, : self.num_goals]  # shape: (1, num_goals, 3)
+        env_0_xy_goals = env_0_goals[:, :, :2] + self.env_origins[env_id:env_id+1, :2].unsqueeze(1)
+        env_0_goal_height = self.env_per_heights[env_id:env_id+1].unsqueeze(-1) * self.terrain.cfg.terrain_generator.vertical_scale
+        env_0_goal_pos = torch.concat([env_0_xy_goals, env_0_goal_height], dim=-1)  # shape: (1, num_goals, 3)
+        
+        # 获取第一个环境的目标状态
+        env_0_future_goal_idx = self.future_goal_idx[env_id:env_id+1, :]  # shape: (1, num_goals)
+        env_0_current_goal_pos = env_0_goal_pos[~env_0_future_goal_idx, :]  # 已到达的目标（绿色）
+        env_0_future_goal_pos = env_0_goal_pos[env_0_future_goal_idx, :]  # 未到达的目标（红色）
+        
+        # 可视化目标点
+        if len(env_0_current_goal_pos) > 0:
+            self.current_goal_pose_visualizer.visualize(
+                translations=env_0_current_goal_pos,
             )
+        if len(env_0_future_goal_pos) > 0:
+            self.future_goal_poses_visualizer.visualize(
+                translations=env_0_future_goal_pos,
+            )
+        
+        # 获取第一个环境的箭头数据
+        env_0_target_pos_rel = self.target_pos_rel[env_id:env_id+1, :]  # shape: (1, 2)
+        env_0_next_target_pos_rel = self.next_target_pos_rel[env_id:env_id+1, :]  # shape: (1, 2)
+        env_0_robot_pos_w = self.robot.data.root_pos_w[env_id:env_id+1, :]  # shape: (1, 3)
+        
         current_arrow_list = []
         future_arrow_list = []
         for i in range(self.arrow_num):
-            norm = torch.norm(self.target_pos_rel, dim=-1, keepdim=True)
-            target_vec_norm = self.target_pos_rel / (norm + 1e-5)
-            current_pose_arrow = self.robot.data.root_pos_w[:, :2] + 0.1*(i+3) * target_vec_norm[:, :2]
+            # 当前目标箭头
+            norm = torch.norm(env_0_target_pos_rel, dim=-1, keepdim=True)
+            target_vec_norm = env_0_target_pos_rel / (norm + 1e-5)
+            current_pose_arrow = env_0_robot_pos_w[:, :2] + 0.1*(i+3) * target_vec_norm[:, :2]
             current_arrow_list.append(torch.concat([
                 current_pose_arrow[:,0][:,None], 
                 current_pose_arrow[:,1][:,None], 
-                self.robot.data.root_pos_w[:, 2][:,None]
+                env_0_robot_pos_w[:, 2:3]
                 ], dim = 1))
-            if len(env_per_future_goal_pos) > 0:
-                    
-                norm = torch.norm(self.next_target_pos_rel, dim=-1, keepdim=True)
-                target_vec_norm = self.next_target_pos_rel / (norm + 1e-5)
-                future_pose_arrow = self.robot.data.root_pos_w[:, :2] + 0.2*(i+3) * target_vec_norm[:, :2]
+            
+            # 下一个目标箭头
+            if len(env_0_future_goal_pos) > 0:
+                norm = torch.norm(env_0_next_target_pos_rel, dim=-1, keepdim=True)
+                target_vec_norm = env_0_next_target_pos_rel / (norm + 1e-5)
+                future_pose_arrow = env_0_robot_pos_w[:, :2] + 0.2*(i+3) * target_vec_norm[:, :2]
                 future_arrow_list.append(torch.concat([
                     future_pose_arrow[:,0][:,None], 
                     future_pose_arrow[:,1][:,None], 
-                    self.robot.data.root_pos_w[:, 2][:,None]
+                    env_0_robot_pos_w[:, 2:3]
                     ], dim = 1))
             else:
+                # 如果没有未来目标，使用当前目标箭头
                 future_arrow_list.append(torch.concat([
                     current_pose_arrow[:,0][:,None], 
                     current_pose_arrow[:,1][:,None], 
-                    self.robot.data.root_pos_w[:, 2][:,None]
+                    env_0_robot_pos_w[:, 2:3]
                     ], dim = 1))
 
-        current_arrow_positions = torch.cat(current_arrow_list, dim=0)
-        future_arrow_positions = torch.cat(future_arrow_list, dim=0)
-        self.current_arrow_visualizer.visualize(
-            translations=current_arrow_positions,
-        )
-
-        self.future_arrow_visualizer.visualize(
-            translations=future_arrow_positions,
-        )
+        # 可视化箭头
+        if len(current_arrow_list) > 0:
+            current_arrow_positions = torch.cat(current_arrow_list, dim=0)
+            self.current_arrow_visualizer.visualize(
+                translations=current_arrow_positions,
+            )
+        
+        if len(future_arrow_list) > 0:
+            future_arrow_positions = torch.cat(future_arrow_list, dim=0)
+            self.future_arrow_visualizer.visualize(
+                translations=future_arrow_positions,
+            )
 
     @property
     def command(self):
