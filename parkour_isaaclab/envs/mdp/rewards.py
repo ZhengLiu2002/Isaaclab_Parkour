@@ -852,12 +852,23 @@ def reward_lateral_deviation_penalty(
         back_extend=back_sense,
     )
     
-    if cache is None or not cache.get("has_any", False):
+    if cache is None:
+        return torch.zeros(env.num_envs, device=env.device)
+    
+    # 检查是否有有效的栏杆
+    has_any = cache.get("has_any", False)
+    if isinstance(has_any, torch.Tensor):
+        if not torch.any(has_any):
+            return torch.zeros(env.num_envs, device=env.device)
+    elif not has_any:
         return torch.zeros(env.num_envs, device=env.device)
     
     # 获取最近的栏杆信息
-    nearest_forward = cache["nearest_forward"]
-    nearest_lateral = cache["nearest_lateral"]
+    nearest_forward = cache.get("nearest_forward")
+    nearest_lateral = cache.get("nearest_lateral")
+    
+    if nearest_forward is None or nearest_lateral is None:
+        return torch.zeros(env.num_envs, device=env.device)
     
     # 只对在栏杆前方一定范围内的机器人进行惩罚（接近栏杆时）
     # 范围：从栏杆前 detection_range 到栏杆后 back_sense
