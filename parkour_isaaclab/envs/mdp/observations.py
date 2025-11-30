@@ -36,6 +36,7 @@ class ExtremeParkourObservations(ManagerTermBase):
         self.sensor_cfg = cfg.params["sensor_cfg"]
         self.asset_cfg = cfg.params["asset_cfg"]
         self.history_length = cfg.params['history_length']
+        self.include_privileged = cfg.params.get("include_privileged", True)
 
         # 延迟初始化，保证维度与实时观测对齐（兼容新增特征）。
         self._obs_history_buffer = None
@@ -55,6 +56,10 @@ class ExtremeParkourObservations(ManagerTermBase):
             raise ValueError(f"Cannot find base body with patterns {base_candidates}")
         
     def reset(self, env_ids: Sequence[int] | None = None) -> None:
+        if self._obs_history_buffer is None:
+            return
+        if env_ids is None:
+            env_ids = slice(None)
         self._obs_history_buffer[env_ids, :, :] = 0. 
 
     def __call__(
@@ -91,18 +96,18 @@ class ExtremeParkourObservations(ManagerTermBase):
                             env.action_manager.get_term('joint_pos').action_history_buf[:, -1],
                             self._get_contact_fill(),
                             ),dim=-1)
-        priv_explicit = self._get_priv_explicit()
-        priv_latent = self._get_priv_latent()
-        priv_hurdles = self._get_priv_hurdles(env)
+        extra_terms: list[torch.Tensor] = []
+        if self.include_privileged:
+            priv_explicit = self._get_priv_explicit()
+            priv_latent = self._get_priv_latent()
+            priv_hurdles = self._get_priv_hurdles(env)
+            extra_terms.extend([priv_hurdles, priv_explicit, priv_latent])
         if self._obs_history_buffer is None or self._obs_history_buffer.shape[2] != obs_buf.shape[1]:
             self._obs_history_buffer = torch.zeros(self.num_envs, self.history_length, obs_buf.shape[1], device=self.device)
-        observations = torch.cat([obs_buf, #53
-                                  self.measured_heights, #132
-                                  priv_hurdles, # 8
-                                  priv_explicit, # 9
-                                  priv_latent, # 29
-                                  self._obs_history_buffer.view(self.num_envs, -1)
-                                  ],dim=-1)
+        observations = torch.cat(
+            [obs_buf, self.measured_heights, *extra_terms, self._obs_history_buffer.view(self.num_envs, -1)],
+            dim=-1,
+        )
         obs_buf[:, 6:8] = 0
         self._obs_history_buffer = torch.where(
             (env.episode_length_buf <= 1)[:, None, None], 

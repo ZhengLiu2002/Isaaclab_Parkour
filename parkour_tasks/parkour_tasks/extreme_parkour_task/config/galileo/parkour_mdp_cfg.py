@@ -83,6 +83,7 @@ class StudentObservationsCfg:
                 "sensor_cfg": SceneEntityCfg("contact_forces", body_names=".*_foot"),
                 "parkour_name": "base_parkour",
                 "history_length": 10,
+                "include_privileged": False,
             },
             clip=(-100, 100),
         )

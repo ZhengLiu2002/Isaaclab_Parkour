@@ -521,11 +521,11 @@ def reward_crawl_clearance(
         return torch.zeros(env.num_envs, device=env.device)
 
     robot_height = asset.data.root_pos_w[:, 2] - env.scene.env_origins[:, 2]
-    target = torch.clamp(
-        cache["nearest_raw_height"] - 0.15,
-        min=target_min_height,
-        max=target_max_height,
-    )
+    height_raw = cache["nearest_raw_height"]
+    # 高杆更苛刻：margin 随高度增大，鼓励 40/50cm 栏杆拉伸身体
+    extra_margin = torch.clamp(height_raw - 0.40, min=0.0)
+    adaptive_margin = torch.clamp(0.18 + 0.25 * extra_margin, 0.15, 0.30)
+    target = torch.clamp(height_raw - adaptive_margin, min=target_min_height, max=target_max_height + 0.05)
     # 越靠近障碍，高度容差越小，引导提前压低
     dist_weight = torch.clamp(1.0 - cache["min_abs_dist"] / detection_range, 0.0, 1.0)
     current_tol = height_tolerance * (1.0 + 2.0 * (1.0 - dist_weight))
@@ -537,7 +537,9 @@ def reward_crawl_clearance(
     clearance = cache["nearest_top_z"] - body_max_z + clearance_margin
     clearance_reward = torch.sigmoid(clearance * 30.0)
 
-    return active.float() * dist_weight * (0.6 * posture_reward + 0.4 * clearance_reward)
+    height_scale = torch.clamp(height_raw / 0.4, 1.0, 1.6)
+    combo = (0.6 * posture_reward + 0.4 * clearance_reward) * height_scale
+    return active.float() * dist_weight * combo
 
 
 def reward_jump_clearance(
@@ -583,8 +585,10 @@ def reward_jump_clearance(
     feet_pos = asset.data.body_state_w[:, foot_ids, 2]
     max_foot_height = feet_pos.max(dim=1).values
 
-    desired_clearance = cache["nearest_top_z"] + safety_margin
-    height_scale = torch.clamp(cache["nearest_raw_height"] / 0.35, 0.8, 1.4)
+    height_raw = cache["nearest_raw_height"]
+    scaled_margin = safety_margin + 0.30 * torch.clamp(height_raw - 0.20, min=0.0)
+    desired_clearance = cache["nearest_top_z"] + scaled_margin
+    height_scale = torch.clamp(height_raw / 0.35, 0.8, 1.6)
     clearance = max_foot_height - desired_clearance
     # 高杆期望更高抬脚：height_scale 随杆高线性放大
     reward = torch.sigmoid(clearance * 25.0) * height_scale
@@ -675,7 +679,10 @@ def reward_successful_traversal(
     )
     forward_speed = torch.clamp(asset.data.root_vel_w[:, 0], min=0.0)
     speed_term = torch.clamp(forward_speed / 0.4, 0.0, 1.0)
-    reward = lateral_term * speed_term
+    layout_heights = cache["layout"]["heights"]
+    passed_height = layout_heights[env_ids, idx]
+    height_scale = torch.clamp(passed_height / 0.35, 0.8, 1.5)
+    reward = lateral_term * speed_term * height_scale
     return torch.where(passed_mask, reward, torch.zeros_like(reward))
 
 
@@ -709,13 +716,15 @@ def reward_mode_mismatch(
     foot_ids = asset.find_bodies(".*_foot")[0]
     feet_pos = asset.data.body_state_w[:, foot_ids, 2]
     max_foot_height = feet_pos.max(dim=1).values
-    desired_jump = cache["nearest_top_z"] + jump_margin
+    dyn_jump_margin = torch.clamp(jump_margin + 0.25 * torch.clamp(cache["nearest_raw_height"] - 0.20, min=0.0), 0.08, 0.28)
+    desired_jump = cache["nearest_top_z"] + dyn_jump_margin
     jump_deficit = torch.clamp(desired_jump - max_foot_height, min=0.0)
     jump_pen = torch.sigmoid(jump_deficit * 15.0)
 
     # crawl: 惩罚身体最高点过高
     body_max_z = asset.data.body_state_w[:, :, 2].max(dim=1).values
-    crawl_target = cache["nearest_top_z"] - crawl_margin
+    dyn_crawl_margin = torch.clamp(crawl_margin + 0.25 * torch.clamp(cache["nearest_raw_height"] - 0.35, min=0.0), 0.05, 0.20)
+    crawl_target = cache["nearest_top_z"] - dyn_crawl_margin
     crawl_over = torch.clamp(body_max_z - crawl_target, min=0.0)
     crawl_pen = torch.sigmoid(crawl_over * 20.0)
 
@@ -747,7 +756,8 @@ def reward_low_crawl_penalty(
     if cache is None or cache.get("layout") is None:
         return torch.zeros(env.num_envs, device=env.device)
 
-    low_mask = cache["nearest_raw_height"] <= low_threshold
+    height_raw = cache["nearest_raw_height"]
+    low_mask = height_raw <= low_threshold
     near_mask = cache["has_any"] & low_mask & (cache["min_abs_dist"] < detection_range)
     if not torch.any(near_mask):
         return torch.zeros(env.num_envs, device=env.device)
@@ -755,7 +765,8 @@ def reward_low_crawl_penalty(
     body_max_z = asset.data.body_state_w[:, :, 2].max(dim=1).values
     desired = cache["nearest_top_z"] + posture_margin
     crouch_depth = torch.clamp(desired - body_max_z, min=0.0)
-    pen = torch.sigmoid(crouch_depth * 25.0)
+    severity = torch.clamp((low_threshold - height_raw) / (low_threshold + 1e-6), min=0.0, max=1.0)
+    pen = torch.sigmoid(crouch_depth * 25.0) * (1.0 + severity)
     return torch.where(near_mask, pen, torch.zeros_like(pen))
 
 

@@ -100,88 +100,43 @@ def place_galileo_hurdles(
     mix_refresh_prob: float = 0.1,
     warmup_levels: int = 1,
 ):
-    """混合课程栏杆摆放：列 0-1 训练跳跃，列 2-3 训练钻爬。
+    """单跑道栏杆摆放：所有 env 沿跑道依次放置 4 根 20/30/40/50cm 栏杆。
 
-    - 难度依据 terrain_level 归一化（level/8.0），随着阶段提升逐步抬高/压低栏杆。
-    - 跳跃列：从 0.05m 开始，按 0.05m 递增，最高约 0.55m；钻爬列：从 0.60m 逐步下降到 0.30m。
-    - num_visible = level//2 + 1 → 1~4 根栏杆逐步解锁，配合课程长度。
-    - 栏杆用 Cuboid/Cylinder 原语即时生成（避免对 USD 资产的硬依赖）。
+    - 课程模式（layout="auto" 且启用 curriculum）时，随着阶段提升逐渐解锁更多栏杆，
+      并通过线性插值让高度从热身值平滑过渡到目标高度（20/30/40/50cm）。
+    - 固定/竞赛模式下直接输出完整序列，避免每列策略固化。
+    - 栏杆模式标记依据实际高度（<=0.35m 视作跳跃，>0.35m 视作钻爬），奖励统计与日志均可复用。
     """
     terrain = env.scene.terrain
     terrain_levels = terrain.terrain_levels[env_ids]
-    terrain_types = terrain.terrain_types[env_ids]  # 列索引
     env_origins = terrain.env_origins[env_ids]
     curriculum_on = getattr(terrain.cfg.terrain_generator, "curriculum", True)
-    lane_is_jump = (env_ids % 4) < 2
-    # Play / fixed layout：固定高度序列，减少可视化噪声
+    num_slots = 4
+    target_seq = torch.tensor([0.20, 0.30, 0.40, 0.50], device=env.device)
+    warmup_seq = torch.tensor([0.12, 0.18, 0.26, 0.34], device=env.device)
+    unlock_interval = max(int(warmup_levels), 1)
+    jump_threshold = 0.35
+
     if layout != "auto" or not curriculum_on:
-        num_visible = torch.full_like(terrain_levels, 4)
-        jump_h = torch.tensor([0.20, 0.30, 0.40, 0.50], device=env.device).repeat(len(env_ids), 1)
-        crawl_h = torch.tensor([0.40, 0.50, 0.55, 0.60], device=env.device).repeat(len(env_ids), 1)
-        target_h = torch.where(lane_is_jump.unsqueeze(1), jump_h, crawl_h)
+        num_visible = torch.full_like(terrain_levels, num_slots)
+        target_h = target_seq.repeat(len(env_ids), 1)
     else:
-        # 课程阶段：优先读取 env.curriculum_stage，其次由 terrain_level 推导
         stage_tensor = getattr(env, "curriculum_stage", None)
         if stage_tensor is not None:
             stage_used = torch.clamp(stage_tensor[env_ids], 0, 50)
         else:
             stage_used = torch.clamp((terrain_levels // 2), 0, 50)
-        # 统一的栏杆高度增量（米）
-        increments = torch.tensor([0.00, 0.05, 0.10, 0.15], device=env.device)
-        # 阶段可见数量（逐渐递增，>table 后保持 4 根）
-        num_visible_table = torch.tensor([1, 2, 3, 4, 4], device=env.device)
-        table_len = num_visible_table.numel()
-        safe_idx = torch.clamp(stage_used, max=table_len - 1)
-        num_visible = torch.full_like(stage_used, 4)
-        within_table = stage_used < table_len
-        num_visible[within_table] = num_visible_table[safe_idx[within_table]]
+        num_visible = torch.clamp(stage_used // unlock_interval + 1, max=num_slots)
+        # 热身到正式阶段的线性插值：stage 达 jump_to_mix_level 后输出最终高度
+        denom = max(float(jump_to_mix_level), 1.0)
+        progress = torch.clamp(stage_used.float() / denom, 0.0, 1.0).unsqueeze(1)
+        target_h = torch.lerp(warmup_seq, target_seq, progress)
+        full_mask = stage_used >= jump_to_mix_level
+        if torch.any(full_mask):
+            repeat_n = int(full_mask.sum().item())
+            target_h[full_mask] = target_seq.repeat(repeat_n, 1)
 
-        # 极端高度（低/高）更容易，中间高度最难：阶段越高，中间高度概率越大，同时整体高度小幅上移
-        prob_mid_table = torch.tensor([0.10, 0.25, 0.50, 0.70, 0.85], device=env.device)
-        prob_table_len = prob_mid_table.numel()
-        safe_idx_prob = torch.clamp(stage_used, max=prob_table_len - 1)
-        prob_mid = torch.full(stage_used.shape, 0.9, device=env.device, dtype=torch.float)
-        within_prob_table = stage_used < prob_table_len
-        prob_mid[within_prob_table] = prob_mid_table[safe_idx_prob[within_prob_table]]
-        height_scale = torch.clamp(1.0 + 0.03 * torch.clamp(stage_used - 4, min=0).float(), max=1.5)
-
-        # Jump 列高度采样
-        jump_low = (0.05, 0.12)
-        jump_mid = (0.20, 0.30)
-        jump_high = (0.32, 0.42)
-        rand_mid = torch.rand_like(prob_mid)
-        use_mid = rand_mid < prob_mid
-        rand_ext = torch.rand_like(prob_mid)
-        jump_ext = torch.where(
-            rand_ext > 0.5,
-            jump_high[0] + (jump_high[1] - jump_high[0]) * torch.rand_like(prob_mid),
-            jump_low[0] + (jump_low[1] - jump_low[0]) * torch.rand_like(prob_mid),
-        )
-        jump_mid_sample = jump_mid[0] + (jump_mid[1] - jump_mid[0]) * torch.rand_like(prob_mid)
-        jump_base = torch.where(use_mid, jump_mid_sample, jump_ext) * height_scale
-
-        # Crawl 列高度采样（高/低极端更易，中间更难）：反向递减，让机器人学会低姿穿越
-        crawl_low = (0.35, 0.40)
-        crawl_mid = (0.42, 0.50)
-        crawl_high = (0.55, 0.60)
-        rand_mid_crawl = torch.rand_like(prob_mid)
-        use_mid_crawl = rand_mid_crawl < prob_mid
-        rand_ext_crawl = torch.rand_like(prob_mid)
-        crawl_ext = torch.where(
-            rand_ext_crawl > 0.5,
-            crawl_high[0] + (crawl_high[1] - crawl_high[0]) * torch.rand_like(prob_mid),
-            crawl_low[0] + (crawl_low[1] - crawl_low[0]) * torch.rand_like(prob_mid),
-        )
-        crawl_mid_sample = crawl_mid[0] + (crawl_mid[1] - crawl_mid[0]) * torch.rand_like(prob_mid)
-        crawl_base = torch.where(use_mid_crawl, crawl_mid_sample, crawl_ext) * height_scale
-
-        # 默认 4 槽位递增/递减序列
-        # 保持跳栏高度低于约 0.35，爬栏高度高于约 0.40，避免模式冲突
-        jump_heights = torch.clamp(jump_base.unsqueeze(1) + increments, 0.05, 0.35)
-        crawl_heights = torch.clamp(crawl_base.unsqueeze(1) - 0.4 * increments, 0.40, 0.65)
-        target_h = torch.where(lane_is_jump.unsqueeze(1), jump_heights, crawl_heights)
-
-    target_x = env_origins[:, 0].unsqueeze(1) + start + spacing * torch.arange(4, device=env.device)
+    target_x = env_origins[:, 0].unsqueeze(1) + start + spacing * torch.arange(num_slots, device=env.device)
     target_y = env_origins[:, 1].unsqueeze(1)
 
     avail_heights = torch.tensor(HURDLE_HEIGHTS_M, device=env.device)
@@ -207,7 +162,7 @@ def place_galileo_hurdles(
             asset.write_root_velocity_to_sim(torch.zeros_like(hide_state[:, 7:]), env_ids)
 
     # 按栏杆槽位逐一放置，并为每个 env 选择最接近的预制高度
-    for idx in range(4):
+    for idx in range(num_slots):
         active_mask = num_visible > idx
         if not active_mask.any():
             continue
@@ -224,12 +179,10 @@ def place_galileo_hurdles(
                 continue
 
             env.scene.hurdle_heights[active_ids, idx] = asset_h
-            lane_modes = torch.where(
-                lane_is_jump[env_sel],
-                torch.full_like(active_ids, HURDLE_MODE_JUMP, dtype=torch.long),
-                torch.full_like(active_ids, HURDLE_MODE_CRAWL, dtype=torch.long),
+            mode_val = HURDLE_MODE_CRAWL if float(asset_h) > jump_threshold else HURDLE_MODE_JUMP
+            env.scene.hurdle_modes[active_ids, idx] = torch.full(
+                (active_ids.numel(),), mode_val, device=env.device, dtype=torch.long
             )
-            env.scene.hurdle_modes[active_ids, idx] = lane_modes
             _place_static_hurdle(
                 env=env,
                 height_cm=height_cm,
@@ -288,10 +241,10 @@ class GalileoParkourSceneCfg(ParkourDefaultSceneCfg):
         super().__post_init__()
         # Ensure robot config uses Galileo (override go2 defaults from base scene).
         self.robot = _galileo_robot_cfg()
-        # Flat terrain; curriculum drives hurdle count和列分配（跳跃/钻爬）。
+        # Flat terrain; curriculum drives hurdle count/height progression.
         self.terrain.terrain_generator = EXTREME_PARKOUR_TERRAINS_CFG
         self.terrain.terrain_generator.num_rows = 10
-        self.terrain.terrain_generator.num_cols = 4  # 0-1 列 jump，2-3 列 crawl
+        self.terrain.terrain_generator.num_cols = 4
         self.terrain.terrain_generator.horizontal_scale = 0.1
         self.terrain.terrain_generator.curriculum = True
         self.terrain.terrain_generator.random_difficulty = False

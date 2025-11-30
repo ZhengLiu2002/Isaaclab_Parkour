@@ -176,6 +176,22 @@ class ParkourManagerBasedRLEnv(ParkourManagerBasedEnv, gym.Env):
             self.extras["log"]["terrain_level_hist"] = hist.tolist()
         except Exception:
             pass
+        try:
+            heights = getattr(self.scene, "hurdle_heights", None)
+            if heights is not None:
+                valid = heights >= 0.0
+                if torch.any(valid):
+                    valid_vals = heights[valid]
+                    mean_cm = (valid_vals.mean() * 100.0).item()
+                    self.extras["log"]["hurdle_height_mean_cm"] = mean_cm
+                    min_cm = (valid_vals.min() * 100.0).item()
+                    max_cm = (valid_vals.max() * 100.0).item()
+                    self.extras["log"]["hurdle_height_min_max_cm"] = [min_cm, max_cm]
+                    cm_vals = torch.round(valid_vals * 100).to(torch.long)
+                    hist = torch.bincount(cm_vals, minlength=int(cm_vals.max().item()) + 1)
+                    self.extras["log"]["hurdle_height_hist_cm"] = hist.tolist()
+        except Exception:
+            pass
 
         # return observations, rewards, resets and extras
         return self.obs_buf, self.reward_buf, self.reset_terminated, self.reset_time_outs, self.extras
