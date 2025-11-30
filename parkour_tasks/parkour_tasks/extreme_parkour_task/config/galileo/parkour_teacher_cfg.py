@@ -1,5 +1,6 @@
 import torch
 
+import copy
 import os
 from pathlib import Path
 
@@ -242,10 +243,14 @@ class GalileoParkourSceneCfg(ParkourDefaultSceneCfg):
         # Ensure robot config uses Galileo (override go2 defaults from base scene).
         self.robot = _galileo_robot_cfg()
         # Flat terrain; curriculum drives hurdle count/height progression.
-        self.terrain.terrain_generator = EXTREME_PARKOUR_TERRAINS_CFG
+        self.terrain.terrain_generator = copy.deepcopy(EXTREME_PARKOUR_TERRAINS_CFG)
+        # Extend lane length so entry + 4 hurdles + final goal markers all stay inside bounds
+        self.terrain.terrain_generator.size = (20.0, self.terrain.terrain_generator.size[1])
         self.terrain.terrain_generator.num_rows = 10
         self.terrain.terrain_generator.num_cols = 4
         self.terrain.terrain_generator.horizontal_scale = 0.1
+        # Waypoints follow the hurdle layout: entry + 4 hurdles + final target
+        self.terrain.terrain_generator.num_goals = 6
         self.terrain.terrain_generator.curriculum = True
         self.terrain.terrain_generator.random_difficulty = False
         self.terrain.terrain_generator.difficulty_range = (0.0, 0.15)

@@ -74,13 +74,15 @@ class ParkourEvent(ParkourTerm):
         
         terrain_goals = terrain_generator.goals
         self.terrain_goals = torch.from_numpy(terrain_goals).to(self.device).to(torch.float)
-        self.env_goals = torch.zeros(self.num_envs,  self.terrain_goals.shape[2] + self.num_future_goal_obs, 3, device=self.device, requires_grad=False)
+        self.env_goals = torch.zeros(
+            self.num_envs,
+            self.terrain_goals.shape[2] + self.num_future_goal_obs,
+            3,
+            device=self.device,
+            requires_grad=False,
+        )
         self.cur_goal_idx = torch.zeros(self.num_envs, device=self.device, requires_grad=False, dtype=torch.long)
-        temp = self.terrain_goals[self.terrain.terrain_levels, self.terrain.terrain_types]
-        last_col = temp[:, -1].unsqueeze(1)
-        self.env_goals[:] = torch.cat((temp, last_col.repeat(1, self.num_future_goal_obs, 1)), dim=1)[:]
-        self.cur_goals = self._gather_cur_goals()
-        self.next_goals = self._gather_cur_goals(future=1)
+        self._refresh_env_goals()
         self.reach_goal_timer = torch.zeros(self.num_envs, dtype=torch.float).to(device = self.device)
         
         if self.debug_vis:
@@ -95,20 +97,13 @@ class ParkourEvent(ParkourTerm):
         self.env_per_terrain_name = self.total_terrain_names[numpy_terrain_levels, numpy_terrain_types]
         self._reset_offset = self.env.event_manager.get_term_cfg('reset_root_state').params['offset']
 
-        robot_root_pos_w = self.robot.data.root_pos_w[:, :2] - self.env_origins[:, :2]
-        self.target_pos_rel = self.cur_goals[:, :2] - robot_root_pos_w
-        self.next_target_pos_rel = self.next_goals[:, :2] - robot_root_pos_w
-        norm = torch.norm(self.target_pos_rel, dim=-1, keepdim=True)
-        target_vec_norm = self.target_pos_rel / (norm + 1e-5)
-        self.target_yaw = torch.atan2(target_vec_norm[:, 1], target_vec_norm[:, 0])
-        norm = torch.norm(self.next_target_pos_rel, dim=-1, keepdim=True)
-        target_vec_norm = self.next_target_pos_rel / (norm + 1e-5)
-        self.next_target_yaw = torch.atan2(target_vec_norm[:, 1], target_vec_norm[:, 0])
+        self._update_goal_vectors()
 
 
     def __call__(self):
         self.cur_goals = self._gather_cur_goals()
         self.next_goals = self._gather_cur_goals(future=1)
+        self._update_goal_vectors()
 
     def _gather_cur_goals(self, future=0):
         idx = torch.clamp(self.cur_goal_idx + future, max=self.env_goals.shape[1] - 1)
@@ -140,17 +135,9 @@ class ParkourEvent(ParkourTerm):
         if last_goal_mask.any():
             self.cur_goal_idx[last_goal_mask] = self.num_goals
 
-        self.target_pos_rel = self.cur_goals[:, :2] - robot_root_pos_w
-        self.next_target_pos_rel = self.next_goals[:, :2] - robot_root_pos_w
-        norm = torch.norm(self.target_pos_rel, dim=-1, keepdim=True)
-        target_vec_norm = self.target_pos_rel / (norm + 1e-5)
-        self.target_yaw = torch.atan2(target_vec_norm[:, 1], target_vec_norm[:, 0])
-        
-        norm = torch.norm(self.next_target_pos_rel, dim=-1, keepdim=True)
-        target_vec_norm = self.next_target_pos_rel / (norm + 1e-5)
-        self.next_target_yaw = torch.atan2(target_vec_norm[:, 1], target_vec_norm[:, 0])
         self.cur_goals = self._gather_cur_goals()
         self.next_goals = self._gather_cur_goals(future=1)
+        self._update_goal_vectors(robot_root_pos_w)
         start_pos = self.env_origins[:,:2] - \
                     torch.tensor((self.terrain.cfg.terrain_generator.size[1] + \
                                   self._reset_offset, 0)).to(self.device)
@@ -184,45 +171,8 @@ class ParkourEvent(ParkourTerm):
         self.env_origins[env_ids] = self.terrain.terrain_origins[self.terrain.terrain_levels[env_ids], self.terrain.terrain_types[env_ids]]
         self.env_class[env_ids] = self.terrain_class[self.terrain.terrain_levels[env_ids], self.terrain.terrain_types[env_ids]]
 
-        temp = self.terrain_goals[self.terrain.terrain_levels, self.terrain.terrain_types]
-        last_col = temp[:, -1].unsqueeze(1)
-        self.env_goals[:] = torch.cat((temp, last_col.repeat(1, self.cfg.num_future_goal_obs, 1)), dim=1)[:]
-        # 将航向点置于跑道中心（y=0），避免偏移
-        self.env_goals[:, :, 1] = 0.0
-        # 将航点从栏杆处偏移开，避免目标落在栏杆上
-        try:
-            place_cfg = self.env.event_manager.get_term_cfg("place_hurdles")
-            spacing = place_cfg.params.get("spacing", 2.0)
-            start = place_cfg.params.get("start", 2.0)
-        except Exception:
-            spacing, start = 2.0, 2.0
-        hurdle_slots = start + spacing * torch.arange(4, device=self.device).view(1, -1)
-        goal_x = self.env_goals[:, :, 0]
-        env_hurdle_x = self.env_origins[:, 0:1] + hurdle_slots  # (N,4)
-        # 找到与任意栏杆距离过近的航点并向前推开 margin
-        margin = 0.5
-        dist = goal_x.unsqueeze(-1) - env_hurdle_x.unsqueeze(1)  # (N,G,4)
-        nearest = torch.abs(dist).min(dim=-1).values  # (N,G)
-        near_mask = nearest < margin
-        # 对过近的目标，推到最近栏杆前方 margin
-        # 取最近栏杆坐标
-        nearest_idx = torch.abs(dist).argmin(dim=-1)
-        nearest_hurdle_x = env_hurdle_x.gather(1, nearest_idx)
-        adjusted_x = torch.where(goal_x < nearest_hurdle_x, nearest_hurdle_x + margin, goal_x)
-        self.env_goals[:, :, 0] = torch.where(near_mask, adjusted_x, goal_x)
-        self.cur_goals = self._gather_cur_goals()
-        self.next_goals = self._gather_cur_goals(future=1)
-
-        robot_root_pos_w = self.robot.data.root_pos_w[:, :2] - self.env_origins[:, :2]
-        self.target_pos_rel = self.cur_goals[:, :2] - robot_root_pos_w
-        self.next_target_pos_rel = self.next_goals[:, :2] - robot_root_pos_w
-        norm = torch.norm(self.target_pos_rel, dim=-1, keepdim=True)
-        target_vec_norm = self.target_pos_rel / (norm + 1e-5)
-        self.target_yaw = torch.atan2(target_vec_norm[:, 1], target_vec_norm[:, 0])
-        
-        norm = torch.norm(self.next_target_pos_rel, dim=-1, keepdim=True)
-        target_vec_norm = self.next_target_pos_rel / (norm + 1e-5)
-        self.next_target_yaw = torch.atan2(target_vec_norm[:, 1], target_vec_norm[:, 0])
+        self._refresh_env_goals(env_ids)
+        self._update_goal_vectors()
 
         numpy_terrain_levels = self.terrain.terrain_levels.detach().cpu().numpy()
         numpy_terrain_types = self.terrain.terrain_types.detach().cpu().numpy()
@@ -247,6 +197,132 @@ class ParkourEvent(ParkourTerm):
         self.metrics["far_from_current_goal"] = (torch.norm(self.cur_goals[:, :2] - robot_root_pos_w,dim =-1) - self.next_goal_threshold).to(device = 'cpu')
         self.metrics["current_goal_idx"] = self.cur_goal_idx.to(device='cpu', dtype=float)
         self.metrics["how_far_from_start_point"] = self.dis_to_start_pos.to(device = 'cpu')
+
+    def _refresh_env_goals(self, env_ids: Sequence[int] | torch.Tensor | None = None):
+        """Gather and pad terrain goals, then recentre and offset them safely away from hurdles."""
+        if env_ids is not None:
+            env_ids = torch.as_tensor(env_ids, device=self.device, dtype=torch.long)
+        temp = self.terrain_goals[self.terrain.terrain_levels, self.terrain.terrain_types]
+        temp = self._apply_hurdle_layout_goals(temp, env_ids)
+        last_col = temp[:, -1].unsqueeze(1)
+        padded = torch.cat((temp, last_col.repeat(1, self.num_future_goal_obs, 1)), dim=1)
+        # 将所有目标点对齐到赛道中心线，避免沿 y 轴随机漂移
+        padded[:, :, 1] = 0.0
+        padded = self._offset_goals_from_hurdles(padded)
+        if env_ids is None:
+            self.env_goals.copy_(padded)
+        else:
+            self.env_goals[env_ids] = padded[env_ids]
+        self.cur_goals = self._gather_cur_goals()
+        self.next_goals = self._gather_cur_goals(future=1)
+
+    def _offset_goals_from_hurdles(self, goal_tensor: torch.Tensor) -> torch.Tensor:
+        """Push goals away from hurdles so that the policy never aims directly at an obstacle."""
+        try:
+            place_cfg = self.env.event_manager.get_term_cfg("place_hurdles")
+            spacing = float(place_cfg.params.get("spacing", 2.0))
+            start = float(place_cfg.params.get("start", 2.0))
+            hurdle_count = int(place_cfg.params.get("count", 4))
+        except Exception:
+            return goal_tensor
+
+        if hurdle_count <= 0:
+            return goal_tensor
+
+        hurdle_slots = start + spacing * torch.arange(hurdle_count, device=self.device)
+        env_hurdle_x = hurdle_slots.view(1, -1).expand(goal_tensor.shape[0], -1)
+        goal_x = goal_tensor[:, :, 0]
+        margin = float(place_cfg.params.get("goal_margin", 0.5))
+        dist = goal_x.unsqueeze(-1) - env_hurdle_x.unsqueeze(1)
+        nearest = torch.abs(dist).min(dim=-1).values
+        near_mask = nearest < margin
+        if not near_mask.any():
+            return goal_tensor
+
+        nearest_idx = torch.abs(dist).argmin(dim=-1)
+        nearest_hurdle_x = env_hurdle_x.gather(1, nearest_idx)
+        adjusted_x = torch.where(goal_x < nearest_hurdle_x, nearest_hurdle_x + margin, nearest_hurdle_x - margin)
+        goal_tensor[:, :, 0] = torch.where(near_mask, adjusted_x, goal_x)
+        return goal_tensor
+
+    def _apply_hurdle_layout_goals(
+        self, base_goals: torch.Tensor, env_ids: torch.Tensor | None
+    ) -> torch.Tensor:
+        """Project waypoints to the Galileo hurdle layout (entry + per-hurdle + final, then padded)."""
+        try:
+            place_cfg = self.env.event_manager.get_term_cfg("place_hurdles")
+        except Exception:
+            return base_goals
+
+        hurdle_count = int(place_cfg.params.get("count", 4))
+        if hurdle_count <= 0:
+            return base_goals
+
+        spacing = float(place_cfg.params.get("spacing", 2.0))
+        start = float(place_cfg.params.get("start", 2.0))
+        entry_offset = float(place_cfg.params.get("entry_offset", spacing * 0.5))
+        post_goal_offset = float(place_cfg.params.get("post_goal_offset", spacing * 0.75))
+        layout = place_cfg.params.get("layout", "auto")
+        curriculum_on = getattr(self.terrain.cfg.terrain_generator, "curriculum", True)
+
+        if env_ids is None:
+            env_ids = torch.arange(self.num_envs, device=self.device, dtype=torch.long)
+
+        if layout != "auto" or not curriculum_on:
+            visible = torch.full((env_ids.numel(),), hurdle_count, device=self.device, dtype=torch.long)
+        else:
+            stage_tensor = getattr(self.env, "curriculum_stage", None)
+            if stage_tensor is not None:
+                stage_used = torch.clamp(stage_tensor[env_ids], 0, 50)
+            else:
+                stage_used = torch.clamp(self.terrain.terrain_levels[env_ids] // 2, 0, 50)
+            unlock_interval = max(int(place_cfg.params.get("warmup_levels", 1)), 1)
+            visible = torch.clamp(stage_used // unlock_interval + 1, max=hurdle_count)
+
+        size_x = float(self.terrain.cfg.terrain_generator.size[0])
+        # keep navigation points away from terrain borders to avoid falling off the mesh
+        margin = 0.5
+        min_x = -0.5 * size_x + margin
+        max_x = 0.5 * size_x - margin
+
+        entry_x = torch.clamp(
+            torch.full((env_ids.numel(),), start - entry_offset, device=self.device), min_x, max_x
+        )
+        last_x = start + spacing * torch.clamp(visible.to(torch.float) - 1.0, min=0.0)
+        final_x = torch.clamp(last_x + post_goal_offset, min_x, max_x)
+
+        slot_max = min(hurdle_count, max(self.num_goals - 2, 0))
+        base_x = final_x.unsqueeze(1).repeat(1, self.num_goals)
+        base_x[:, 0] = entry_x
+        if slot_max > 0:
+            hurdle_xs = torch.clamp(
+                start + spacing * torch.arange(slot_max, device=self.device, dtype=torch.float), min_x, max_x
+            )
+            mask = torch.arange(slot_max, device=self.device, dtype=torch.long).unsqueeze(0) < visible.unsqueeze(1)
+            hurdle_grid = hurdle_xs.unsqueeze(0).expand(env_ids.numel(), slot_max)
+            base_slice = base_x[:, 1 : 1 + slot_max]
+            base_x[:, 1 : 1 + slot_max] = torch.where(mask, hurdle_grid, base_slice)
+
+        updated_goals = base_goals.clone()
+        updated_goals[env_ids, : self.num_goals, 0] = base_x
+        updated_goals[env_ids, : self.num_goals, 1] = 0.0
+        return updated_goals
+
+    def _update_goal_vectors(self, robot_root_pos_w: torch.Tensor | None = None):
+        """Recompute goal-relative vectors and yaws for the latest goal indices."""
+        if robot_root_pos_w is None:
+            robot_root_pos_w = self.robot.data.root_pos_w[:, :2] - self.env_origins[:, :2]
+
+        self.target_pos_rel = self.cur_goals[:, :2] - robot_root_pos_w
+        self.next_target_pos_rel = self.next_goals[:, :2] - robot_root_pos_w
+
+        norm = torch.norm(self.target_pos_rel, dim=-1, keepdim=True)
+        target_vec_norm = self.target_pos_rel / (norm + 1e-5)
+        self.target_yaw = torch.atan2(target_vec_norm[:, 1], target_vec_norm[:, 0])
+
+        norm = torch.norm(self.next_target_pos_rel, dim=-1, keepdim=True)
+        target_vec_norm = self.next_target_pos_rel / (norm + 1e-5)
+        self.next_target_yaw = torch.atan2(target_vec_norm[:, 1], target_vec_norm[:, 0])
 
     def _get_last_outcome(self, env_ids: Sequence[int]) -> tuple[torch.Tensor, torch.Tensor]:
         """Determine episode success per env with a conservative definition."""
@@ -331,9 +407,8 @@ class ParkourEvent(ParkourTerm):
     def _debug_vis_callback(self, event):
         if not self.robot.is_initialized:
             return
-        env_per_goals = self.terrain_goals[self.terrain.terrain_levels, self.terrain.terrain_types] 
-        env_per_xy_goals = env_per_goals[:,:,:2].reshape(self.num_envs, -1,2) ## (env_num, 8, 2 )
-        env_per_xy_goals = env_per_xy_goals + self.env_origins[:, :2].unsqueeze(1)
+        env_per_goals = self.env_goals[:, : self.num_goals]
+        env_per_xy_goals = env_per_goals[:, :, :2] + self.env_origins[:, :2].unsqueeze(1)
         goal_height = self.env_per_heights.unsqueeze(-1)*self.terrain.cfg.terrain_generator.vertical_scale
         env_per_goal_pos = torch.concat([env_per_xy_goals, goal_height],dim=-1)
         env_per_current_goal_pos = env_per_goal_pos[~self.future_goal_idx, :]
