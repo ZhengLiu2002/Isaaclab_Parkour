@@ -291,7 +291,7 @@ class TeacherRewardsCfg:
     )
     reward_crawl_clearance = RewTerm(
         func=rewards.reward_crawl_clearance,
-        weight=5.0,
+        weight=2.0,
         params={
             "asset_cfg": SceneEntityCfg("robot"),
             "lane_half_width": 0.45,
@@ -346,7 +346,7 @@ class TeacherRewardsCfg:
     )
     reward_action_rate = RewTerm(
         func=rewards.reward_action_rate,
-        weight=-0.02,
+        weight=-0.05,
         params={"asset_cfg": SceneEntityCfg("robot")},
     )
     reward_dof_acc = RewTerm(

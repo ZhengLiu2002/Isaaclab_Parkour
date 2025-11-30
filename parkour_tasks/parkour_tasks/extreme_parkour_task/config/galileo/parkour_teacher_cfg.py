@@ -112,10 +112,13 @@ def place_galileo_hurdles(
     terrain_types = terrain.terrain_types[env_ids]  # 列索引
     env_origins = terrain.env_origins[env_ids]
     curriculum_on = getattr(terrain.cfg.terrain_generator, "curriculum", True)
+    lane_is_jump = (env_ids % 4) < 2
     # Play / fixed layout：固定高度序列，减少可视化噪声
     if layout != "auto" or not curriculum_on:
         num_visible = torch.full_like(terrain_levels, 4)
-        target_h = torch.tensor([0.20, 0.30, 0.40, 0.50], device=env.device).repeat(len(env_ids), 1)
+        jump_h = torch.tensor([0.20, 0.30, 0.40, 0.50], device=env.device).repeat(len(env_ids), 1)
+        crawl_h = torch.tensor([0.40, 0.50, 0.55, 0.60], device=env.device).repeat(len(env_ids), 1)
+        target_h = torch.where(lane_is_jump.unsqueeze(1), jump_h, crawl_h)
     else:
         # 课程阶段：优先读取 env.curriculum_stage，其次由 terrain_level 推导
         stage_tensor = getattr(env, "curriculum_stage", None)
@@ -176,7 +179,7 @@ def place_galileo_hurdles(
         # 保持跳栏高度低于约 0.35，爬栏高度高于约 0.40，避免模式冲突
         jump_heights = torch.clamp(jump_base.unsqueeze(1) + increments, 0.05, 0.35)
         crawl_heights = torch.clamp(crawl_base.unsqueeze(1) - 0.4 * increments, 0.40, 0.65)
-        target_h = torch.where(terrain_types.unsqueeze(1) < 2, jump_heights, crawl_heights)
+        target_h = torch.where(lane_is_jump.unsqueeze(1), jump_heights, crawl_heights)
 
     target_x = env_origins[:, 0].unsqueeze(1) + start + spacing * torch.arange(4, device=env.device)
     target_y = env_origins[:, 1].unsqueeze(1)
@@ -222,9 +225,9 @@ def place_galileo_hurdles(
 
             env.scene.hurdle_heights[active_ids, idx] = asset_h
             lane_modes = torch.where(
-                terrain_types[env_sel] >= 2,
-                torch.full_like(active_ids, HURDLE_MODE_CRAWL, dtype=torch.long),
+                lane_is_jump[env_sel],
                 torch.full_like(active_ids, HURDLE_MODE_JUMP, dtype=torch.long),
+                torch.full_like(active_ids, HURDLE_MODE_CRAWL, dtype=torch.long),
             )
             env.scene.hurdle_modes[active_ids, idx] = lane_modes
             _place_static_hurdle(
@@ -270,7 +273,8 @@ class GalileoParkourSceneCfg(ParkourDefaultSceneCfg):
         ray_alignment="yaw",
         pattern_cfg=patterns.GridPatternCfg(resolution=0.15, size=[1.65, 1.5]),
         debug_vis=False,
-        mesh_prim_paths=["/World/ground"],
+        # 指向 /World 以捕获地面与栏杆等所有静态/动态几何
+        mesh_prim_paths=["/World"],
     )
     contact_forces = ContactSensorCfg(
         prim_path="{ENV_REGEX_NS}/Robot/.*",
