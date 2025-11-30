@@ -1,6 +1,6 @@
 
 from __future__ import annotations
-from typing import Optional, Callable, Dict, Tuple
+from typing import Optional, Callable, Dict, Tuple, List
 import torch
 import torch.nn as nn
 from torch.distributions import Normal
@@ -146,9 +146,9 @@ class Actor(nn.Module):
         return self.scan_encoder(scan)
 
 
-@register_actor("GatedDualHeadActor")
-class GatedDualHeadActor(nn.Module):
-    """双头 Actor：跳跃/钻爬专家头由 gating MLP 按特权特征软选择。"""
+@register_actor("GatedMoEActor")
+class GatedMoEActor(nn.Module):
+    """多头 Actor：平稳/跳跃/钻爬专家头由 gating MLP 按特权特征软选择。"""
     def __init__(
         self,
         num_actions,
@@ -160,6 +160,9 @@ class GatedDualHeadActor(nn.Module):
         gating_hidden_dims=None,
         gating_temperature: float = 1.0,
         gating_input_indices=None,
+        num_experts: int = 3,
+        gating_top_k: Optional[int] = None,
+        expert_names: Optional[List[str]] = None,
         **kwargs,
     ) -> None:
         super().__init__()
@@ -222,8 +225,10 @@ class GatedDualHeadActor(nn.Module):
                 layers.append(nn.Tanh())
             return nn.Sequential(*layers)
 
-        self.jump_head = build_head()
-        self.crawl_head = build_head()
+        # 专家列表：默认平稳/跳跃/钻爬三头；可扩展到任意 num_experts。
+        self.num_experts = max(int(num_experts), 2)
+        self.expert_names = expert_names or ["flat", "jump", "crawl"][: self.num_experts]
+        self.heads = nn.ModuleList([build_head() for _ in range(self.num_experts)])
 
         gating_hidden_dims = gating_hidden_dims or [64, 64]
         gate_layers = []
@@ -234,12 +239,14 @@ class GatedDualHeadActor(nn.Module):
         for l in range(len(gating_hidden_dims) - 1):
             gate_layers.append(nn.Linear(gating_hidden_dims[l], gating_hidden_dims[l + 1]))
             gate_layers.append(activation)
-        gate_layers.append(nn.Linear(gating_hidden_dims[-1], 2))
+        gate_layers.append(nn.Linear(gating_hidden_dims[-1], self.num_experts))
         self.gating_mlp = nn.Sequential(*gate_layers)
         self.gating_temperature = gating_temperature
+        self.gating_top_k = gating_top_k
         # TorchScript 需要属性预先定义
-        self.gate_last = torch.zeros(1, 2)
+        self.gate_last = torch.zeros(1, self.num_experts)
         self.gate_entropy = torch.zeros(1)
+        self.gate_logits_last = torch.zeros(1, self.num_experts)
 
     def _split_inputs(
         self, obs: torch.Tensor, scandots_latent: Optional[torch.Tensor] = None
@@ -262,6 +269,18 @@ class GatedDualHeadActor(nn.Module):
         priv = obs[:, self.num_prop + self.num_scan + self.num_priv_explicit : self.num_prop + self.num_scan + self.num_priv_explicit + self.num_priv_latent]
         return self.priv_encoder(priv)
 
+    def _compute_gate(self, gate_feat: torch.Tensor) -> torch.Tensor:
+        """计算 gating 权重，可选 top-k 裁剪后做 softmax。"""
+        logits = self.gating_mlp(gate_feat)
+        self.gate_logits_last = logits.detach()
+        if self.gating_top_k is not None and self.gating_top_k < self.num_experts:
+            topk_vals, topk_idx = torch.topk(logits, self.gating_top_k, dim=-1)
+            mask = torch.full_like(logits, float("-inf"))
+            mask.scatter_(1, topk_idx, topk_vals)
+            logits = mask
+        gate = torch.softmax(logits / max(self.gating_temperature, 1e-3), dim=-1)
+        return gate
+
     def forward(self, obs: torch.Tensor, hist_encoding: bool, scandots_latent: Optional[torch.Tensor] = None):
         """两头混合：
         1) 编码输入 -> 共享特征
@@ -272,16 +291,15 @@ class GatedDualHeadActor(nn.Module):
         latent = self._latent(obs, hist_encoding)
         backbone_input = torch.cat([obs_prop_scan, obs_priv_explicit, latent], dim=1)
 
-        a_jump = self.jump_head(backbone_input)
-        a_crawl = self.crawl_head(backbone_input)
+        # 所有专家并行前向，再用门控权重混合
+        head_outputs = torch.stack([head(backbone_input) for head in self.heads], dim=1)
 
         gate_feat = obs_priv_explicit[:, self.gating_input_indices]
-        gate_logits = self.gating_mlp(gate_feat) / max(self.gating_temperature, 1e-3)
-        gate = torch.softmax(gate_logits, dim=-1)
+        gate = self._compute_gate(gate_feat)
         # expose gate statistics for logging
         self.gate_last = gate.detach()
         self.gate_entropy = (-(gate * torch.log(gate + 1e-8)).sum(dim=-1)).detach()
-        mixed = gate[:, 0:1] * a_jump + gate[:, 1:2] * a_crawl
+        mixed = torch.sum(gate.unsqueeze(-1) * head_outputs, dim=1)
         return mixed
 
     # keep parity with base Actor for downstream calls
@@ -298,6 +316,10 @@ class GatedDualHeadActor(nn.Module):
             return None
         scan = obs[:, self.num_prop : self.num_prop + self.num_scan]
         return self.scan_encoder(scan)
+
+
+# 兼容旧配置：沿用原类名以最小化外部改动
+ACTOR_REGISTRY["GatedDualHeadActor"] = GatedMoEActor
 
 class ActorCriticRMA(nn.Module):
     is_recurrent = False

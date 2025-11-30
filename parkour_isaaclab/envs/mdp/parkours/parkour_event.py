@@ -120,7 +120,8 @@ class ParkourEvent(ParkourTerm):
         # 避免索引越界，仅对未完成的索引做自增
         next_flag = next_flag & (self.cur_goal_idx < self.num_goals)
         if self.debug_vis:
-            tmp_mask = torch.nonzero(self.cur_goal_idx>0).squeeze(-1)
+            # guard against completed episodes (cur_goal_idx==num_goals) to avoid OOB writes
+            tmp_mask = torch.nonzero((self.cur_goal_idx > 0) & (self.cur_goal_idx < self.num_goals)).squeeze(-1)
             if tmp_mask.numel() > 0:
                 self.future_goal_idx[tmp_mask, self.cur_goal_idx[tmp_mask]] = False
         self.cur_goal_idx[next_flag] += 1

@@ -65,12 +65,18 @@ class ParkourRslRlPpoActorCriticCfg(RslRlPpoActorCriticCfg):
     gating_hidden_dims: list[int] | None = None
     gating_temperature: float = 1.0
     gating_input_indices: list[int] | None = None
+    gating_top_k: int | None = None
+    num_experts: int = 2
+    expert_names: list[str] | None = None
 
 @configclass
 class ParkourRslRlPpoAlgorithmCfg(RslRlPpoAlgorithmCfg):
     class_name: str = 'PPOWithExtractor'
     dagger_update_freq: int = 1
     priv_reg_coef_schedual: list[float]= [0, 0.1, 2000, 3000]
+    gating_temperature_schedule: list[float] | None = None
+    moe_aux_scales: dict | None = None
+    moe_min_usage: float = 0.15
 
 @configclass
 class ParkourRslRlDistillationAlgorithmCfg(RslRlPpoAlgorithmCfg):

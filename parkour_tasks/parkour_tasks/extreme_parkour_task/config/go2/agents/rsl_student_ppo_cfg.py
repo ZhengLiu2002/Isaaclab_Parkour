@@ -24,14 +24,17 @@ class UnitreeGo2ParkourStudentPPORunnerCfg(ParkourRslRlOnPolicyRunnerCfg):
         priv_encoder_dims = [64, 20],
         activation="elu",
         actor = ParkourRslRlActorCfg(
-            class_name = "GatedDualHeadActor",
+            class_name = "GatedMoEActor",
             state_history_encoder = ParkourRslRlStateHistEncoderCfg(
                 class_name = "StateHistoryEncoder" 
             )
         ),
         gating_hidden_dims=[64, 64],
-        gating_temperature=1.0,
+        gating_temperature=2.0,
         gating_input_indices=[0,1,2,3,4,5,6,7],
+        gating_top_k=2,
+        num_experts=3,
+        expert_names=["flat", "jump", "crawl"],
     )
     estimator = ParkourRslRlEstimatorCfg(
             hidden_dims = [128, 64]
@@ -55,4 +58,7 @@ class UnitreeGo2ParkourStudentPPORunnerCfg(ParkourRslRlOnPolicyRunnerCfg):
         lam=0.95,
         desired_kl=0.01,
         max_grad_norm=1.0,
+        gating_temperature_schedule=[2.0, 0.6, 6000.0],
+        moe_aux_scales={"balance": 0.1, "entropy": 0.05, "diversity": 0.2},
+        moe_min_usage=0.15,
     )
