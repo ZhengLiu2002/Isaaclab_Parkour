@@ -188,7 +188,8 @@ class ParkourManagerBasedRLEnv(ParkourManagerBasedEnv, gym.Env):
                     max_cm = (valid_vals.max() * 100.0).item()
                     self.extras["log"]["hurdle_height_min_max_cm"] = [min_cm, max_cm]
                     cm_vals = torch.round(valid_vals * 100).to(torch.long)
-                    hist = torch.bincount(cm_vals, minlength=int(cm_vals.max().item()) + 1)
+                    max_bin = 100
+                    hist = torch.bincount(cm_vals, minlength=max_bin + 1)[: max_bin + 1]
                     self.extras["log"]["hurdle_height_hist_cm"] = hist.tolist()
         except Exception:
             pass
