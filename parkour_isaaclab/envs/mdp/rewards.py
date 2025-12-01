@@ -389,15 +389,24 @@ def reward_lin_vel_z(
     env: ParkourManagerBasedRLEnv,        
     parkour_name:str, 
     asset_cfg: SceneEntityCfg = SceneEntityCfg("robot"),
-    ) -> torch.Tensor: 
-    """惩罚竖直速度（世界系），非平地场景时减半惩罚避免阻碍跳跃/爬行。"""
-    parkour_event: ParkourEvent =  env.parkour_manager.get_term(parkour_name)
-    terrain_names = parkour_event.env_per_terrain_name
+    detection_range: float = GUIDANCE_DETECTION_RANGE,
+) -> torch.Tensor: 
+    """惩罚竖直速度（世界系），跳跃/钻爬模式下不施加惩罚，避免与越障奖励冲突。"""
+    _ = parkour_name  # 保留参数以兼容配置接口
     asset: Articulation = env.scene[asset_cfg.name]
+    cache = _get_hurdle_cache(env, asset)
+    mode = _get_locomotion_mode(
+        env,
+        cache,
+        height_threshold=OBSTACLE_HEIGHT_THRESHOLD,
+        detection_range=detection_range,
+    )
+    flat_mask = mode == MODE_FLAT
+    if not torch.any(flat_mask):
+        return torch.zeros(env.num_envs, device=env.device)
     # Use world-frame vertical speed; body-frame z would penalize tilting as if it were lift.
     rew = torch.square(asset.data.root_vel_w[:, 2])
-    rew[(terrain_names !='parkour_flat')[:,-1]] *= 0.5
-    return rew
+    return torch.where(flat_mask, rew, torch.zeros_like(rew))
 
 def reward_orientation(
     env: ParkourManagerBasedRLEnv,   
@@ -446,8 +455,36 @@ def reward_tracking_goal_vel(
     cur_vel = asset.data.root_vel_w[:, :2]
     proj_vel = torch.sum(target_vel * cur_vel, dim=-1)
     command_vel = env.command_manager.get_command('base_velocity')[:, 0]
-    rew_move = torch.minimum(proj_vel, command_vel) / (command_vel + 1e-5)
+    # 反向运动时给出线性惩罚，避免“倒着走”也能获得其它奖励
+    backward_pen = torch.clamp(-proj_vel / (command_vel + 1e-5), 0.0, 1.0)
+    forward_term = torch.minimum(proj_vel, command_vel) / (command_vel + 1e-5)
+    rew_move = torch.where(proj_vel >= 0.0, forward_term, -backward_pen)
     return rew_move
+
+
+class reward_goal_progress(ManagerTermBase):
+    """鼓励向当前目标点前进，远离目标则产生负奖励。"""
+    def __init__(self, cfg: RewardTermCfg, env: ParkourManagerBasedRLEnv):
+        super().__init__(cfg, env)
+        self.prev_dist = torch.zeros(env.num_envs, device=self.device)
+        self.parkour_name = cfg.params["parkour_name"]
+
+    def reset(self, env_ids: Sequence[int] | None = None) -> None:
+        idx = slice(None) if env_ids is None else env_ids
+        parkour_event: ParkourEvent = self.env.parkour_manager.get_term(self.parkour_name)
+        dist = torch.norm(parkour_event.target_pos_rel, dim=-1)
+        self.prev_dist[idx] = dist[idx]
+
+    def __call__(
+        self,
+        env: ParkourManagerBasedRLEnv,        
+        parkour_name: str, 
+    ) -> torch.Tensor:
+        parkour_event: ParkourEvent = env.parkour_manager.get_term(parkour_name)
+        dist = torch.norm(parkour_event.target_pos_rel, dim=-1)
+        progress = self.prev_dist - dist
+        self.prev_dist = dist
+        return progress
 
 
 def reward_height_guidance(

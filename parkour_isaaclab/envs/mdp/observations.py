@@ -84,10 +84,10 @@ class ExtremeParkourObservations(ManagerTermBase):
         obs_buf = torch.cat((
                             self.asset.data.root_ang_vel_b * 0.25,   #[1,3] 0~2
                             imu_obs,    #[1,2] 3~4
-                            0*self.delta_yaw[:, None],   #[1,1] 5
+                            self.delta_yaw[:, None],   #[1,1] 5 - 修复：恢复航向误差观测
                             self.delta_yaw[:, None], #[1,1] 6
                             self.delta_next_yaw[:, None], #[1,1] 7 
-                            0*commands[:, 0:2], #[1,2] 8 
+                            commands[:, 0:2], #[1,2] 8 - 修复：恢复命令的x和y分量
                             commands[:, 0:1],  #[1,1] 9
                             env_idx_tensor,
                             invert_env_idx_tensor,

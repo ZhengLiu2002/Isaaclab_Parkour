@@ -237,6 +237,11 @@ class StudentRewardsCfg:
         weight=3.0,
         params={"asset_cfg": SceneEntityCfg("robot"), "parkour_name": "base_parkour"},
     )
+    reward_goal_progress = RewTerm(
+        func=rewards.reward_goal_progress,
+        weight=4.0,
+        params={"parkour_name": "base_parkour"},
+    )
     reward_tracking_yaw = RewTerm(
         func=rewards.reward_tracking_yaw,
         weight=1.5,
@@ -398,6 +403,11 @@ class TeacherRewardsCfg:
         func=rewards.reward_tracking_goal_vel,
         weight = 5.0,
         params={"asset_cfg": SceneEntityCfg("robot"), "parkour_name": "base_parkour"},
+    )
+    reward_goal_progress = RewTerm(
+        func=rewards.reward_goal_progress,
+        weight=6.0,
+        params={"parkour_name": "base_parkour"},
     )
     reward_tracking_yaw = RewTerm(
         func=rewards.reward_tracking_yaw,
