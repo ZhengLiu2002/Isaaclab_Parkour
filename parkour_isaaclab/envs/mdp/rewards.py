@@ -466,6 +466,7 @@ class reward_goal_progress(ManagerTermBase):
     """鼓励向当前目标点前进，远离目标则产生负奖励。"""
     def __init__(self, cfg: RewardTermCfg, env: ParkourManagerBasedRLEnv):
         super().__init__(cfg, env)
+        self.env = env
         self.prev_dist = torch.zeros(env.num_envs, device=self.device)
         self.parkour_name = cfg.params["parkour_name"]
 
