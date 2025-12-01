@@ -881,7 +881,8 @@ def reward_lateral_deviation_penalty(
     lateral_abs = torch.abs(nearest_lateral)
     
     # 超过阈值后按车道剩余宽度归一化并截断，避免偶发几何异常导致爆炸值
-    lane_margin = torch.clamp(lane_half_width - lateral_threshold, min=1e-3)
+    # clamp is on a scalar, avoid tensor overload errors
+    lane_margin = max(lane_half_width - lateral_threshold, 1e-3)
     excess_lateral = torch.clamp(lateral_abs - lateral_threshold, min=0.0)
     normalized = torch.clamp(excess_lateral / lane_margin, 0.0, 1.0)
     penalty = penalty_scale * torch.square(normalized)
