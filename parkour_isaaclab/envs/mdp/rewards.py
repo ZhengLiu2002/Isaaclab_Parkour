@@ -842,7 +842,7 @@ def reward_lateral_deviation_penalty(
         penalty_scale: 惩罚强度系数
     
     Returns:
-        惩罚值（负数），横向偏移越大，惩罚越大
+        惩罚强度（非负，建议配合负权重使用），偏移越大惩罚越大，上限约为 penalty_scale
     """
     asset: Articulation = env.scene[asset_cfg.name]
     cache = _get_hurdle_cache(
@@ -880,10 +880,11 @@ def reward_lateral_deviation_penalty(
     # 计算横向偏移的绝对值
     lateral_abs = torch.abs(nearest_lateral)
     
-    # 如果横向偏移超过阈值，给予惩罚
-    # 惩罚强度随偏移距离增加而增加
+    # 超过阈值后按车道剩余宽度归一化并截断，避免偶发几何异常导致爆炸值
+    lane_margin = torch.clamp(lane_half_width - lateral_threshold, min=1e-3)
     excess_lateral = torch.clamp(lateral_abs - lateral_threshold, min=0.0)
-    penalty = -penalty_scale * torch.square(excess_lateral / (lane_half_width + 1e-6))
+    normalized = torch.clamp(excess_lateral / lane_margin, 0.0, 1.0)
+    penalty = penalty_scale * torch.square(normalized)
     
     # 只对接近栏杆的机器人应用惩罚
     return torch.where(near_hurdle_mask, penalty, torch.zeros_like(penalty))
