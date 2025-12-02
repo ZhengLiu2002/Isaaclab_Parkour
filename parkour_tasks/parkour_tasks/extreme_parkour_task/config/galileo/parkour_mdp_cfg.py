@@ -381,7 +381,7 @@ class TeacherRewardsCfg:
     )
     reward_dof_acc = RewTerm(
         func=rewards.reward_dof_acc,
-        weight=-2.0e-7,
+        weight=-2.0e-6,
         params={"asset_cfg": SceneEntityCfg("robot")},
     )
     reward_lin_vel_z = RewTerm(
@@ -411,7 +411,7 @@ class TeacherRewardsCfg:
     )
     reward_delta_torques = RewTerm(
         func=rewards.reward_delta_torques,
-        weight=-1.0e-7,
+        weight=-1.0e-6,
         params={"asset_cfg": SceneEntityCfg("robot")},
     )
     # 诊断用：模式判定偏差与低杆爬行惩罚（小权重，仅供日志观察）
