@@ -296,7 +296,7 @@ class TeacherRewardsCfg:
     )
     reward_jump_clearance = RewTerm(
         func=rewards.reward_jump_clearance,
-        weight=10.0,
+        weight=5.0,
         params={
             "asset_cfg": SceneEntityCfg("robot"),
             "lane_half_width": 0.45,
