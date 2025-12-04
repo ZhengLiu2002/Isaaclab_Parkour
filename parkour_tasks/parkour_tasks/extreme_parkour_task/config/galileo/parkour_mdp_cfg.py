@@ -279,7 +279,7 @@ class TeacherRewardsCfg:
     )
     reward_collision = RewTerm(
         func=rewards.reward_collision,
-        weight=-15.0,
+        weight=-10.0,
         params={"sensor_cfg": SceneEntityCfg("contact_forces", body_names=["base_link", ".*_calf", ".*_thigh"])},
     )
     reward_height_guidance = RewTerm(
@@ -329,7 +329,7 @@ class TeacherRewardsCfg:
     )
     reward_foot_symmetry = RewTerm(
         func=rewards.reward_foot_symmetry,
-        weight=1.7,
+        weight=2.0,
         params={"asset_cfg": SceneEntityCfg("robot"), "height_scale": 0.12},
     )
     reward_lateral_deviation_penalty = RewTerm(
@@ -346,7 +346,7 @@ class TeacherRewardsCfg:
     )
     reward_successful_traversal = RewTerm(
         func=rewards.reward_successful_traversal,
-        weight=4.0,
+        weight=5.0,
         params={
             "asset_cfg": SceneEntityCfg("robot"),
             "lane_half_width": 0.45,
@@ -356,7 +356,7 @@ class TeacherRewardsCfg:
     )
     reward_torques = RewTerm(
         func=rewards.reward_torques,
-        weight=-2.0e-7,
+        weight=-5.0e-7,
         params={"asset_cfg": SceneEntityCfg("robot")},
     )
     reward_dof_error = RewTerm(
@@ -381,7 +381,7 @@ class TeacherRewardsCfg:
     )
     reward_dof_acc = RewTerm(
         func=rewards.reward_dof_acc,
-        weight=-2.0e-6,
+        weight=-2.0e-7,
         params={"asset_cfg": SceneEntityCfg("robot")},
     )
     reward_lin_vel_z = RewTerm(
@@ -422,7 +422,7 @@ class TeacherRewardsCfg:
     )
     reward_low_crawl_penalty = RewTerm(
         func=rewards.reward_low_crawl_penalty,
-        weight=-1.,
+        weight=-0.0,
         params={"asset_cfg": SceneEntityCfg("robot")},
     )
 
