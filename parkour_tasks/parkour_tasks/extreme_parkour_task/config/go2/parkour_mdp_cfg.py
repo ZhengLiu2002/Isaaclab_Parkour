@@ -145,9 +145,16 @@ class TeacherRewardsCfg:
 # Available Body strings: 
     reward_collision = RewTerm(
         func=rewards.reward_collision, 
-        weight=-15., 
+        weight=-20., 
         params={
             "sensor_cfg":SceneEntityCfg("contact_forces", body_names=["base",".*_calf",".*_thigh"]),
+        },
+    )
+    reward_mode_mismatch = RewTerm(
+        func=rewards.reward_mode_mismatch,
+        weight=-1.0,
+        params={
+            "asset_cfg":SceneEntityCfg("robot"),
         },
     )
     reward_feet_edge = RewTerm(
@@ -226,7 +233,7 @@ class TeacherRewardsCfg:
     )
     reward_tracking_goal_vel = RewTerm(
         func=rewards.reward_tracking_goal_vel, 
-        weight=5.0, 
+        weight=3.0, 
         params={
             "asset_cfg":SceneEntityCfg("robot"),
             "parkour_name":'base_parkour'

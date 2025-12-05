@@ -66,6 +66,12 @@ class UniformParkourCommand(CommandTerm):
                                             > self.cfg.clips.lin_vel_clip
             
     def _update_command(self):
+        # Retrieve the parkour event term to align the command with the target
+        if hasattr(self._env, "parkour_manager"):
+            parkour_term = self._env.parkour_manager._terms.get("base_parkour")
+            if parkour_term and hasattr(parkour_term, "target_yaw"):
+                self.heading_target = parkour_term.target_yaw
+
         heading_error = math_utils.wrap_to_pi(self.heading_target  - \
                                             self.robot.data.heading_w) * self.cfg.heading_control_stiffness
         self.vel_command_b[:, 2] = torch.clip(heading_error,
@@ -96,9 +102,21 @@ class UniformParkourCommand(CommandTerm):
         # -- base state
         base_pos_w = self.robot.data.root_pos_w.clone()
         base_pos_w[:, 2] += 0.5
-        # -- resolve the scales and quaternions
-        vel_des_arrow_scale, vel_des_arrow_quat = self._resolve_xy_velocity_to_arrow(self.command[:, :2])
+        
+        # -- Goal Arrow (Green): Points towards the target yaw (heading_target)
+        # Create arrow quaternion directly from heading_target (World Frame)
+        zeros = torch.zeros_like(self.heading_target)
+        vel_des_arrow_quat = math_utils.quat_from_euler_xyz(zeros, zeros, self.heading_target)
+        
+        # Scale based on commanded linear velocity magnitude
+        cmd_mag = torch.norm(self.command[:, :2], dim=1)
+        default_scale = self.goal_vel_visualizer.cfg.markers["arrow"].scale
+        vel_des_arrow_scale = torch.tensor(default_scale, device=self.device).repeat(self.num_envs, 1)
+        vel_des_arrow_scale[:, 0] *= cmd_mag * 3.0
+
+        # -- Current Velocity Arrow (Blue): Points in direction of actual movement
         vel_arrow_scale, vel_arrow_quat = self._resolve_xy_velocity_to_arrow(self.robot.data.root_lin_vel_b[:, :2])
+        
         # display markers
         self.goal_vel_visualizer.visualize(base_pos_w, vel_des_arrow_quat, vel_des_arrow_scale)
         self.current_vel_visualizer.visualize(base_pos_w, vel_arrow_quat, vel_arrow_scale)

@@ -177,8 +177,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 torchrun --nproc_per_node=4 scripts/rsl_rl/train.py
 python scripts/rsl_rl/play.py \
   --task Isaac-Galileo-Parkour-Teacher-Play-v0 \
   --num_envs 16 \
-  --checkpoint logs/rsl_rl/unitree_go2_parkour/model_4400.pt
-  --enable_cameras
+  --checkpoint logs/rsl_rl/
 
 # Galileo 学生模型
 python scripts/rsl_rl/play.py \

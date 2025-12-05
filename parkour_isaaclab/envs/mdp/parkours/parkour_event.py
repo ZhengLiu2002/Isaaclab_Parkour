@@ -367,12 +367,12 @@ class ParkourEvent(ParkourTerm):
         except Exception:
             return torch.zeros(len(env_ids), device=self.device, dtype=torch.bool), torch.zeros(len(env_ids), device=self.device, dtype=torch.bool)
         reached_goal = self.reached_goal_ids[env_ids] if hasattr(self, "reached_goal_ids") else torch.zeros(len(env_ids), device=self.device, dtype=torch.bool)
-        # 额外距离判定：跑过半程也记为成功
-        start_pos = self.env_origins[env_ids, :2] - torch.tensor((self.terrain.cfg.terrain_generator.size[1] + self._reset_offset, 0)).to(self.device)
-        dist = torch.norm(start_pos - self.robot.data.root_pos_w[env_ids, :2], dim=1)
-        dist_thresh = 0.5 * (self.terrain.cfg.terrain_generator.size[1])
-        dist_success = dist > dist_thresh
-        success = reached_goal | dist_success
+        # 移除距离判定：必须到达目标点才算成功，避免“跑过半程”导致的伪成功
+        # start_pos = self.env_origins[env_ids, :2] - torch.tensor((self.terrain.cfg.terrain_generator.size[1] + self._reset_offset, 0)).to(self.device)
+        # dist = torch.norm(start_pos - self.robot.data.root_pos_w[env_ids, :2], dim=1)
+        # dist_thresh = 0.5 * (self.terrain.cfg.terrain_generator.size[1])
+        # dist_success = dist > dist_thresh
+        success = reached_goal
         # 超时不再视为成功，避免“站桩升级”
         return success, torch.ones(len(env_ids), device=self.device, dtype=torch.bool)
 
